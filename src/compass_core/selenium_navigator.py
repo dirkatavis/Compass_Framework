@@ -36,12 +36,13 @@ class SeleniumNavigator(Navigator):
         """
         self.driver = driver
     
-    def navigate_to(self, url: str, verify: bool = True, **kwargs) -> Dict[str, Any]:
+    def navigate_to(self, url: str, label: str = "page", verify: bool = True, **kwargs) -> Dict[str, Any]:
         """
         Navigate to a URL using Selenium WebDriver.
         
         Args:
             url: Target URL to navigate to
+            label: Descriptive label for the page (for logging/reporting)
             verify: Whether to verify page load after navigation
             **kwargs: Additional parameters (timeout, etc.)
         
@@ -50,6 +51,7 @@ class SeleniumNavigator(Navigator):
             - status: 'success' or 'failure' 
             - error: Error message if navigation failed
             - url: The URL that was navigated to
+            - label: The page label that was provided
         """
         try:
             # Perform navigation
@@ -70,6 +72,7 @@ class SeleniumNavigator(Navigator):
             return {
                 'status': 'success',
                 'url': url,
+                'label': label,
                 'current_url': self.driver.current_url
             }
             
@@ -77,7 +80,8 @@ class SeleniumNavigator(Navigator):
             return {
                 'status': 'failure',
                 'error': f"Navigation failed: {str(e)}",
-                'url': url
+                'url': url,
+                'label': label
             }
     
     def verify_page(self, expected_url: Optional[str] = None, timeout: int = 15, **kwargs) -> Dict[str, Any]:

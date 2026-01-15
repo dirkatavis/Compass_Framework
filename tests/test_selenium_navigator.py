@@ -44,7 +44,7 @@ class TestSeleniumNavigator(unittest.TestCase):
         mock_wait.return_value.until = Mock()
         
         # Test basic navigation
-        result = self.navigator.navigate_to("https://example.com")
+        result = self.navigator.navigate_to("https://example.com", "test page")
         
         # Verify driver.get was called
         self.mock_driver.get.assert_called_once_with("https://example.com")
@@ -59,7 +59,7 @@ class TestSeleniumNavigator(unittest.TestCase):
         # Setup successful wait
         mock_wait.return_value.until = Mock()
         
-        result = self.navigator.navigate_to("https://example.com")
+        result = self.navigator.navigate_to("https://example.com", "test page")
         
         # Should return success status
         self.assertEqual(result['status'], 'success')
@@ -69,7 +69,7 @@ class TestSeleniumNavigator(unittest.TestCase):
         """Test navigate_to with verification disabled."""
         mock_wait.return_value.until = Mock()
         
-        result = self.navigator.navigate_to("https://example.com", verify=False)
+        result = self.navigator.navigate_to("https://example.com", "test page", verify=False)
         
         # Should still call driver.get
         self.mock_driver.get.assert_called_once_with("https://example.com")
@@ -153,7 +153,7 @@ class TestSeleniumNavigator(unittest.TestCase):
         # Setup driver to raise exception
         self.mock_driver.get.side_effect = Exception("Navigation failed")
         
-        result = self.navigator.navigate_to("https://example.com")
+        result = self.navigator.navigate_to("https://example.com", "test page")
         
         # Should return failure status
         self.assertEqual(result['status'], 'failure') 
