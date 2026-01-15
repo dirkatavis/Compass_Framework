@@ -80,6 +80,7 @@ When updating versions, modify both:
 - [`test_compass_runner.py`](tests/test_compass_runner.py) - Tests for core CompassRunner functionality
 - [`test_version_checker_interface.py`](tests/test_version_checker_interface.py) - Interface contract tests
 - [`test_navigator_interface.py`](tests/test_navigator_interface.py) - Navigation protocol tests  
+- [`test_logger_interface.py`](tests/test_logger_interface.py) - Logging protocol tests
 - [`test_meta.py`](tests/test_meta.py) - Import validation and test discovery validation
 
 ## Interfaces & Protocols
@@ -89,12 +90,14 @@ The framework follows **interface-first design** using Python Protocols:
 ### Current Interfaces
 - [`VersionChecker`](src/compass_core/version_checker.py) - Browser/driver version detection protocol
 - [`Navigator`](src/compass_core/navigation.py) - Web navigation and page verification protocol
+- [`Logger + LoggerFactory`](src/compass_core/logging.py) - Structured logging with dependency injection
 
 ### Interface Design Patterns
 - **@runtime_checkable** protocols for runtime type validation
 - **Dependency injection** ready - no hard-coded dependencies  
 - **Method signature testing** to ensure protocol compliance
 - **Return type specifications** using typed dictionaries and generics
+- **Factory patterns** for configurable component creation
 
 
 The Best Practice: Only expose what is necessary in the top-level __init__.py.
