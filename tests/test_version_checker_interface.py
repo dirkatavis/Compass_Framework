@@ -52,6 +52,28 @@ class TestVersionCheckerInterface(unittest.TestCase):
         
         hints = get_type_hints(self.checker.get_driver_version)
         self.assertEqual(hints.get('return'), str)
+    
+    def test_mock_satisfies_protocol(self):
+        """Test that MockVersionChecker explicitly satisfies VersionChecker protocol"""
+        # This verifies protocol compliance at runtime
+        self.assertIsInstance(self.checker, VersionChecker)
+        
+        # Additional verification that the protocol contract is met
+        self.assertTrue(hasattr(self.checker, 'get_browser_version'))
+        self.assertTrue(hasattr(self.checker, 'get_driver_version'))
+        
+        # Verify the methods have the right signatures
+        import inspect
+        browser_sig = inspect.signature(self.checker.get_browser_version)
+        driver_sig = inspect.signature(self.checker.get_driver_version)
+        
+        # Browser version takes no arguments (except self)
+        self.assertEqual(len(browser_sig.parameters), 0)
+        
+        # Driver version takes one argument (driver_path)  
+        self.assertEqual(len(driver_sig.parameters), 1)
+        param_name = list(driver_sig.parameters.keys())[0]
+        self.assertEqual(param_name, 'driver_path')
 
 
 if __name__ == '__main__':

@@ -2,9 +2,10 @@
 Version Checker Interface for Compass Framework
 Focused extraction of version checking responsibilities
 """
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 
+@runtime_checkable
 class VersionChecker(Protocol):
     """Protocol for checking browser and driver versions"""
     
