@@ -20,7 +20,7 @@ class TestTestSuite(unittest.TestCase):
         self.assertGreater(len(test_files), 0, "No test files found")
         
         for test_file in test_files:
-            if test_file.name == __file__.split('/')[-1]:  # Skip self
+            if test_file.name == Path(__file__).name:  # Skip self
                 continue
                 
             module_name = f"tests.{test_file.stem}"
