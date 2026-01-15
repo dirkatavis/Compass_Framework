@@ -32,6 +32,12 @@ runner.run()  # Outputs version info and activation status
 # Install in development mode
 pip install -e .
 
+# Run all tests
+python -m unittest discover tests -v
+
+# Run specific test file
+python -m unittest tests.test_compass_runner -v
+
 # Build distribution packages
 python -m build
 
@@ -63,5 +69,14 @@ When updating versions, modify both:
 - Export public APIs through `__init__.py` imports
 - Keep the framework lightweight and focused on its core purpose
 
-### No Testing Framework
-Currently no test structure exists - consider adding `tests/` directory if implementing test coverage.
+### Testing Framework
+- **Test Structure**: Comprehensive test suite in [`tests/`](tests/) directory
+- **Test Categories**: Unit tests, interface tests, meta-tests for import validation
+- **Run Tests**: `python -m unittest discover tests -v` (11 tests currently passing)
+- **TDD Approach**: Write tests first, then implement features
+- **Meta-Tests**: [`test_meta.py`](tests/test_meta.py) validates all imports work to prevent broken test suites
+
+### Test Files
+- [`test_compass_runner.py`](tests/test_compass_runner.py) - Tests for core CompassRunner functionality
+- [`test_version_checker_interface.py`](tests/test_version_checker_interface.py) - Interface contract tests
+- [`test_meta.py`](tests/test_meta.py) - Import validation and test discovery validation
