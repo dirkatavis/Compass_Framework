@@ -109,7 +109,7 @@ class TestSeleniumNavigator(unittest.TestCase):
         # Set current_url to something different than expected
         self.mock_driver.current_url = "https://different.com"
         
-        result = self.navigator.verify_page(expected_url="https://example.com")
+        result = self.navigator.verify_page(url="https://example.com")
         
         # Should return failure status for URL mismatch
         self.assertEqual(result['status'], 'failure')
@@ -125,7 +125,7 @@ class TestSeleniumNavigator(unittest.TestCase):
         # Set matching URL
         self.mock_driver.current_url = "https://example.com/page"
         
-        result = self.navigator.verify_page(expected_url="https://example.com")
+        result = self.navigator.verify_page(url="https://example.com")
         
         # Should return success for URL that starts with expected
         self.assertEqual(result['status'], 'success')

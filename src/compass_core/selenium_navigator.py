@@ -60,7 +60,7 @@ class SeleniumNavigator(Navigator):
             # Optionally verify the page loaded correctly
             if verify:
                 timeout = kwargs.get('timeout', 15)
-                verify_result = self.verify_page(expected_url=url, timeout=timeout)
+                verify_result = self.verify_page(url=url, timeout=timeout)
                 if verify_result['status'] == 'failure':
                     return {
                         'status': 'failure',
@@ -84,14 +84,17 @@ class SeleniumNavigator(Navigator):
                 'label': label
             }
     
-    def verify_page(self, expected_url: Optional[str] = None, timeout: int = 15, **kwargs) -> Dict[str, Any]:
+    def verify_page(self, 
+                   url: Optional[str] = None, 
+                   check_locator: Optional[Tuple[str, str]] = None, 
+                   timeout: int = 15) -> Dict[str, Any]:
         """
         Verify that the current page has loaded correctly.
         
         Args:
-            expected_url: Optional URL to verify against current URL
+            url: Optional URL to verify against current URL
+            check_locator: Optional element locator to verify presence  
             timeout: Maximum time to wait for page to load (default 15s)
-            **kwargs: Additional verification parameters
         
         Returns:
             Dictionary with verification result:
@@ -109,16 +112,15 @@ class SeleniumNavigator(Navigator):
             current_url = self.driver.current_url
             
             # Check URL match if expected URL provided
-            if expected_url and not current_url.startswith(expected_url):
+            if url and not current_url.startswith(url):
                 return {
                     'status': 'failure',
                     'error': 'url_mismatch',
-                    'expected': expected_url,
+                    'expected': url,
                     'actual': current_url
                 }
             
             # Check for optional element presence
-            check_locator = kwargs.get('check_locator')
             if check_locator:
                 WebDriverWait(self.driver, timeout).until(
                     EC.presence_of_element_located(check_locator)
@@ -127,7 +129,7 @@ class SeleniumNavigator(Navigator):
             return {
                 'status': 'success',
                 'current_url': current_url,
-                **({"expected_url": expected_url} if expected_url else {})
+                **({"expected_url": url} if url else {})
             }
             
         except Exception as e:
