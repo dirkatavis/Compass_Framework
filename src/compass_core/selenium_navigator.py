@@ -36,7 +36,7 @@ class SeleniumNavigator(Navigator):
         """
         self.driver = driver
     
-    def navigate_to(self, url: str, label: str = "page", verify: bool = True, **kwargs) -> Dict[str, Any]:
+    def navigate_to(self, url: str, label: str = "page", verify: bool = True, timeout: int = 15) -> Dict[str, Any]:
         """
         Navigate to a URL using Selenium WebDriver.
         
@@ -44,7 +44,7 @@ class SeleniumNavigator(Navigator):
             url: Target URL to navigate to
             label: Descriptive label for the page (for logging/reporting)
             verify: Whether to verify page load after navigation
-            **kwargs: Additional parameters (timeout, etc.)
+            timeout: Maximum time to wait for operations (default 15s)
         
         Returns:
             Dictionary with navigation result:
@@ -59,7 +59,6 @@ class SeleniumNavigator(Navigator):
             
             # Optionally verify the page loaded correctly
             if verify:
-                timeout = kwargs.get('timeout', 15)
                 verify_result = self.verify_page(url=url, timeout=timeout)
                 if verify_result['status'] == 'failure':
                     return {

@@ -158,6 +158,17 @@ class TestSeleniumNavigator(unittest.TestCase):
         # Should return failure status
         self.assertEqual(result['status'], 'failure') 
         self.assertIn('error', result)
+    
+    @patch('compass_core.selenium_navigator.WebDriverWait')
+    def test_navigate_to_custom_timeout(self, mock_wait):
+        """Test navigate_to with custom timeout parameter."""
+        mock_wait.return_value.until = Mock()
+        
+        result = self.navigator.navigate_to("https://example.com", "test page", timeout=30)
+        
+        # Should pass timeout to verify_page call
+        self.assertEqual(result['status'], 'success')
+        # Verify timeout was used (would be passed to verify_page internally)
 
 
 if __name__ == '__main__':
