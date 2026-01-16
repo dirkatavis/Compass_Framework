@@ -205,7 +205,7 @@ class IniConfiguration(Configuration):
         Returns:
             Dictionary with validation results:
             {
-                "valid": bool,
+                "status": str,  # "valid" or "invalid"
                 "warnings": List[str],
                 "errors": List[str]
             }
@@ -241,7 +241,7 @@ class IniConfiguration(Configuration):
                     errors.append(f"Invalid timeout value for {timeout_key}: {timeout_value}")
         
         return {
-            "valid": len(errors) == 0,
+            "status": "valid" if len(errors) == 0 else "invalid",
             "warnings": warnings,
             "errors": errors
         }
