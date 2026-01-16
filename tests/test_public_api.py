@@ -21,6 +21,14 @@ class TestPublicAPI(unittest.TestCase):
         """Test that JsonConfiguration is always in __all__."""
         self.assertIn('JsonConfiguration', compass_core.__all__)
     
+    def test_standard_logger_in_all(self):
+        """Test that StandardLogger is always in __all__."""
+        self.assertIn('StandardLogger', compass_core.__all__)
+    
+    def test_standard_logger_factory_in_all(self):
+        """Test that StandardLoggerFactory is always in __all__."""
+        self.assertIn('StandardLoggerFactory', compass_core.__all__)
+    
     def test_browser_version_checker_conditional_in_all(self):
         """Test BrowserVersionChecker in __all__ when on Windows."""
         try:
@@ -54,7 +62,7 @@ class TestPublicAPI(unittest.TestCase):
             
     def test_private_modules_not_in_all(self):
         """Test that internal modules are not exposed in __all__."""
-        private_items = ['engine', 'navigation', 'selenium_navigator', 'configuration', 'json_configuration', 'version_checker', 'browser_version_checker']
+        private_items = ['engine', 'navigation', 'selenium_navigator', 'configuration', 'json_configuration', 'version_checker', 'browser_version_checker', 'logging']
         
         for item in private_items:
             self.assertNotIn(item, compass_core.__all__)
