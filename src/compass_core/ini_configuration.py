@@ -85,12 +85,14 @@ class IniConfiguration(Configuration):
         try:
             return int(value)
         except ValueError:
+            # Not a valid integer, try float conversion instead
             pass
         
         # Try to convert to float  
         try:
             return float(value)
         except ValueError:
+            # Not a valid float either, return as-is
             pass
         
         # Return as string
