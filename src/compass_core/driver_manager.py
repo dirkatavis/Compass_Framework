@@ -4,7 +4,7 @@ DriverManager protocol definition for WebDriver lifecycle management.
 This protocol defines the interface for managing WebDriver instances,
 inspired by DevCompass driver_manager.py patterns.
 """
-from typing import Protocol, runtime_checkable, Any, Dict, Optional
+from typing import Protocol, runtime_checkable, Any, Dict
 from selenium.webdriver.common.service import Service
 from selenium.webdriver.remote.webdriver import WebDriver
 
