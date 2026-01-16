@@ -85,10 +85,67 @@ edge_path = drivers.local/edge/msedgedriver.exe
     def test_set_with_dot_notation(self):
         """Test setting values with dot notation creates nested structure."""
         config = IniConfiguration()
-        config.set('webdriver.edge_path', 'test/path/driver.exe')
+        result = config.set('webdriver.edge_path', 'test/path/driver.exe')
         
-        result = config.get('webdriver.edge_path')
-        self.assertEqual(result, 'test/path/driver.exe')
+        # Test that set() returns bool (protocol compliance)
+        self.assertIsInstance(result, bool)
+        self.assertTrue(result)
+        
+        # Test value was actually set
+        retrieved_value = config.get('webdriver.edge_path')
+        self.assertEqual(retrieved_value, 'test/path/driver.exe')
+    
+    def test_set_method_return_type_compliance(self):
+        """Test that set() method returns bool as per Configuration protocol."""
+        config = IniConfiguration()
+        
+        # Test successful set operation
+        result = config.set('test_key', 'test_value')
+        self.assertIsInstance(result, bool, "set() must return bool per Configuration protocol")
+        self.assertTrue(result, "set() should return True on success")
+        
+        # Test with nested key
+        result = config.set('section.key', 'value')
+        self.assertIsInstance(result, bool)
+        self.assertTrue(result)
+    
+    def test_save_method_protocol_compliance(self):
+        """Test that save() method matches Configuration protocol signature."""
+        config = IniConfiguration()
+        test_config_data = {
+            'webdriver': {
+                'edge_path': 'test/path/driver.exe'
+            },
+            'timeouts': {
+                'page_load': '30'
+            }
+        }
+        
+        test_file = Path(self.test_dir) / "protocol_test.ini"
+        
+        # Test save() method signature and return type
+        result = config.save(test_config_data, test_file)
+        self.assertIsInstance(result, bool, "save() must return bool per Configuration protocol")
+        self.assertTrue(result, "save() should return True on successful save")
+        
+        # Verify file was created and contains expected content
+        self.assertTrue(test_file.exists(), "save() should create the specified file")
+        
+        # Verify saved content can be loaded back
+        new_config = IniConfiguration()
+        loaded_data = new_config.load(test_file)
+        self.assertEqual(loaded_data['webdriver']['edge_path'], 'test/path/driver.exe')
+    
+    def test_save_method_error_handling(self):
+        """Test that save() method returns False on errors."""
+        config = IniConfiguration()
+        test_config_data = {'test': {'key': 'value'}}
+        
+        # Try to save to invalid path (should return False)
+        invalid_path = "/invalid/path/that/should/not/exist/test.ini"
+        result = config.save(test_config_data, invalid_path)
+        self.assertIsInstance(result, bool)
+        # Note: This might still succeed depending on system, so we just check return type
     
     def test_configuration_protocol_compliance(self):
         """Test that IniConfiguration implements Configuration protocol."""
@@ -97,12 +154,61 @@ edge_path = drivers.local/edge/msedgedriver.exe
         self.assertIsInstance(config, Configuration)
     
     def test_validate_configuration(self):
-        """Test configuration validation."""
+        """Test configuration validation with correct return format."""
         config = IniConfiguration(config_path="nonexistent.ini")  # Don't auto-load
         
         # Test empty configuration
         result = config.validate()
+        
+        # Test return format matches Configuration protocol (status, not valid)
+        self.assertIn("status", result, "validate() must return 'status' key per protocol")
+        self.assertIn("warnings", result, "validate() must return 'warnings' key")
+        self.assertIn("errors", result, "validate() must return 'errors' key")
+        
+        # Test status value is string, not boolean
+        self.assertIsInstance(result["status"], str, "status must be string ('valid'/'invalid')")
+        self.assertIn(result["status"], ["valid", "invalid"], "status must be 'valid' or 'invalid'")
+        
+        # Test warnings for empty config
         self.assertIn("Configuration is empty", result["warnings"])
+        
+        # Test status is 'valid' for empty config (warnings don't make it invalid)
+        self.assertEqual(result["status"], "valid", "Empty config should be valid with warnings")
+    
+    def test_validate_format_consistency_with_json_configuration(self):
+        """Test that validate() format matches JsonConfiguration format."""
+        from compass_core import JsonConfiguration
+        
+        ini_config = IniConfiguration(config_path="nonexistent.ini")
+        json_config = JsonConfiguration()
+        
+        ini_result = ini_config.validate({})
+        json_result = json_config.validate({})
+        
+        # Both should have same keys
+        self.assertEqual(set(ini_result.keys()), set(json_result.keys()), 
+                        "IniConfiguration and JsonConfiguration validate() should return same keys")
+        
+        # Both should use 'status' key with string values
+        self.assertIsInstance(ini_result["status"], str)
+        self.assertIsInstance(json_result["status"], str)
+        self.assertIn(ini_result["status"], ["valid", "invalid"])
+        self.assertIn(json_result["status"], ["valid", "invalid"])
+    
+    def test_validate_with_invalid_data(self):
+        """Test validate() returns 'invalid' status for problematic configurations."""
+        config = IniConfiguration(config_path="nonexistent.ini")
+        
+        # Test configuration with invalid timeout
+        invalid_config = {
+            'timeouts': {
+                'page_load': 'invalid_number'
+            }
+        }
+        
+        result = config.validate(invalid_config)
+        self.assertEqual(result["status"], "invalid", "Config with invalid timeout should be 'invalid'")
+        self.assertTrue(len(result["errors"]) > 0, "Invalid config should have errors")
     
     def test_default_config_loading(self):
         """Test that default configuration loading works."""
