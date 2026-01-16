@@ -28,10 +28,6 @@ class BrowserVersionChecker(VersionChecker):
         driver_version = checker.get_driver_version("chromedriver.exe")
     """
     
-    def __init__(self):
-        """Initialize BrowserVersionChecker."""
-        pass
-    
     def get_browser_version(self) -> str:
         """
         Get Chrome browser version (default browser for automation).

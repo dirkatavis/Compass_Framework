@@ -2,8 +2,8 @@
 Tests for BrowserVersionChecker implementation.
 """
 import unittest
-import tempfile
 import os
+import subprocess
 from unittest.mock import patch, MagicMock, mock_open
 from compass_core.browser_version_checker import BrowserVersionChecker
 from compass_core.version_checker import VersionChecker
@@ -15,13 +15,6 @@ class TestBrowserVersionChecker(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.checker = BrowserVersionChecker()
-        self.temp_dir = tempfile.TemporaryDirectory()
-        self.temp_path = self.temp_dir.name
-    
-    def tearDown(self):
-        """Clean up test fixtures."""
-        self.temp_dir.cleanup()
-    
     def test_version_checker_protocol_compliance(self):
         """Test that BrowserVersionChecker implements VersionChecker protocol."""
         self.assertIsInstance(self.checker, VersionChecker)
@@ -229,10 +222,6 @@ class TestBrowserVersionChecker(unittest.TestCase):
         
         self.assertIsInstance(result, str)
         self.assertEqual(result, "131.0.2903.70")
-
-
-# Import subprocess for TimeoutExpired in tests
-import subprocess
 
 
 if __name__ == '__main__':

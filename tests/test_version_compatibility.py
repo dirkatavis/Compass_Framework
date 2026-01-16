@@ -3,7 +3,6 @@ Tests for version compatibility scenarios - the most common real-world failures.
 """
 import unittest
 from unittest.mock import patch, MagicMock
-import tempfile
 from compass_core.browser_version_checker import BrowserVersionChecker
 
 

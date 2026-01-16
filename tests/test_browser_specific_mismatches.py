@@ -247,7 +247,7 @@ class TestEdgeSpecificMismatches(unittest.TestCase):
                     self.assertEqual(driver_version, expected_version)
 
 
-class TestCrosseBrowserMismatchComparison(unittest.TestCase):
+class TestCrossBrowserMismatchComparison(unittest.TestCase):
     """Test cross-browser compatibility comparison scenarios."""
     
     def setUp(self):
