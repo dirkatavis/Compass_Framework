@@ -29,7 +29,7 @@ class TestJsonConfiguration(unittest.TestCase):
     def test_json_configuration_initialization(self):
         """Test JsonConfiguration initialization."""
         config = JsonConfiguration()
-        self.assertEqual(config._config, {})
+        self.assertEqual(config.get_all(), {})
     
     def test_load_valid_json_file(self):
         """Test loading a valid JSON configuration file."""
@@ -47,7 +47,7 @@ class TestJsonConfiguration(unittest.TestCase):
         # Test loading
         result = self.config.load(test_file)
         self.assertEqual(result, test_data)
-        self.assertEqual(self.config._config, test_data)
+        self.assertEqual(self.config.get_all(), test_data)
     
     def test_load_with_string_path(self):
         """Test loading with string path."""
@@ -154,31 +154,31 @@ class TestJsonConfiguration(unittest.TestCase):
         """Test setting values with simple keys."""
         result = self.config.set("test_key", "test_value")
         self.assertTrue(result)
-        self.assertEqual(self.config._config["test_key"], "test_value")
+        self.assertEqual(self.config.get("test_key"), "test_value")
         
         # Test different data types
         self.config.set("number", 123)
         self.config.set("boolean", False)
         self.config.set("list", [1, 2, 3])
         
-        self.assertEqual(self.config._config["number"], 123)
-        self.assertEqual(self.config._config["boolean"], False)
-        self.assertEqual(self.config._config["list"], [1, 2, 3])
+        self.assertEqual(self.config.get("number"), 123)
+        self.assertEqual(self.config.get("boolean"), False)
+        self.assertEqual(self.config.get("list"), [1, 2, 3])
     
     def test_set_nested_key_dot_notation(self):
         """Test setting values with dot notation creates nested structure."""
         result = self.config.set("database.host", "localhost")
         self.assertTrue(result)
-        self.assertEqual(self.config._config["database"]["host"], "localhost")
+        self.assertEqual(self.config.get("database.host"), "localhost")
         
         # Test deeper nesting
         self.config.set("app.settings.auto_save", True)
-        self.assertEqual(self.config._config["app"]["settings"]["auto_save"], True)
+        self.assertEqual(self.config.get("app.settings.auto_save"), True)
         
         # Test overwriting existing structure
         self.config.set("database.port", 5432)
-        self.assertEqual(self.config._config["database"]["port"], 5432)
-        self.assertEqual(self.config._config["database"]["host"], "localhost")  # Should preserve existing
+        self.assertEqual(self.config.get("database.port"), 5432)
+        self.assertEqual(self.config.get("database.host"), "localhost")  # Should preserve existing
     
     def test_validate_valid_configuration(self):
         """Test validation of valid configuration."""
