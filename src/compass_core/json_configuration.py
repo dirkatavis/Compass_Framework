@@ -22,7 +22,7 @@ class JsonConfiguration(Configuration):
         config = JsonConfiguration()
         data = config.load("settings.json")
         config.set("api_key", "your-key-here")
-        config.save(config._config, "updated_settings.json")
+        config.save(config.get_all(), "updated_settings.json")
         validation = config.validate()
     """
     
@@ -206,3 +206,12 @@ class JsonConfiguration(Configuration):
             'errors': errors,
             'warnings': warnings
         }
+    
+    def get_all(self) -> Dict[str, Any]:
+        """
+        Get a copy of the current configuration.
+        
+        Returns:
+            Dictionary containing all current configuration data
+        """
+        return self._config.copy()

@@ -238,6 +238,36 @@ class TestJsonConfiguration(unittest.TestCase):
         self.assertEqual(result["status"], "invalid")
         self.assertGreater(len(result["errors"]), 0)
         self.assertIn("dictionary", result["errors"][0])
+    
+    def test_get_all_returns_copy_of_configuration(self):
+        """Test get_all returns a copy of current configuration."""
+        test_data = {
+            "database": {"host": "localhost", "port": 5432},
+            "api": {"timeout": 30}
+        }
+        
+        # Set up test configuration
+        for key, value in test_data.items():
+            self.config._config[key] = value
+        
+        # Get all configuration
+        result = self.config.get_all()
+        
+        # Should equal the test data
+        self.assertEqual(result, test_data)
+        
+        # Should be a copy, not the same object
+        self.assertIsNot(result, self.config._config)
+        
+        # Modifying returned dict should not affect internal config
+        result["new_key"] = "new_value"
+        self.assertNotIn("new_key", self.config._config)
+    
+    def test_get_all_empty_configuration(self):
+        """Test get_all with empty configuration."""
+        result = self.config.get_all()
+        self.assertEqual(result, {})
+        self.assertIsInstance(result, dict)
 
 
 if __name__ == '__main__':
