@@ -4,5 +4,10 @@ dist/
 __pycache__/
 *.pyc
 
+# Local configuration and drivers (Python pattern: file.local)
+*.local
+*.local/
+drivers.local/
+
 # Editor directories and files
 .vscode/

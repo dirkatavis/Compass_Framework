@@ -7,7 +7,6 @@ interface, enabling web navigation and page verification operations.
 from typing import Dict, Any, Optional, Tuple
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 
 from .navigation import Navigator

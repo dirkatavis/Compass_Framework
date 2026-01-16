@@ -8,7 +8,6 @@ import os
 import re
 import subprocess
 import winreg
-from typing import Optional
 
 from .version_checker import VersionChecker
 
@@ -129,6 +128,7 @@ class BrowserVersionChecker(VersionChecker):
                     continue
                     
         except Exception:
+            # Registry access failed completely, fallback to executable detection
             pass
         
         return 'unknown'
@@ -153,6 +153,7 @@ class BrowserVersionChecker(VersionChecker):
                     continue
                     
         except Exception:
+            # Registry access failed completely, fallback to executable detection
             pass
         
         return 'unknown'
@@ -176,6 +177,7 @@ class BrowserVersionChecker(VersionChecker):
                     return version_match.group(1)
                     
         except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+            # Executable version detection failed (timeout, missing file, or permission error)
             pass
         
         return 'unknown'
@@ -202,6 +204,7 @@ class BrowserVersionChecker(VersionChecker):
                     return version_match.group(1)
                     
         except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+            # Driver executable version detection failed (timeout, missing file, or permission error)
             pass
         
         return 'unknown'

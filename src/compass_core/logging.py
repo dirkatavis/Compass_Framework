@@ -63,6 +63,9 @@ class StandardLogger(Logger):
             level: Logging level (default: INFO)
         """
         self.name = name
+        # Convert string levels to logging constants
+        if isinstance(level, str):
+            level = getattr(logging, level.upper())
         self.level = level
         self._logger = logging.getLogger(name)
         self._logger.setLevel(level)

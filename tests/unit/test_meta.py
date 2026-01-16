@@ -23,7 +23,7 @@ class TestTestSuite(unittest.TestCase):
             if test_file.name == Path(__file__).name:  # Skip self
                 continue
                 
-            module_name = f"tests.{test_file.stem}"
+            module_name = f"tests.unit.{test_file.stem}"
             with self.subTest(module=module_name):
                 try:
                     importlib.import_module(module_name)
