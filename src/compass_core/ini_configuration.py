@@ -96,29 +96,43 @@ class IniConfiguration(Configuration):
         # Return as string
         return value
     
-    def save(self, file_path: Union[str, Path]) -> None:
+    def save(self, config: Dict[str, Any], destination: Union[str, Path]) -> bool:
         """
-        Save current configuration to INI file.
+        Save configuration to INI file.
         
         Args:
-            file_path: Destination path for the INI file
+            config: Configuration data to save
+            destination: Destination path for the INI file
+            
+        Returns:
+            bool: True if save successful, False otherwise
         """
-        file_path = Path(file_path)
-        
-        # Ensure parent directory exists
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        # Create new configparser with current data
-        output_config = configparser.ConfigParser()
-        
-        for section_name, section_data in self._data.items():
-            output_config.add_section(section_name)
-            for key, value in section_data.items():
-                output_config.set(section_name, key, str(value))
-        
-        # Write to file
-        with open(file_path, 'w') as configfile:
-            output_config.write(configfile)
+        try:
+            destination = Path(destination)
+            
+            # Ensure parent directory exists
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Create new configparser with provided data
+            output_config = configparser.ConfigParser()
+            
+            for section_name, section_data in config.items():
+                output_config.add_section(section_name)
+                if isinstance(section_data, dict):
+                    for key, value in section_data.items():
+                        output_config.set(section_name, key, str(value))
+                else:
+                    # Handle flat key-value pairs in a default section
+                    output_config.set(section_name, str(section_data), '')
+            
+            # Write to file
+            with open(destination, 'w') as configfile:
+                output_config.write(configfile)
+                
+            return True
+            
+        except Exception:
+            return False
     
     def get(self, key: str, default: Any = None) -> Any:
         """
@@ -143,7 +157,7 @@ class IniConfiguration(Configuration):
                     return section_data[key]
             return default
     
-    def set(self, key: str, value: Any) -> None:
+    def set(self, key: str, value: Any) -> bool:
         """
         Set configuration value by key.
         
@@ -152,17 +166,24 @@ class IniConfiguration(Configuration):
         Args:
             key: Configuration key (supports dot notation)  
             value: Value to set
+            
+        Returns:
+            bool: True if set successful, False otherwise
         """
-        if '.' in key:
-            section, option = key.split('.', 1)
-            if section not in self._data:
-                self._data[section] = {}
-            self._data[section][option] = value
-        else:
-            # Default to 'DEFAULT' section for simple keys
-            if 'DEFAULT' not in self._data:
-                self._data['DEFAULT'] = {}
-            self._data['DEFAULT'][key] = value
+        try:
+            if '.' in key:
+                section, option = key.split('.', 1)
+                if section not in self._data:
+                    self._data[section] = {}
+                self._data[section][option] = value
+            else:
+                # Default to 'DEFAULT' section for simple keys
+                if 'DEFAULT' not in self._data:
+                    self._data['DEFAULT'] = {}
+                self._data['DEFAULT'][key] = value
+            return True
+        except Exception:
+            return False
     
     def get_all(self) -> Dict[str, Any]:
         """
