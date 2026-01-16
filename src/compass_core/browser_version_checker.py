@@ -201,7 +201,6 @@ class BrowserVersionChecker(VersionChecker):
             if result.returncode == 0:
                 # Extract version number from output
                 # ChromeDriver: "ChromeDriver 131.0.6778.85"
-                # EdgeDriver: "Microsoft Edge WebDriver 131.0.2903.70"
                 version_match = re.search(r'(\d+\.\d+\.\d+\.\d+)', result.stdout)
                 if version_match:
                     return version_match.group(1)
@@ -210,3 +209,82 @@ class BrowserVersionChecker(VersionChecker):
             pass
         
         return 'unknown'
+    
+    def check_compatibility(self, browser_type: str = "chrome", driver_path: str = None) -> dict:
+        """
+        Check compatibility between browser and driver versions.
+        
+        Args:
+            browser_type: "chrome" or "edge" (default: "chrome")
+            driver_path: Optional path to driver executable for driver version check
+            
+        Returns:
+            Dictionary with compatibility information:
+            {
+                "browser_version": "131.0.6778.85",
+                "driver_version": "131.0.6778.85" or "unknown",
+                "compatible": True/False,
+                "major_match": True/False,
+                "exact_match": True/False,
+                "recommendation": "descriptive message"
+            }
+        """
+        # Get browser version
+        if browser_type.lower() == "edge":
+            browser_version = self.get_edge_version()
+            default_driver = "msedgedriver.exe"
+        else:
+            browser_version = self.get_browser_version()
+            default_driver = "chromedriver.exe"
+        
+        # Get driver version
+        driver_version = "unknown"
+        if driver_path:
+            driver_version = self.get_driver_version(driver_path)
+        elif driver_path is None:
+            # Try to find driver in common locations
+            driver_version = self.get_driver_version(default_driver)
+        
+        # Analyze compatibility
+        result = {
+            "browser_version": browser_version,
+            "driver_version": driver_version,
+            "compatible": False,
+            "major_match": False,
+            "exact_match": False,
+            "recommendation": ""
+        }
+        
+        if browser_version == "unknown" and driver_version == "unknown":
+            result["recommendation"] = f"Both {browser_type} browser and driver not found. Please install both."
+        elif browser_version == "unknown":
+            result["recommendation"] = f"{browser_type.title()} browser not found. Please install {browser_type}."
+        elif driver_version == "unknown":
+            result["recommendation"] = f"Driver not found at {driver_path or default_driver}. Please install WebDriver."
+        else:
+            # Both versions detected, check compatibility
+            try:
+                browser_major = int(browser_version.split('.')[0])
+                driver_major = int(driver_version.split('.')[0])
+                
+                result["exact_match"] = browser_version == driver_version
+                result["major_match"] = browser_major == driver_major
+                
+                # Chrome/Edge drivers generally require major version match
+                result["compatible"] = result["major_match"]
+                
+                if result["exact_match"]:
+                    result["recommendation"] = "Perfect version match. Automation should work reliably."
+                elif result["major_match"]:
+                    result["recommendation"] = f"Major versions match ({browser_major}). Should work, but exact match preferred."
+                else:
+                    version_gap = abs(browser_major - driver_major)
+                    if browser_major > driver_major:
+                        result["recommendation"] = f"Driver too old (gap: {version_gap} versions). Update WebDriver to v{browser_major}.x"
+                    else:
+                        result["recommendation"] = f"Driver too new (gap: {version_gap} versions). Update {browser_type} browser or downgrade driver."
+                        
+            except (ValueError, IndexError):
+                result["recommendation"] = "Invalid version format detected. Manual verification needed."
+        
+        return result

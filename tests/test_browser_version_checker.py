@@ -200,6 +200,26 @@ class TestBrowserVersionChecker(unittest.TestCase):
         self.assertTrue(hasattr(self.checker, 'get_edge_version'))
         self.assertTrue(callable(self.checker.get_edge_version))
     
+    def test_check_compatibility_method_exists(self):
+        """Test that check_compatibility method exists and is callable."""
+        self.assertTrue(hasattr(self.checker, 'check_compatibility'))
+        self.assertTrue(callable(self.checker.check_compatibility))
+    
+    @patch.object(BrowserVersionChecker, 'get_browser_version')
+    @patch.object(BrowserVersionChecker, 'get_driver_version')
+    def test_check_compatibility_returns_dict(self, mock_driver, mock_browser):
+        """Test check_compatibility returns proper dictionary structure."""
+        mock_browser.return_value = "131.0.6778.85"
+        mock_driver.return_value = "131.0.6778.85"
+        
+        result = self.checker.check_compatibility()
+        
+        self.assertIsInstance(result, dict)
+        required_keys = ["browser_version", "driver_version", "compatible", 
+                        "major_match", "exact_match", "recommendation"]
+        for key in required_keys:
+            self.assertIn(key, result)
+    
     @patch('compass_core.browser_version_checker.BrowserVersionChecker._get_edge_version')
     def test_get_edge_version_returns_string(self, mock_edge):
         """Test get_edge_version returns string."""
