@@ -16,6 +16,10 @@ class TestPublicAPI(unittest.TestCase):
     def test_compass_runner_in_all(self):
         """Test that CompassRunner is always in __all__."""
         self.assertIn('CompassRunner', compass_core.__all__)
+    
+    def test_json_configuration_in_all(self):
+        """Test that JsonConfiguration is always in __all__."""
+        self.assertIn('JsonConfiguration', compass_core.__all__)
         
     def test_selenium_navigator_conditional_in_all(self):
         """Test SeleniumNavigator in __all__ when selenium available."""
@@ -39,7 +43,7 @@ class TestPublicAPI(unittest.TestCase):
             
     def test_private_modules_not_in_all(self):
         """Test that internal modules are not exposed in __all__."""
-        private_items = ['engine', 'navigation', 'selenium_navigator']
+        private_items = ['engine', 'navigation', 'selenium_navigator', 'configuration', 'json_configuration']
         
         for item in private_items:
             self.assertNotIn(item, compass_core.__all__)
