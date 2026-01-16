@@ -11,3 +11,11 @@ try:
 except ImportError:
     # selenium not installed - SeleniumNavigator not available
     pass
+
+# Windows-only imports - only available on Windows
+try:
+    from .browser_version_checker import BrowserVersionChecker
+    __all__.append('BrowserVersionChecker')
+except ImportError:
+    # winreg not available (non-Windows) - BrowserVersionChecker not available
+    pass
