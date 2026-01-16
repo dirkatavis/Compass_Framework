@@ -315,6 +315,39 @@ class TestStandardDriverManager(unittest.TestCase):
         
         version = self.manager._get_browser_version()
         self.assertEqual(version, "unknown")
+    
+    @patch('compass_core.ini_configuration.IniConfiguration')
+    def test_configuration_caching_performance(self, mock_ini_config_class):
+        """Test that IniConfiguration is cached and not created repeatedly."""
+        # Setup mock configuration instance
+        mock_config = Mock()
+        mock_config.get.return_value = ""
+        mock_config.load.return_value = True
+        mock_ini_config_class.return_value = mock_config
+        
+        # Create a new manager instance to trigger initialization
+        # This will call _get_configured_driver_path once during init
+        manager = StandardDriverManager()
+        
+        # Configuration should be created only once during initialization
+        self.assertEqual(mock_ini_config_class.call_count, 1)
+        # Config.get was called once during initialization
+        init_call_count = mock_config.get.call_count
+        
+        # Call _get_configured_driver_path multiple additional times
+        path1 = manager._get_configured_driver_path()
+        path2 = manager._get_configured_driver_path()
+        path3 = manager._get_configured_driver_path()
+        
+        # Configuration should still only be created once (cached)
+        self.assertEqual(mock_ini_config_class.call_count, 1)
+        
+        # Config.get should be called for each additional lookup (init + 3 new calls)
+        self.assertEqual(mock_config.get.call_count, init_call_count + 3)
+        
+        # All paths should be the same (fallback path since mock returns empty)
+        self.assertEqual(path1, path2)
+        self.assertEqual(path2, path3)
 
 
 if __name__ == '__main__':

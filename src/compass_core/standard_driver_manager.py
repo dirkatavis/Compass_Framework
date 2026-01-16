@@ -32,22 +32,29 @@ class StandardDriverManager(DriverManager):
             driver_path: Path to WebDriver executable. If None, uses INI config or default path.
         """
         self._driver: Optional[WebDriver] = None
+        self._config: Optional[Any] = None  # Cached configuration instance
         self._driver_path = driver_path or self._get_configured_driver_path()
         self._logger = logging.getLogger(__name__)
         
+    def _get_config(self):
+        """Get cached configuration instance, creating it if needed."""
+        if self._config is None:
+            try:
+                from .ini_configuration import IniConfiguration
+                self._config = IniConfiguration()  # Auto-loads webdriver.ini.local or webdriver.ini
+            except Exception as e:
+                self._logger.debug(f"[DRIVER] Could not load INI config: {e}")
+                self._config = None  # Mark as failed to avoid retries
+        return self._config
+        
     def _get_configured_driver_path(self) -> str:
         """Get driver path from INI configuration with fallback to default."""
-        try:
-            from .ini_configuration import IniConfiguration
-            config = IniConfiguration()  # Auto-loads webdriver.ini.local or webdriver.ini
-            
-            # Try to get edge_path from configuration
+        config = self._get_config()
+        if config is not None:
+            # Try to get edge_path from cached configuration
             edge_path = config.get('webdriver.edge_path')
             if edge_path and os.path.exists(edge_path):
                 return edge_path
-                
-        except Exception as e:
-            self._logger.debug(f"[DRIVER] Could not load INI config: {e}")
         
         # Fallback to default path
         return self._get_default_driver_path()
