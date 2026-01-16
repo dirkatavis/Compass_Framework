@@ -1,7 +1,8 @@
 from .engine import CompassRunner
+from .json_configuration import JsonConfiguration
 
 # Define base public API
-__all__ = ['CompassRunner']
+__all__ = ['CompassRunner', 'JsonConfiguration']
 
 # Optional imports - only available if dependencies are installed
 try:
