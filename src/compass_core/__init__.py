@@ -13,6 +13,14 @@ except ImportError:
     # selenium not installed - SeleniumNavigator not available
     pass
 
+# DriverManager - requires selenium for WebDriver support
+try:
+    from .standard_driver_manager import StandardDriverManager
+    __all__.append('StandardDriverManager')
+except ImportError:
+    # selenium not installed - StandardDriverManager not available
+    pass
+
 # Windows-only imports - only available on Windows
 try:
     from .browser_version_checker import BrowserVersionChecker
