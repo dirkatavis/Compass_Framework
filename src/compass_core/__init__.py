@@ -1,9 +1,10 @@
 from .engine import CompassRunner
 from .json_configuration import JsonConfiguration
+from .ini_configuration import IniConfiguration
 from .logging import StandardLogger, StandardLoggerFactory
 
 # Define base public API
-__all__ = ['CompassRunner', 'JsonConfiguration', 'StandardLogger', 'StandardLoggerFactory']
+__all__ = ['CompassRunner', 'JsonConfiguration', 'IniConfiguration', 'StandardLogger', 'StandardLoggerFactory']
 
 # Optional imports - only available if dependencies are installed
 try:

@@ -29,16 +29,38 @@ class StandardDriverManager(DriverManager):
         """Initialize StandardDriverManager.
         
         Args:
-            driver_path: Path to WebDriver executable. If None, uses default path.
+            driver_path: Path to WebDriver executable. If None, uses INI config or default path.
         """
         self._driver: Optional[WebDriver] = None
-        self._driver_path = driver_path or self._get_default_driver_path()
+        self._driver_path = driver_path or self._get_configured_driver_path()
         self._logger = logging.getLogger(__name__)
+        
+    def _get_configured_driver_path(self) -> str:
+        """Get driver path from INI configuration with fallback to default."""
+        try:
+            from .ini_configuration import IniConfiguration
+            config = IniConfiguration()  # Auto-loads webdriver.ini.local or webdriver.ini
+            
+            # Try to get edge_path from configuration
+            edge_path = config.get('webdriver.edge_path')
+            if edge_path and os.path.exists(edge_path):
+                return edge_path
+                
+        except Exception as e:
+            self._logger.debug(f"[DRIVER] Could not load INI config: {e}")
+        
+        # Fallback to default path
+        return self._get_default_driver_path()
         
     def _get_default_driver_path(self) -> str:
         """Get default driver path based on project structure."""
-        # Try to find driver in project root (like DevCompass pattern)
+        # Try local drivers first
         project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        local_path = os.path.join(project_root, "drivers.local", "msedgedriver.exe")
+        if os.path.exists(local_path):
+            return local_path
+            
+        # Fallback to project root (original pattern)
         default_path = os.path.join(project_root, "msedgedriver.exe")
         return default_path
         

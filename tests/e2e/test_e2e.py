@@ -7,7 +7,7 @@ validating that all protocols work together in production scenarios.
 import unittest
 from compass_core import (
     StandardDriverManager, SeleniumNavigator, BrowserVersionChecker, 
-    StandardLogger, JsonConfiguration
+    StandardLogger, JsonConfiguration, IniConfiguration
 )
 
 
@@ -20,6 +20,10 @@ class TestE2E(unittest.TestCase):
         self.version_checker = BrowserVersionChecker()
         self.driver_manager = None
         self.navigator = None
+        
+        # Load INI configuration to get correct driver path
+        self.config = IniConfiguration()
+        self.driver_path = self.config.get('webdriver.edge_path', 'msedgedriver.exe')
         
     def tearDown(self):
         """Clean up after E2E tests."""
@@ -35,8 +39,10 @@ class TestE2E(unittest.TestCase):
     )
     def test_basic_web_navigation(self):
         """Test basic web navigation with example.com."""
-        # Pre-flight compatibility check
-        compatibility = self.version_checker.check_compatibility("edge")
+        # Use configured driver path for compatibility check
+        import os
+        abs_driver_path = os.path.abspath(self.driver_path)
+        compatibility = self.version_checker.check_compatibility("edge", abs_driver_path)
         self.assertTrue(compatibility["compatible"], 
                        f"Browser compatibility failed: {compatibility}")
         
@@ -52,12 +58,12 @@ class TestE2E(unittest.TestCase):
             verify=True
         )
         
-        self.assertEqual(result["status"], "ok", f"Navigation failed: {result}")
+        self.assertEqual(result["status"], "success", f"Navigation failed: {result}")
         self.logger.info(f"Successfully navigated to: {driver.current_url}")
         
         # Verify page loaded
         page_verify = self.navigator.verify_page(url="https://example.com")
-        self.assertEqual(page_verify["status"], "ok")
+        self.assertEqual(page_verify["status"], "success")
     
     @unittest.skipIf(
         not hasattr(unittest, '_e2e_enabled'), 
@@ -65,8 +71,10 @@ class TestE2E(unittest.TestCase):
     )
     def test_palantir_redirect_handling(self):
         """Test real-world redirect handling with Avis Palantir Foundry."""
-        # Pre-flight compatibility check
-        compatibility = self.version_checker.check_compatibility("edge")
+        # Use configured driver path for compatibility check
+        import os
+        abs_driver_path = os.path.abspath(self.driver_path)
+        compatibility = self.version_checker.check_compatibility("edge", abs_driver_path)
         self.assertTrue(compatibility["compatible"])
         
         # Initialize components
@@ -81,7 +89,7 @@ class TestE2E(unittest.TestCase):
             verify=True  # Will handle redirects with startswith()
         )
         
-        self.assertEqual(result["status"], "ok", f"Navigation failed: {result}")
+        self.assertEqual(result["status"], "success", f"Navigation failed: {result}")
         self.logger.info(f"Handled redirect to: {driver.current_url}")
         
         # Verify we ended up on correct domain
@@ -121,8 +129,10 @@ class TestE2E(unittest.TestCase):
             config = JsonConfiguration()
             config.load(config_file)
             
-            # Pre-flight check
-            compatibility = self.version_checker.check_compatibility("edge")
+            # Use configured driver path for compatibility check
+            import os
+            abs_driver_path = os.path.abspath(self.driver_path)
+            compatibility = self.version_checker.check_compatibility("edge", abs_driver_path)
             self.assertTrue(compatibility["compatible"])
             
             # Initialize browser
@@ -135,7 +145,7 @@ class TestE2E(unittest.TestCase):
             self.assertEqual(test_url, "https://example.com")
             
             result = self.navigator.navigate_to(test_url, verify=True)
-            self.assertEqual(result["status"], "ok")
+            self.assertEqual(result["status"], "success")
             
             self.logger.info(f"Configuration-driven navigation successful: {test_url}")
             
@@ -150,8 +160,10 @@ class TestE2E(unittest.TestCase):
     )
     def test_driver_lifecycle_management(self):
         """Test complete driver lifecycle with multiple operations."""
-        # Pre-flight check
-        compatibility = self.version_checker.check_compatibility("edge")
+        # Use configured driver path for compatibility check
+        import os
+        abs_driver_path = os.path.abspath(self.driver_path)
+        compatibility = self.version_checker.check_compatibility("edge", abs_driver_path)
         self.assertTrue(compatibility["compatible"])
         
         # Test driver creation
@@ -169,7 +181,7 @@ class TestE2E(unittest.TestCase):
         # Test navigation
         self.navigator = SeleniumNavigator(driver)
         result = self.navigator.navigate_to("https://httpbin.org/get", verify=True)
-        self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["status"], "success")
         
         # Test explicit cleanup
         self.driver_manager.quit_driver()
