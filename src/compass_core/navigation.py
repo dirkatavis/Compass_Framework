@@ -9,7 +9,7 @@ from typing import Protocol, runtime_checkable, Dict, Any, Optional, Tuple
 class Navigator(Protocol):
     """Protocol for web navigation operations"""
     
-    def navigate_to(self, url: str, label: str = "page", verify: bool = True) -> Dict[str, Any]:
+    def navigate_to(self, url: str, label: str = "page", verify: bool = True, timeout: int = 15) -> Dict[str, Any]:
         """Navigate to a URL with optional verification"""
         ...
     

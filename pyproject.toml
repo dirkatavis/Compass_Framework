@@ -6,5 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "compass_core"  # This is the name you will 'pip install'
 version = "0.1.0"
 
+[project.optional-dependencies]
+selenium = ["selenium>=4.0.0"]
+web = ["selenium>=4.0.0"]  # Alias for easier installation
+
 [tool.setuptools.packages.find]
 where = ["src"]       # Tells it to look in 'src' for the code
