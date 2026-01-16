@@ -2,161 +2,200 @@
 
 ## Project Overview
 
-Compass Framework is a minimal Python framework built as a pip-installable package using setuptools. The core architecture follows a simple modular design with a single main component: the `CompassRunner` class.
+Compass Framework is a protocol-based Python framework extracted from the monolithic DevCompass codebase. Built as a pip-installable package with setuptools, it emphasizes clean interfaces, dependency injection, and comprehensive testing. The framework is 75% complete in its refactoring journey.
 
-## Architecture
+## Architecture Philosophy
 
-- **Package Structure**: Uses `src/` layout for clean separation between source and build artifacts
-- **Entry Point**: [`src/compass_core/__init__.py`](src/compass_core/__init__.py) exports the main `CompassRunner` class
-- **Core Engine**: [`src/compass_core/engine.py`](src/compass_core/engine.py) contains the primary framework logic
+- **Protocol-First Design**: All major components implement Python `@runtime_checkable` protocols  
+- **Dependency Injection Ready**: No hard-coded dependencies between components
+- **Optional Dependencies**: Features gracefully degrade when dependencies unavailable
+- **Comprehensive Testing**: 128+ tests covering protocols, implementations, and edge cases
 
-## Key Components
+## Core Architecture
 
-### CompassRunner Class
-Located in [`engine.py`](src/compass_core/engine.py), this is the main framework interface:
+### Package Structure (`src/` layout)
+```
+src/compass_core/
+├── __init__.py              # Public API with conditional imports
+├── engine.py                # Core CompassRunner class  
+├── [protocol].py           # Interface definitions
+├── [implementation].py     # Concrete protocol implementations
+tests/
+├── test_[protocol]_interface.py    # Protocol compliance tests
+├── test_[implementation].py        # Implementation-specific tests  
+└── test_meta.py                    # Import validation meta-tests
+```
+
+### Current Protocol Implementations (3/4 Complete)
+1. **Navigation**: `Navigator` → `SeleniumNavigator` (11 tests)
+2. **Configuration**: `Configuration` → `JsonConfiguration` (22 tests) 
+3. **Version Checking**: `VersionChecker` → `BrowserVersionChecker` (53 tests)
+4. **Logging**: `Logger`/`LoggerFactory` → *Not yet implemented* (remaining work)
+
+## Essential Framework Entry Points
+
+### CompassRunner (Core Engine)
 ```python
 from compass_core import CompassRunner
 runner = CompassRunner()
 runner.run()  # Outputs version info and activation status
 ```
 
-## Build & Development Workflow
+### Protocol-Based Components (Main Usage Patterns)
+```python
+# Configuration management with validation
+from compass_core import JsonConfiguration
+config = JsonConfiguration()
+data = config.load("settings.json")
+config.validate()  # Returns validation results with warnings
 
-### Package Configuration
-- **Build System**: Uses modern `pyproject.toml` with setuptools backend
-- **Package Discovery**: Automatically finds packages in `src/` directory
-- **Versioning**: Currently hardcoded in both `pyproject.toml` and `engine.py` (keep in sync)
+# Browser/driver version compatibility checking  
+from compass_core import BrowserVersionChecker  # Windows only
+checker = BrowserVersionChecker()
+compatibility = checker.check_compatibility("chrome")
 
-### Installation & Testing
+# Web navigation with Selenium (optional dependency)
+from compass_core import SeleniumNavigator
+navigator = SeleniumNavigator(webdriver_instance)
+result = navigator.navigate_to("https://example.com", verify=True)
+```
+
+## Critical Development Workflows
+
+### Testing Strategy (TDD Protocol Pattern)
 ```powershell
-# Install in development mode
-pip install -e .
-
-# Run all tests
+# Run all tests frequently during development
 python -m unittest discover tests -v
 
-# Run specific test file
-python -m unittest tests.test_compass_runner -v
+# Target test categories for new protocols:
+# 1. Interface compliance (5-7 tests)
+# 2. Core functionality (8-15 tests)  
+# 3. Edge cases & error handling (5-10 tests)
+```
 
-# Build distribution packages
+### Protocol Implementation Pattern
+1. **Define Protocol Interface** in `[name].py` with `@runtime_checkable`
+2. **Create Implementation** in `[name]_[type].py` (e.g., `json_configuration.py`)
+3. **Write Interface Tests** in `test_[name]_interface.py` first
+4. **Write Implementation Tests** in `test_[name]_[type].py` 
+5. **Add Conditional Import** to `__init__.py` with graceful fallback
+
+### Version Synchronization (Critical)
+Always update both locations when changing versions:
+- [`pyproject.toml`](pyproject.toml) line 7: `version = "0.1.0"`  
+- [`engine.py`](src/compass_core/engine.py) line 3: `self.version = "0.1.0"`
+
+## Protocol Design Patterns (Framework Core)
+
+### @runtime_checkable Protocol Definition
+```python
+from typing import Protocol, runtime_checkable, Dict, Any
+
+@runtime_checkable
+class YourProtocol(Protocol):
+    """Protocol documentation with usage examples"""
+    def required_method(self, param: str) -> Dict[str, Any]: ...
+```
+
+### Implementation Pattern (Follow Existing Examples)
+- **Study**: [`JsonConfiguration`](src/compass_core/json_configuration.py) - Clean config implementation
+- **Study**: [`BrowserVersionChecker`](src/compass_core/browser_version_checker.py) - Complex implementation with fallbacks  
+- **Study**: [`SeleniumNavigator`](src/compass_core/selenium_navigator.py) - Optional dependency handling
+
+### Conditional Import Pattern (Essential)
+```python
+# In __init__.py - graceful fallbacks for missing dependencies
+__all__ = ['CompassRunner', 'JsonConfiguration']  # Core API always available
+
+try:
+    from .selenium_navigator import SeleniumNavigator
+    __all__.append('SeleniumNavigator')
+except ImportError:
+    pass  # selenium not installed - feature unavailable
+```
+
+### Testing Protocol Compliance
+```python
+# Essential test pattern for all protocols
+def test_protocol_compliance(self):
+    """Test implementation satisfies protocol interface"""
+    self.assertIsInstance(self.implementation, YourProtocol)
+    
+    # Verify required methods exist
+    self.assertTrue(hasattr(self.implementation, 'required_method'))
+    self.assertTrue(callable(self.implementation.required_method))
+```
+
+## Build & Package Management
+
+### Installation & Development
+```powershell
+# Development installation (most common)
+pip install -e .
+
+# With optional dependencies
+pip install -e .[selenium]  # Adds Selenium for navigation features
+pip install -e .[web]       # Alias for selenium extras
+
+# Build distribution
 python -m build
 
-# Clean build artifacts (as per .gitignore)
+# Clean build artifacts (per .gitignore)
 Remove-Item -Recurse -Force build/, dist/, *.egg-info/, __pycache__/
 ```
 
-## Project Conventions
+### Package Organization
+- **Source Layout**: All code in `src/compass_core/` (not root level)
+- **Public API Control**: Only export essentials via `__init__.py.__all__`
+- **Optional Dependencies**: Use `pyproject.toml[project.optional-dependencies]`
 
-### File Organization
-- All source code lives under `src/compass_core/`
-- Build artifacts are gitignored (build/, dist/, *.egg-info/, __pycache__/)
-- No separate requirements.txt - dependencies should be declared in `pyproject.toml`
+## Common Development Scenarios
 
-### Code Patterns
-- **Single Responsibility**: Each class has one clear purpose (CompassRunner = framework activation)
-- **Version Management**: Version string appears in both `pyproject.toml` and `CompassRunner.__init__()`
-- **Import Pattern**: Clean public API through `__init__.py` re-exports
+### Adding a New Protocol
+```python
+# 1. Define Protocol interface
+@runtime_checkable
+class NewFeature(Protocol):
+    def do_something(self) -> Dict[str, Any]: ...
 
-## Development Notes
+# 2. Create implementation 
+class ConcreteNewFeature(NewFeature):
+    def do_something(self) -> Dict[str, Any]:
+        return {"status": "success"}
 
-### Version Synchronization
-When updating versions, modify both:
-1. `pyproject.toml` - line 7: `version = "0.1.0"`
-2. `engine.py` - line 3: `self.version = "0.1.0"`
+# 3. Add conditional import to __init__.py
+try:
+    from .concrete_new_feature import ConcreteNewFeature  
+    __all__.append('ConcreteNewFeature')
+except ImportError:
+    pass  # Optional dependency not available
+```
 
-### Adding Features
-- New classes should follow the pattern in `engine.py`
-- Export public APIs through `__init__.py` imports
-- Keep the framework lightweight and focused on its core purpose
+### Testing New Features (TDD Pattern)
+```python
+# Write tests FIRST, then implement
+class TestNewFeatureInterface(unittest.TestCase):
+    def test_protocol_compliance(self):
+        implementation = ConcreteNewFeature()
+        self.assertIsInstance(implementation, NewFeature)
+    
+    def test_core_functionality(self):
+        result = implementation.do_something() 
+        self.assertEqual(result["status"], "success")
+```
 
-### Testing Framework
-- **Test Structure**: Comprehensive test suite in [`tests/`](tests/) directory
-- **Test Categories**: Unit tests, interface tests, meta-tests for import validation
-- **Run Tests**: `python -m unittest discover tests -v` (11 tests currently passing)
-- **TDD Approach**: Write tests first, then implement features
-- **Meta-Tests**: [`test_meta.py`](tests/test_meta.py) validates all imports work to prevent broken test suites
+### Browser/Driver Version Compatibility (Windows Only)
+Critical for Selenium automation - use [`BrowserVersionChecker`](src/compass_core/browser_version_checker.py):
+```python
+from compass_core import BrowserVersionChecker
+checker = BrowserVersionChecker()
 
-### Test Files
-- [`test_compass_runner.py`](tests/test_compass_runner.py) - Tests for core CompassRunner functionality
-- [`test_version_checker_interface.py`](tests/test_version_checker_interface.py) - Interface contract tests
-- [`test_navigator_interface.py`](tests/test_navigator_interface.py) - Navigation protocol tests  
-- [`test_logger_interface.py`](tests/test_logger_interface.py) - Logging protocol tests
-- [`test_meta.py`](tests/test_meta.py) - Import validation and test discovery validation
-
-## Interfaces & Protocols
-
-The framework follows **interface-first design** using Python Protocols:
-
-### Current Interfaces
-- [`VersionChecker`](src/compass_core/version_checker.py) - Browser/driver version detection protocol
-- [`Navigator`](src/compass_core/navigation.py) - Web navigation and page verification protocol
-- [`Logger + LoggerFactory`](src/compass_core/logging.py) - Structured logging with dependency injection
-
-### Interface Design Patterns
-- **@runtime_checkable** protocols for runtime type validation
-- **Dependency injection** ready - no hard-coded dependencies  
-- **Method signature testing** to ensure protocol compliance
-- **Return type specifications** using typed dictionaries and generics
-- **Factory patterns** for configurable component creation
-
-
-The Best Practice: Only expose what is necessary in the top-level __init__.py.
-
-Why: If your team adds 50 files to src/compass_core/, the client shouldn't have to know which file a class lives in. They should just do from compass_core import CompassRunner.
-
-Action: Keep your internal logic deep in the submodules, and "promote" the main classes to the __init__.py.
-
-2. Dependency Management (The "Lightweight" Rule)
-The biggest mistake in framework design is forcing every client to install libraries they don't need.
-
-The Best Practice: Use Optional Dependencies (Extras).
-
-Why: If only 10% of your scripts need to connect to SQL Server, don't make the other 90% install heavy drivers.
-
-Implementation: In your pyproject.toml, you can define "extras":
-
-Ini, TOML
-
-[project.optional-dependencies]
-sql = ["pyodbc>=4.0"]
-api = ["requests>=2.28"]
-Clients can then install exactly what they need: pip install -e .[sql].
-
-3. Use Type Hinting (The C# Safety Net)
-Python is dynamically typed, which can be terrifying for a C# team.
-
-The Best Practice: Use Type Hints and Pydantic or dataclasses.
-
-Why: It provides IntelliSense in VS Code/PyCharm, making the framework feel "discoverable."
-
-Example:
-
-Python
-
-def process_data(self, record_id: int, metadata: dict[str, str]) -> bool:
-    # VS Code will now warn the dev if they pass a string to record_id
-    ...
-4. Semantic Versioning (The "Contract")
-Since you are using a shared framework, a change you make today could break a script someone else wrote six months ago.
-
-The Best Practice: Follow SemVer (Major.Minor.Patch).
-
-Patch (0.1.1): Bug fixes (safe to update).
-
-Minor (0.2.0): New features, no breaking changes (usually safe).
-
-Major (1.0.0): Breaking changes (Client must rewrite code).
-
-Action: Ensure your pyproject.toml version is updated before pushing major changes.
-
-5. Automated Testing (The "Don't Break the Client" Rule)
-In a decoupled setup, you need to be certain that a change in the Framework repository doesn't break the Client repository.
-
-The Best Practice: Place a tests/ folder in your Framework root (outside src).
-
-Why: It allows you to run unit tests against the framework logic in isolation.
-
-Action: Encourage the team to write at least one test for every new feature added to the engine.
+# Check compatibility before automation
+compatibility = checker.check_compatibility("chrome") 
+if not compatibility["compatible"]:
+    print(f"⚠️  {compatibility['recommendation']}")
+    # Update drivers before running tests
+```
 
 ## Client Integration Workflow
 
@@ -189,5 +228,3 @@ python main.py  # Run client integration tests
 - Framework unit tests (`python -m unittest discover tests -v`) must pass first  
 - Then verify `project_alpha` (or other client projects) still work
 - This prevents breaking changes from reaching production
-
-Summary Checklist for the TeamCategoryGoalImportsClients should only import from the package root, not deep subfiles.VisibilityUse _single_leading_underscore for methods that are "Private."EnvironmentNever commit a .venv folder; always use .gitignore.StabilityNever push to main without verifying it doesn't break the project_alpha test script.
