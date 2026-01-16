@@ -26,6 +26,9 @@ class JsonConfiguration(Configuration):
         validation = config.validate()
     """
     
+    # Sensitive key patterns that trigger validation warnings
+    SENSITIVE_KEY_PATTERNS = ['password', 'secret', 'token', 'api_key']
+    
     def __init__(self):
         """Initialize JsonConfiguration with empty config."""
         self._config: Dict[str, Any] = {}
@@ -193,9 +196,8 @@ class JsonConfiguration(Configuration):
                     warnings.append("Configuration is empty")
                 
                 # Example: check for sensitive data that shouldn't be in config
-                sensitive_keys = ['password', 'secret', 'token', 'api_key']
                 for key in target_config:
-                    if any(sensitive in key.lower() for sensitive in sensitive_keys):
+                    if any(sensitive in key.lower() for sensitive in self.SENSITIVE_KEY_PATTERNS):
                         warnings.append(f"Potential sensitive data in key: {key}")
         
         except (TypeError, ValueError) as e:

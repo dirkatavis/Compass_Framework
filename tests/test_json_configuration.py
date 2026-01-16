@@ -268,6 +268,17 @@ class TestJsonConfiguration(unittest.TestCase):
         result = self.config.get_all()
         self.assertEqual(result, {})
         self.assertIsInstance(result, dict)
+    
+    def test_sensitive_key_patterns_constant(self):
+        """Test that sensitive key patterns are accessible as class constant."""
+        # Verify constant exists and has expected content
+        self.assertTrue(hasattr(JsonConfiguration, 'SENSITIVE_KEY_PATTERNS'))
+        self.assertIsInstance(JsonConfiguration.SENSITIVE_KEY_PATTERNS, list)
+        self.assertIn('password', JsonConfiguration.SENSITIVE_KEY_PATTERNS)
+        self.assertIn('api_key', JsonConfiguration.SENSITIVE_KEY_PATTERNS)
+        
+        # Verify it can be accessed via instance
+        self.assertEqual(self.config.SENSITIVE_KEY_PATTERNS, JsonConfiguration.SENSITIVE_KEY_PATTERNS)
 
 
 if __name__ == '__main__':
