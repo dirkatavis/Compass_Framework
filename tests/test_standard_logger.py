@@ -3,11 +3,7 @@ Tests for StandardLogger implementation.
 TDD approach - write tests first, then implement.
 """
 import unittest
-import tempfile
 import logging
-from pathlib import Path
-from unittest.mock import patch
-from io import StringIO
 
 from compass_core.logging import Logger
 
