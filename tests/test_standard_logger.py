@@ -4,7 +4,6 @@ TDD approach - write tests first, then implement.
 """
 import unittest
 import logging
-from io import StringIO
 
 from compass_core.logging import Logger
 
