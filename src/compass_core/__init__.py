@@ -10,7 +10,13 @@ except ImportError:
     PmWorkItemFlow = None  # type: ignore
 
 # Define base public API
-__all__ = ['CompassRunner', 'JsonConfiguration', 'IniConfiguration', 'StandardLogger', 'StandardLoggerFactory']
+__all__ = [
+    'CompassRunner',
+    'JsonConfiguration',
+    'IniConfiguration',
+    'StandardLogger',
+    'StandardLoggerFactory'
+]
 if PmWorkItemFlow is not None:
     __all__.append('PmWorkItemFlow')
 
@@ -20,6 +26,14 @@ try:
     __all__.append('SeleniumNavigator')
 except ImportError:
     # selenium not installed - SeleniumNavigator not available
+    pass
+
+# Optional Selenium-backed PM actions - available when selenium and protocol present
+try:
+    from .pm_actions_selenium import SeleniumPmActions
+    __all__.append('SeleniumPmActions')
+except ImportError:
+    # selenium or pm_actions not installed - SeleniumPmActions not available
     pass
 
 # DriverManager - requires selenium for WebDriver support
@@ -37,3 +51,6 @@ try:
 except ImportError:
     # winreg not available (non-Windows) - BrowserVersionChecker not available
     pass
+
+# Note: Additional public API exports (e.g., WorkflowManager, flows, and Selenium-backed PM actions)
+# will be added once their modules land on main to avoid misleading API entries and ImportErrors.
