@@ -91,6 +91,27 @@ class TestSeleniumPmActions(unittest.TestCase):
         actions = SeleniumPmActions(_FakeDriver())
         actions.navigate_back_home()  # should not raise
 
+    def test_start_new_workitem_success(self):
+        """Verify start_new_workitem returns ok when button is clickable."""
+        actions = SeleniumPmActions(_FakeDriver())
+        res = actions.start_new_workitem("MVA")
+        self.assertEqual(res.get('status'), 'ok')
+
+    def test_start_new_workitem_timeout(self):
+        """Verify start_new_workitem handles timeout and returns add_btn_timeout."""
+        # Patch WebDriverWait to raise TimeoutException in until
+        class _TimeoutWait:
+            def __init__(self, driver, timeout):
+                pass
+            def until(self, cond):
+                raise mod.TimeoutException('timeout')
+
+        with mock.patch.object(mod, 'WebDriverWait', _TimeoutWait):
+            actions = SeleniumPmActions(_FakeDriver())
+            res = actions.start_new_workitem("MVA")
+            self.assertEqual(res.get('status'), 'failed')
+            self.assertEqual(res.get('reason'), 'add_btn_timeout')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -280,6 +280,23 @@ class TestStandardDriverManager(unittest.TestCase):
         
         # Verify Edge was called (options verification would be more complex)
         mock_edge.assert_called_once()
+
+    @patch.object(StandardDriverManager, '_get_browser_version')
+    @patch.object(StandardDriverManager, 'get_driver_version')
+    @patch('compass_core.standard_driver_manager.webdriver.Edge')
+    def test_get_or_create_driver_incognito_adds_inprivate(self, mock_edge, mock_get_driver_version, mock_get_browser_version):
+        """Incognito=True should add --inprivate argument to Edge options."""
+        mock_get_browser_version.return_value = "120.0.6099.109"
+        mock_get_driver_version.return_value = "120.0.6000.50"
+        mock_edge.return_value = Mock()
+
+        # Patch configure_driver_options to capture add_argument calls
+        options_mock = Mock()
+        with patch.object(StandardDriverManager, 'configure_driver_options', return_value=options_mock):
+            self.manager.get_or_create_driver(incognito=True)
+
+        # Verify --inprivate was added
+        options_mock.add_argument.assert_any_call("--inprivate")
     
     @patch.object(StandardDriverManager, '_get_browser_version')
     @patch.object(StandardDriverManager, 'get_driver_version')

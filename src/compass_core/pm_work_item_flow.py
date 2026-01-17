@@ -112,15 +112,16 @@ def _associate_or_skip(context: FlowContext) -> Dict[str, Any]:
     if bool((context.params or {}).get("completed_open_pm")):
         # Existing work item was completed, conclude flow
         return {"status": "ok", "reason": "completed_open_pm"}
-    # Begin new work item flow before checking for complaints
-    if actions is not None:
-        start_res = actions.start_new_workitem(context.mva)
-        if start_res.get("status") != "ok":
-            return {"status": "failed", "reason": start_res.get("reason", "start_new_workitem")}
+    # Determine complaint presence before starting a new work item
     if not has_pm and actions is not None:
         has_pm = actions.has_pm_complaint(context.mva)
         (context.params or {}).update({"has_pm_complaint": has_pm})
     if has_pm:
+        # Only start a new work item when a PM complaint exists
+        if actions is not None:
+            start_res = actions.start_new_workitem(context.mva)
+            if start_res.get("status") != "ok":
+                return {"status": "failed", "reason": start_res.get("reason", "start_new_workitem")}
         # In a real implementation, associate complaint and finalize.
         if context.logger:
             context.logger.info(f"[COMPLAINT] {context.mva} - associated PM complaint")
