@@ -15,7 +15,9 @@ Note: This document is the authoritative source for current status and completio
 ## **Recent Updates (2026-01-17)**
 - PR #16 merged: Roadmap added — see [ROADMAP.md](ROADMAP.md).
 - PR #17 merged: Selenium-backed PM actions (`SeleniumPmActions`) introduced with unit tests; exported conditionally in the public API.
-- Test suite status: 220 passed, 0 failed, 4 skipped (all green) after merges.
+- PR #20 merged: Workflow protocols added — see [src/compass_core/workflow.py](src/compass_core/workflow.py); `StandardWorkflowManager` exported via [src/compass_core/__init__.py](src/compass_core/__init__.py).
+- PR #22 merged: `PmActions` protocol added — see [src/compass_core/pm_actions.py](src/compass_core/pm_actions.py), enabling protocol-first PM flow actions.
+- Test suite status: 227 passed, 0 failed, 4 skipped (all green).
 - Branch housekeeping: merged feature branches pruned locally and remotely.
 
 ## 🎯 **Refactoring Goal**
