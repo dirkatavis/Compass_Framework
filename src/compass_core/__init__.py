@@ -3,6 +3,12 @@ from .json_configuration import JsonConfiguration
 from .ini_configuration import IniConfiguration
 from .logging import StandardLogger, StandardLoggerFactory
 
+# Optional PM flow - available when workflow protocols are present
+try:
+    from .pm_work_item_flow import PmWorkItemFlow
+except ImportError:
+    PmWorkItemFlow = None  # type: ignore
+
 # Define base public API
 __all__ = [
     'CompassRunner',
@@ -11,6 +17,8 @@ __all__ = [
     'StandardLogger',
     'StandardLoggerFactory'
 ]
+if PmWorkItemFlow is not None:
+    __all__.append('PmWorkItemFlow')
 
 # Optional imports - only available if dependencies are installed
 try:
