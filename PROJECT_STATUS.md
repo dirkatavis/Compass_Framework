@@ -20,6 +20,12 @@ Note: This document is the authoritative source for current status and completio
 - Test suite status: 227 passed, 0 failed, 4 skipped (all green).
 - Branch housekeeping: merged feature branches pruned locally and remotely.
 
+### Addendum: SSO-tolerant verification and UI sample
+- Navigator now supports URL match strategies: `prefix` (default), `exact`, and `domain` for SSO/redirect-friendly verification — see [src/compass_core/navigation.py](src/compass_core/navigation.py) and [src/compass_core/selenium_navigator.py](src/compass_core/selenium_navigator.py).
+- Unit tests added for domain-match verification — see [tests/unit/test_selenium_navigator.py](tests/unit/test_selenium_navigator.py). Current unit count: 218.
+- `StandardDriverManager` supports Edge InPrivate (`--inprivate`) for incognito runs — see [src/compass_core/standard_driver_manager.py](src/compass_core/standard_driver_manager.py).
+- UI sample script demonstrates login and optional MVA entry — see [scripts/ui_flow_sample.py](scripts/ui_flow_sample.py). Validated against Microsoft login and Foundry workspace with domain verification.
+
 ## 🎯 **Refactoring Goal**
 Extract the monolithic **DevCompass** framework into clean, testable **Compass Framework** with protocol-based architecture.
 

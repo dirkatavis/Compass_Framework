@@ -8,7 +8,7 @@ Related docs: [PROJECT_STATUS.md](PROJECT_STATUS.md), [COMPLETION_PLAN.md](COMPL
 
 ```
 tests/
-├── unit/              # Individual component tests (185 tests)
+├── unit/              # Individual component tests (218 tests)
 │   ├── test_*_interface.py     # Protocol compliance tests
 │   ├── test_*.py              # Implementation tests
 │   └── __init__.py
@@ -27,7 +27,7 @@ tests/
 
 ```bash
 # Run specific test categories
-python run_tests.py unit          # Unit tests only (185 tests)
+python run_tests.py unit          # Unit tests only (218 tests)
 python run_tests.py integration   # Integration tests only (7 tests)  
 python run_tests.py e2e           # E2E tests only (4 tests)
 python run_tests.py all           # All tests (E2E skipped by default)
@@ -58,15 +58,16 @@ python -m unittest discover tests/e2e -v
 
 ## Test Categories
 
-### Unit Tests (185 tests)
+### Unit Tests (218 tests)
 **Location**: `tests/unit/`  
 **Purpose**: Test individual components in isolation  
 **Dependencies**: Mocked external dependencies  
-**Speed**: Fast (~0.5s)
+**Speed**: Fast (~0.4s)
 
 - **Protocol Interface Tests**: Verify protocol compliance
 - **Implementation Tests**: Test concrete implementations  
 - **Edge Cases**: Error handling and boundary conditions
+ - **SSO/Redirect Verification**: Domain-based URL match tests in navigator
 
 ### Integration Tests (7 tests)
 **Location**: `tests/integration/`  

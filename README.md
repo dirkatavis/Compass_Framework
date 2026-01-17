@@ -28,3 +28,36 @@ For more details on test organization and E2E prerequisites, see [docs/TESTING.m
 - Use PRs via GitHub Copilot; avoid pushing directly to `main`.
 - After pulling latest `main`, re-run the full test suite (including E2E when applicable).
 - Keep version synchronized in both [pyproject.toml](pyproject.toml) and [src/compass_core/engine.py](src/compass_core/engine.py).
+
+## SSO & Redirect Handling
+- **Domain match verification**: Use `Navigator.verify_page(match='domain')` to tolerate SSO/multipass redirects while ensuring you’re on the expected host.
+- **Examples**:
+	- Verify Microsoft login host: `navigator.verify_page(url="https://login.microsoftonline.com", match="domain")`
+	- Verify Foundry workspace host: `navigator.verify_page(url="https://avisbudget.palantirfoundry.com", match="domain")`
+
+## Incognito Mode
+- **Edge InPrivate**: `StandardDriverManager.get_or_create_driver(incognito=True)` adds `--inprivate` for privacy-sensitive runs.
+- Combine with headless: `get_or_create_driver(headless=True, incognito=True)` (note: headless can alter auth flows).
+
+## UI Flow Sample
+Demonstration script to launch Edge, navigate/login, and optionally enter an MVA.
+
+```powershell
+# Provide credentials via environment variables
+$env:UI_SAMPLE_USERNAME = "you@example.com"
+$env:UI_SAMPLE_PASSWORD = "yourPassword"
+
+# Microsoft login page (incognito)
+python scripts/ui_flow_sample.py --url https://login.microsoftonline.com/ --incognito
+
+# Foundry workspace (domain verification, incognito)
+python scripts/ui_flow_sample.py --url https://avisbudget.palantirfoundry.com/workspace/fleet-operations-pwa/health --incognito
+
+# Optional MVA entry (supports css=... or xpath=...)
+python scripts/ui_flow_sample.py --url https://example.com \
+	--mva MVA12345 --mva-locator xpath=//input[@name='search'] --incognito
+```
+
+Notes:
+- The script detects Microsoft login automatically and performs login when credentials are provided.
+- Post-run, the script pauses briefly for inspection and then closes the browser.
