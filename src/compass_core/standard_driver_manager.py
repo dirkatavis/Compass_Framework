@@ -108,6 +108,9 @@ class StandardDriverManager(DriverManager):
             # Apply any custom configuration from kwargs
             if kwargs.get("headless", False):
                 options.add_argument("--headless")
+            if kwargs.get("incognito", False):
+                # Edge equivalent of Chrome's incognito is InPrivate
+                options.add_argument("--inprivate")
             if "window_size" in kwargs:
                 width, height = kwargs["window_size"]
                 options.add_argument(f"--window-size={width},{height}")
