@@ -16,6 +16,14 @@ class Navigator(Protocol):
     def verify_page(self, 
                    url: Optional[str] = None, 
                    check_locator: Optional[Tuple[str, str]] = None, 
-                   timeout: int = 15) -> Dict[str, Any]:
-        """Verify page has loaded correctly"""
+                   timeout: int = 15,
+                   match: str = "prefix") -> Dict[str, Any]:
+        """Verify page has loaded correctly.
+
+        Args:
+            url: Optional URL to verify against current URL.
+            check_locator: Optional element locator to verify presence.
+            timeout: Maximum time to wait for page to load (default 15s).
+            match: URL match strategy: 'prefix' (default), 'exact', or 'domain'.
+        """
         ...

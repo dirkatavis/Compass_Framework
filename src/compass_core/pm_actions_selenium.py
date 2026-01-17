@@ -147,6 +147,24 @@ class SeleniumPmActions(PmActions):
         except Exception as e:
             return {"status": "failed", "reason": f"exception: {e}"}
 
+    def start_new_workitem(self, mva: str) -> Dict[str, Any]:
+        """Initiate creation of a new work item by clicking 'Add Work Item'.
+
+        Returns a structured result dict indicating success or failure.
+        """
+        del mva
+        try:
+            add_btn = self.wait.until(
+                EC.element_to_be_clickable((By.XPATH, "//button[normalize-space()='Add Work Item']"))
+            )
+            add_btn.click()
+            # Allow the complaints screen to render
+            return {"status": "ok"}
+        except TimeoutException:
+            return {"status": "failed", "reason": "add_btn_timeout"}
+        except Exception as e:
+            return {"status": "failed", "reason": f"exception: {e}"}
+
     def has_pm_complaint(self, mva: str) -> bool:
         """Check whether the current vehicle has at least one PM complaint tile.
 

@@ -129,6 +129,32 @@ class TestSeleniumNavigator(unittest.TestCase):
         
         # Should return success for URL that starts with expected
         self.assertEqual(result['status'], 'success')
+
+    @patch('compass_core.selenium_navigator.WebDriverWait')
+    def test_verify_page_domain_match(self, mock_wait):
+        """Test verify_page with domain-only match to tolerate redirects."""
+        mock_wait.return_value.until = Mock()
+
+        # Current URL includes path and query but same domain
+        self.mock_driver.current_url = "https://example.com/path?x=1"
+
+        result = self.navigator.verify_page(url="https://example.com", match="domain")
+
+        self.assertEqual(result['status'], 'success')
+        self.assertEqual(result.get('match'), 'domain')
+
+    @patch('compass_core.selenium_navigator.WebDriverWait')
+    def test_verify_page_domain_mismatch(self, mock_wait):
+        """Test verify_page failure when domains differ."""
+        mock_wait.return_value.until = Mock()
+
+        self.mock_driver.current_url = "https://different.com/home"
+
+        result = self.navigator.verify_page(url="https://example.com", match="domain")
+
+        self.assertEqual(result['status'], 'failure')
+        self.assertEqual(result['error'], 'url_mismatch')
+        self.assertEqual(result.get('match'), 'domain')
     
     @patch('compass_core.selenium_navigator.WebDriverWait')
     def test_verify_page_custom_timeout(self, mock_wait):

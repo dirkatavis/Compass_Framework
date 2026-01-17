@@ -57,6 +57,7 @@ def main():
     ap.add_argument("--mva", default=os.getenv("UI_SAMPLE_MVA", ""), help="MVA to enter after login")
     ap.add_argument("--mva-locator", default=os.getenv("UI_SAMPLE_MVA_LOCATOR", ""), help="Locator for MVA input (css=... | xpath=...)")
     ap.add_argument("--headless", action="store_true", help="Run browser in headless mode")
+    ap.add_argument("--incognito", action="store_true", help="Run browser in InPrivate/incognito mode")
     args = ap.parse_args()
 
     logger = StandardLogger("ui_flow_sample")
@@ -64,7 +65,7 @@ def main():
     # Launch driver
     try:
         dm = StandardDriverManager()
-        driver = dm.get_or_create_driver(headless=args.headless)
+        driver = dm.get_or_create_driver(headless=args.headless, incognito=args.incognito)
     except Exception as e:
         logger.error(f"Failed to launch driver: {e}")
         sys.exit(2)
@@ -122,7 +123,7 @@ def main():
     finally:
         try:
             # Pause to allow manual inspection before closing the browser
-            time.sleep(10)
+            time.sleep(30)
             dm.quit_driver()
         except Exception:
             pass

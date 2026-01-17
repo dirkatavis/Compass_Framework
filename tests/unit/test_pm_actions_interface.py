@@ -33,6 +33,7 @@ class TestPmActionsInterface(unittest.TestCase):
             'get_lighthouse_status',
             'has_open_workitem',
             'complete_open_workitem',
+            'start_new_workitem',
             'has_pm_complaint',
             'associate_pm_complaint',
             'navigate_back_home',

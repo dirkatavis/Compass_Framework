@@ -85,7 +85,8 @@ class SeleniumNavigator(Navigator):
     def verify_page(self, 
                    url: Optional[str] = None, 
                    check_locator: Optional[Tuple[str, str]] = None, 
-                   timeout: int = 15) -> Dict[str, Any]:
+                   timeout: int = 15,
+                   match: str = "prefix") -> Dict[str, Any]:
         """
         Verify that the current page has loaded correctly.
         
@@ -110,13 +111,32 @@ class SeleniumNavigator(Navigator):
             current_url = self.driver.current_url
             
             # Check URL match if expected URL provided
-            if url and not current_url.startswith(url):
-                return {
-                    'status': 'failure',
-                    'error': 'url_mismatch',
-                    'expected': url,
-                    'actual': current_url
-                }
+            if url:
+                try:
+                    from urllib.parse import urlparse
+                    if match == "exact":
+                        url_match = (current_url == url)
+                    elif match == "domain":
+                        expected_base = urlparse(url)
+                        actual_base = urlparse(current_url)
+                        url_match = (
+                            expected_base.scheme == actual_base.scheme and
+                            expected_base.netloc == actual_base.netloc
+                        )
+                    else:  # 'prefix' default
+                        url_match = current_url.startswith(url)
+                except Exception:
+                    # Fallback to prefix match on parse errors
+                    url_match = current_url.startswith(url)
+
+                if not url_match:
+                    return {
+                        'status': 'failure',
+                        'error': 'url_mismatch',
+                        'expected': url,
+                        'actual': current_url,
+                        'match': match
+                    }
             
             # Check for optional element presence
             if check_locator:
@@ -127,7 +147,8 @@ class SeleniumNavigator(Navigator):
             return {
                 'status': 'success',
                 'current_url': current_url,
-                **({"expected_url": url} if url else {})
+                **({"expected_url": url} if url else {}),
+                **({"match": match} if url else {})
             }
             
         except Exception as e:
