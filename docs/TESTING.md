@@ -1,5 +1,9 @@
 # Compass Framework Test Organization
 
+> Purpose: How to run and organize tests for the framework. Audience: developers executing unit, integration, and E2E tests. Out of scope: project status, refactoring plans, and completion summaries.
+
+Related docs: [PROJECT_STATUS.md](PROJECT_STATUS.md), [COMPLETION_PLAN.md](COMPLETION_PLAN.md)
+
 ## Test Structure
 
 ```
@@ -71,20 +75,20 @@ python -m unittest discover tests/e2e -v
 **Speed**: Fast (~0.03s)
 
 - **Service Composition**: How protocols work together
-- **Error Propagation**: Cross-component error handling
 - **Configuration Integration**: Config-driven behavior
+- **Error Propagation**: Cross-component error handling
 
-### End-to-End Tests (4 tests) 
+### End-to-End Tests (4 tests)
 **Location**: `tests/e2e/`  
 **Purpose**: Complete workflow validation  
 **Dependencies**: Real WebDriver, actual websites  
 **Speed**: Slow (requires browser automation)
 
 - **Real Browser Automation**: Full WebDriver workflows
-- **Redirect Handling**: Real-world URL redirections  
 - **Configuration-Driven Navigation**: End-to-end config usage
+- **Redirect Handling**: Real-world URL redirections  
 
-**Note**: E2E tests are **skipped by default** and require:
+**Note**: E2E tests are skipped by default and require:
 1. WebDriver setup (msedgedriver.exe)
 2. Explicit enabling: `unittest._e2e_enabled = True` or `--enable-e2e` flag
 
@@ -105,6 +109,7 @@ python run_tests.py all           # Full suite (E2E skipped)
 ```bash
 python run_tests.py --enable-e2e all   # Complete validation including E2E
 ```
+
 
 ## Adding New Tests
 
