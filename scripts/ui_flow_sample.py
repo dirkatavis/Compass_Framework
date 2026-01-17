@@ -22,8 +22,16 @@ import os
 import sys
 import argparse
 from typing import Tuple, Optional
+import time
 
 from compass_core import StandardDriverManager, SeleniumNavigator, StandardLogger
+
+# Ensure repo root is on sys.path for importing test POMs
+import pathlib as _pl
+_repo_root = str(_pl.Path(__file__).resolve().parents[1])
+if _repo_root not in sys.path:
+    sys.path.insert(0, _repo_root)
+
 from tests.e2e.pages.login_page import MicrosoftLoginPage
 
 
@@ -64,18 +72,34 @@ def main():
     try:
         # Navigate to login URL
         navigator = SeleniumNavigator(driver)
-        nav_res = navigator.navigate_to(args.url, label="Login", verify=True)
-        if nav_res.get("status") != "success":
+        # Navigate without strict verification to allow redirects
+        nav_res = navigator.navigate_to(args.url, label="App", verify=False)
+        # Verify on domain only to tolerate SSO/multipass redirects
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(args.url)
+            base = f"{parsed.scheme}://{parsed.netloc}"
+        except Exception:
+            base = args.url
+        verify_res = navigator.verify_page(url=base)
+        if verify_res.get("status") != "success":
             logger.error(f"Navigation failed: {nav_res}")
             sys.exit(3)
 
-        # Perform login
+        # Perform login only if we detect Microsoft login page
         login_page = MicrosoftLoginPage(driver, timeout=15)
-        login_res = login_page.login(args.username, args.password or None)
-        if not login_res.get("success"):
-            logger.error(f"Login failed: {login_res}")
-            sys.exit(4)
-        logger.info("Login succeeded.")
+        if login_page.is_login_page():
+            if not args.username:
+                logger.warning("Detected Microsoft login page but no username provided; skipping login.")
+            else:
+                login_res = login_page.login(args.username, args.password or None)
+                if not login_res.get("success"):
+                    logger.error(f"Login failed: {login_res}")
+                    # Continue flow to allow inspection of page state even after login failure
+                else:
+                    logger.info("Login succeeded.")
+        else:
+            logger.info("Not a Microsoft login page; skipping login step.")
 
         # Optionally enter MVA
         if args.mva and args.mva_locator:
@@ -97,6 +121,8 @@ def main():
         logger.info("UI flow sample completed.")
     finally:
         try:
+            # Pause to allow manual inspection before closing the browser
+            time.sleep(10)
             dm.quit_driver()
         except Exception:
             pass
