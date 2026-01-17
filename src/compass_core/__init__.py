@@ -20,6 +20,14 @@ except ImportError:
     # selenium not installed - SeleniumNavigator not available
     pass
 
+# Optional Selenium-backed PM actions - available when selenium and protocol present
+try:
+    from .pm_actions_selenium import SeleniumPmActions
+    __all__.append('SeleniumPmActions')
+except ImportError:
+    # selenium or pm_actions not installed - SeleniumPmActions not available
+    pass
+
 # DriverManager - requires selenium for WebDriver support
 try:
     from .standard_driver_manager import StandardDriverManager
