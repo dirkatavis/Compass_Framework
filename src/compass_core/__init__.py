@@ -2,6 +2,7 @@ from .engine import CompassRunner
 from .json_configuration import JsonConfiguration
 from .ini_configuration import IniConfiguration
 from .logging import StandardLogger, StandardLoggerFactory
+from .workflow import StandardWorkflowManager
 
 # Optional PM flow - available when workflow protocols are present
 try:
@@ -15,7 +16,8 @@ __all__ = [
     'JsonConfiguration',
     'IniConfiguration',
     'StandardLogger',
-    'StandardLoggerFactory'
+    'StandardLoggerFactory',
+    'StandardWorkflowManager'
 ]
 if PmWorkItemFlow is not None:
     __all__.append('PmWorkItemFlow')
