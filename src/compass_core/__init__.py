@@ -4,7 +4,13 @@ from .ini_configuration import IniConfiguration
 from .logging import StandardLogger, StandardLoggerFactory
 
 # Define base public API
-__all__ = ['CompassRunner', 'JsonConfiguration', 'IniConfiguration', 'StandardLogger', 'StandardLoggerFactory']
+__all__ = [
+    'CompassRunner',
+    'JsonConfiguration',
+    'IniConfiguration',
+    'StandardLogger',
+    'StandardLoggerFactory'
+]
 
 # Optional imports - only available if dependencies are installed
 try:
@@ -29,3 +35,6 @@ try:
 except ImportError:
     # winreg not available (non-Windows) - BrowserVersionChecker not available
     pass
+
+# Note: Additional public API exports (e.g., WorkflowManager, flows, and Selenium-backed PM actions)
+# will be added once their modules land on main to avoid misleading API entries and ImportErrors.
