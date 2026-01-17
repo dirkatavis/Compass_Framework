@@ -12,6 +12,12 @@ Note: This document is the authoritative source for current status and completio
 - Test suite organized (unit, integration, E2E) with E2E gated; see [docs/TESTING.md](docs/TESTING.md).
 - Package builds via [pyproject.toml](pyproject.toml); version synchronization covered in [src/compass_core/engine.py](src/compass_core/engine.py).
 
+## **Recent Updates (2026-01-17)**
+- PR #16 merged: Roadmap added — see [ROADMAP.md](ROADMAP.md).
+- PR #17 merged: Selenium-backed PM actions (`SeleniumPmActions`) introduced with unit tests; exported conditionally in the public API.
+- Test suite status: 220 passed, 0 failed, 4 skipped (all green) after merges.
+- Branch housekeeping: merged feature branches pruned locally and remotely.
+
 ## 🎯 **Refactoring Goal**
 Extract the monolithic **DevCompass** framework into clean, testable **Compass Framework** with protocol-based architecture.
 
