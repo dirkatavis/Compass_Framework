@@ -104,8 +104,8 @@ class SeleniumVehicleDataActions(VehicleDataActions):
         try:
             # Multiple clearing strategies for robustness
             for _ in range(3):
-                input_field.send_keys(Keys.Keys.CONTROL + 'a')
-                input_field.send_keys(Keys.Keys.DELETE)
+                input_field.send_keys(Keys.CONTROL + 'a')
+                input_field.send_keys(Keys.DELETE)
                 input_field.clear()
                 time.sleep(0.2)
             
