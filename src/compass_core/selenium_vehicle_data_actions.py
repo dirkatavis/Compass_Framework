@@ -6,6 +6,7 @@ Currently includes inline POM logic; will be extracted to separate POMs in futur
 """
 from typing import Dict, Any, Optional, List
 import time
+import logging
 
 try:
     from selenium.webdriver.remote.webdriver import WebDriver
@@ -15,7 +16,7 @@ try:
     from selenium.common.exceptions import TimeoutException, NoSuchElementException
     import selenium.webdriver.common.keys as Keys
 except ImportError:
-    # Fallback when selenium not available
+    # Selenium not available - module cannot be used
     from typing import Any as WebDriver  # type: ignore
     
 from .vehicle_data_actions import VehicleDataActions
@@ -48,6 +49,7 @@ class SeleniumVehicleDataActions(VehicleDataActions):
         self.driver = driver
         self.timeout = timeout
         self.wait = WebDriverWait(driver, timeout)
+        self._logger = logging.getLogger(__name__)
     
     # ====================
     # MVA INPUT METHODS (TODO: Extract to MVAInputPage POM)
@@ -76,12 +78,16 @@ class SeleniumVehicleDataActions(VehicleDataActions):
                     # Return first visible and enabled element
                     for elem in elements:
                         if elem.is_displayed() and elem.is_enabled():
+                            self._logger.debug(f"[MVA_INPUT] Found input field using {by}={selector}")
                             return elem
-                except Exception:
+                except Exception as e:
+                    self._logger.debug(f"[MVA_INPUT] Selector {by}={selector} failed: {e}")
                     continue
             
+            self._logger.warning("[MVA_INPUT] No MVA input field found with any known selector")
             return None
-        except Exception:
+        except Exception as e:
+            self._logger.error(f"[MVA_INPUT] Error finding input field: {e}")
             return None
     
     def _clear_input_field(self, input_field: Any) -> bool:
@@ -104,13 +110,16 @@ class SeleniumVehicleDataActions(VehicleDataActions):
                 time.sleep(0.2)
             
             # Wait for field to be empty (up to 3 seconds)
-            for _ in range(15):
+            for i in range(15):
                 if input_field.get_attribute("value") == "":
+                    self._logger.debug(f"[MVA_INPUT] Field cleared after {i * 0.2:.1f}s")
                     return True
                 time.sleep(0.2)
             
+            self._logger.warning("[MVA_INPUT] Field not empty after clearing attempts")
             return False
-        except Exception:
+        except Exception as e:
+            self._logger.error(f"[MVA_INPUT] Error clearing input field: {e}")
             return False
     
     # ====================
@@ -138,8 +147,19 @@ class SeleniumVehicleDataActions(VehicleDataActions):
                 EC.presence_of_element_located((By.XPATH, xpath))
             )
             value = elem.text.strip() if elem else None
+            if value:
+                self._logger.debug(f"[PROPERTY] Found {label}={value}")
+            else:
+                self._logger.warning(f"[PROPERTY] Element found for {label} but value is empty")
             return value if value else None
-        except (TimeoutException, NoSuchElementException):
+        except TimeoutException:
+            self._logger.warning(f"[PROPERTY] Timeout waiting for property '{label}' (timeout={timeout}s)")
+            return None
+        except NoSuchElementException:
+            self._logger.warning(f"[PROPERTY] Property '{label}' element not found")
+            return None
+        except Exception as e:
+            self._logger.error(f"[PROPERTY] Error getting property '{label}': {e}")
             return None
     
     def _find_mva_echo(self, mva: str, timeout: int = 1) -> bool:
@@ -160,8 +180,18 @@ class SeleniumVehicleDataActions(VehicleDataActions):
             elem = WebDriverWait(self.driver, timeout).until(
                 EC.presence_of_element_located((By.XPATH, xpath))
             )
-            return elem is not None
-        except (TimeoutException, NoSuchElementException):
+            if elem:
+                self._logger.debug(f"[MVA_ECHO] Found MVA '{mva}' echoed in UI")
+                return True
+            return False
+        except TimeoutException:
+            self._logger.debug(f"[MVA_ECHO] MVA '{mva}' not found in UI (timeout={timeout}s)")
+            return False
+        except NoSuchElementException:
+            self._logger.debug(f"[MVA_ECHO] MVA '{mva}' element not found")
+            return False
+        except Exception as e:
+            self._logger.error(f"[MVA_ECHO] Error checking MVA echo for '{mva}': {e}")
             return False
     
     # ====================
@@ -203,11 +233,11 @@ class SeleniumVehicleDataActions(VehicleDataActions):
             # Clear if requested
             if clear_existing:
                 if not self._clear_input_field(input_field):
-                    # Log warning but continue
-                    pass
+                    self._logger.warning(f"[MVA] Field not fully cleared before entering MVA '{mva}'")
             
             # Enter MVA
             input_field.send_keys(mva)
+            self._logger.info(f"[MVA] Entered MVA: {mva}")
             
             return {
                 'status': 'ok',
@@ -215,6 +245,7 @@ class SeleniumVehicleDataActions(VehicleDataActions):
             }
             
         except Exception as e:
+            self._logger.error(f"[MVA] Failed to enter MVA '{mva}': {e}")
             return {
                 'status': 'error',
                 'error': f'Failed to enter MVA: {str(e)}',
@@ -259,6 +290,11 @@ class SeleniumVehicleDataActions(VehicleDataActions):
         
         try:
             WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(non_empty_value)
+            self._logger.debug(f"[PROPERTY] Property '{label}' loaded successfully")
             return True
         except TimeoutException:
+            self._logger.warning(f"[PROPERTY] Timeout waiting for property '{label}' to load (timeout={timeout}s)")
+            return False
+        except Exception as e:
+            self._logger.error(f"[PROPERTY] Error waiting for property '{label}': {e}")
             return False
