@@ -21,6 +21,12 @@ except ImportError:
     
 from .vehicle_data_actions import VehicleDataActions
 
+# WebDriver wait configuration
+DEFAULT_WAIT_TIMEOUT = 10  # seconds
+DEFAULT_POLL_FREQUENCY = 0.5  # seconds
+FIELD_READY_TIMEOUT = 5  # seconds - for field readiness checks
+FIELD_READY_POLL = 0.25  # seconds - faster polling for field checks
+
 
 class SeleniumVehicleDataActions(VehicleDataActions):
     """Selenium-backed implementation of VehicleDataActions.
@@ -34,22 +40,24 @@ class SeleniumVehicleDataActions(VehicleDataActions):
     
     Example:
         driver = get_driver()
-        actions = SeleniumVehicleDataActions(driver)
+        logger = StandardLogger("vehicle_actions")
+        actions = SeleniumVehicleDataActions(driver, logger)
         actions.enter_mva("50227203")
         vin = actions.get_vehicle_property("VIN")
     """
     
-    def __init__(self, driver: WebDriver, timeout: int = 10):
+    def __init__(self, driver: WebDriver, logger: logging.Logger = None, timeout: int = 10):
         """Initialize Selenium vehicle data actions.
         
         Args:
             driver: Selenium WebDriver instance
-            timeout: Default timeout for wait operations
+            logger: Optional logger instance
+            timeout: Default timeout for wait operations (seconds)
         """
         self.driver = driver
         self.timeout = timeout
-        self.wait = WebDriverWait(driver, timeout)
-        self._logger = logging.getLogger(__name__)
+        self.wait = WebDriverWait(driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY)
+        self._logger = logger or logging.getLogger(__name__)
     
     # ====================
     # MVA INPUT METHODS (TODO: Extract to MVAInputPage POM)
@@ -220,7 +228,7 @@ class SeleniumVehicleDataActions(VehicleDataActions):
             
             # Wait for field to be ready
             try:
-                WebDriverWait(self.driver, 5, poll_frequency=0.25).until(
+                WebDriverWait(self.driver, FIELD_READY_TIMEOUT, poll_frequency=FIELD_READY_POLL).until(
                     lambda d: input_field.is_enabled() and input_field.is_displayed()
                 )
             except TimeoutException:
@@ -240,7 +248,7 @@ class SeleniumVehicleDataActions(VehicleDataActions):
             self._logger.info(f"[MVA] Entered MVA: {mva}")
             
             return {
-                'status': 'ok',
+                'status': 'success',
                 'mva': mva
             }
             

@@ -8,8 +8,13 @@ from typing import Dict, Any, Optional, Tuple
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.common.exceptions import TimeoutException
 
 from .navigation import Navigator
+
+# WebDriver wait configuration
+DEFAULT_WAIT_TIMEOUT = 10  # seconds
+DEFAULT_POLL_FREQUENCY = 0.5  # seconds
 
 
 class SeleniumNavigator(Navigator):
@@ -35,7 +40,7 @@ class SeleniumNavigator(Navigator):
         """
         self.driver = driver
     
-    def navigate_to(self, url: str, label: str = "page", verify: bool = True, timeout: int = 15) -> Dict[str, Any]:
+    def navigate_to(self, url: str, label: str = "page", verify: bool = True, timeout: int = DEFAULT_WAIT_TIMEOUT) -> Dict[str, Any]:
         """
         Navigate to a URL using Selenium WebDriver.
         
@@ -43,7 +48,7 @@ class SeleniumNavigator(Navigator):
             url: Target URL to navigate to
             label: Descriptive label for the page (for logging/reporting)
             verify: Whether to verify page load after navigation
-            timeout: Maximum time to wait for operations (default 15s)
+            timeout: Maximum time to wait for operations (default 10s)
         
         Returns:
             Dictionary with navigation result:
@@ -85,14 +90,14 @@ class SeleniumNavigator(Navigator):
     def verify_page(self, 
                    url: Optional[str] = None, 
                    check_locator: Optional[Tuple[str, str]] = None, 
-                   timeout: int = 15) -> Dict[str, Any]:
+                   timeout: int = DEFAULT_WAIT_TIMEOUT) -> Dict[str, Any]:
         """
         Verify that the current page has loaded correctly.
         
         Args:
             url: Optional URL to verify against current URL
             check_locator: Optional element locator to verify presence  
-            timeout: Maximum time to wait for page to load (default 15s)
+            timeout: Maximum time to wait for page to load (default 10s)
         
         Returns:
             Dictionary with verification result:
@@ -103,7 +108,7 @@ class SeleniumNavigator(Navigator):
         """
         try:
             # Wait for document ready state
-            WebDriverWait(self.driver, timeout).until(
+            WebDriverWait(self.driver, timeout, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                 lambda driver: driver.execute_script("return document.readyState") == "complete"
             )
             
@@ -120,7 +125,7 @@ class SeleniumNavigator(Navigator):
             
             # Check for optional element presence
             if check_locator:
-                WebDriverWait(self.driver, timeout).until(
+                WebDriverWait(self.driver, timeout, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                     EC.presence_of_element_located(check_locator)
                 )
             

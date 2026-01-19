@@ -1,0 +1,8 @@
+# Ignore user data files but keep sample files
+*.csv
+!sample_*.csv
+
+# Ignore output files
+*.txt
+*.xlsx
+*.xls

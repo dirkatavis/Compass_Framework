@@ -108,6 +108,9 @@ class StandardDriverManager(DriverManager):
             # Apply any custom configuration from kwargs
             if kwargs.get("headless", False):
                 options.add_argument("--headless")
+            if kwargs.get("incognito", False):
+                options.add_argument("--inprivate")
+                self._logger.info("[DRIVER] InPrivate mode enabled")
             if "window_size" in kwargs:
                 width, height = kwargs["window_size"]
                 options.add_argument(f"--window-size={width},{height}")
