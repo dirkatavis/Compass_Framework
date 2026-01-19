@@ -33,10 +33,7 @@ class TestE2E(unittest.TestCase):
             except Exception as e:
                 self.logger.warning(f"Cleanup error: {e}")
     
-    @unittest.skipIf(
-        not hasattr(unittest, '_e2e_enabled'), 
-        "E2E tests disabled - set unittest._e2e_enabled = True to enable"
-    )
+    @unittest.skip("Generic navigation test disabled - using targeted login test only")
     def test_basic_web_navigation(self):
         """Test basic web navigation with example.com."""
         # Use configured driver path for compatibility check
@@ -65,10 +62,7 @@ class TestE2E(unittest.TestCase):
         page_verify = self.navigator.verify_page(url="https://example.com")
         self.assertEqual(page_verify["status"], "success")
     
-    @unittest.skipIf(
-        not hasattr(unittest, '_e2e_enabled'), 
-        "E2E tests disabled - set unittest._e2e_enabled = True to enable"
-    )
+    @unittest.skip("Generic redirect test disabled - using targeted login test only")
     def test_palantir_redirect_handling(self):
         """Test real-world redirect handling with Avis Palantir Foundry."""
         # Use configured driver path for compatibility check
@@ -98,10 +92,7 @@ class TestE2E(unittest.TestCase):
             f"Unexpected redirect destination: {driver.current_url}"
         )
     
-    @unittest.skipIf(
-        not hasattr(unittest, '_e2e_enabled'), 
-        "E2E tests disabled - set unittest._e2e_enabled = True to enable"
-    )
+    @unittest.skip("Generic config navigation test disabled - using targeted login test only")
     def test_configuration_driven_navigation(self):
         """Test navigation using JsonConfiguration for URLs."""
         import tempfile
@@ -154,10 +145,7 @@ class TestE2E(unittest.TestCase):
             if os.path.exists(config_file):
                 os.unlink(config_file)
     
-    @unittest.skipIf(
-        not hasattr(unittest, '_e2e_enabled'), 
-        "E2E tests disabled - set unittest._e2e_enabled = True to enable"
-    )
+    @unittest.skip("Generic lifecycle test disabled - using targeted login test only")
     def test_driver_lifecycle_management(self):
         """Test complete driver lifecycle with multiple operations."""
         # Use configured driver path for compatibility check

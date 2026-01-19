@@ -88,7 +88,25 @@ class SmartLoginFlow:
         try:
             # Step 1: Navigate to target application
             self.logger.debug("[SMART_AUTH] Step 1: Navigate to application")
-            nav_result = self.navigator.navigate_to(app_url, verify=False, timeout=timeout)
+            
+            # Handle potential alerts before navigation
+            from selenium.common.exceptions import UnexpectedAlertPresentException
+            from selenium.webdriver.common.alert import Alert
+            
+            try:
+                nav_result = self.navigator.navigate_to(app_url, verify=False, timeout=timeout)
+            except UnexpectedAlertPresentException:
+                self.logger.warning("[SMART_AUTH] Alert detected during navigation, dismissing...")
+                try:
+                    alert = Alert(self.driver)
+                    alert_text = alert.text
+                    self.logger.info(f"[SMART_AUTH] Alert text: {alert_text}")
+                    alert.accept()  # Dismiss alert
+                except Exception as e:
+                    self.logger.warning(f"[SMART_AUTH] Failed to dismiss alert: {e}")
+                
+                # Retry navigation after dismissing alert
+                nav_result = self.navigator.navigate_to(app_url, verify=False, timeout=timeout)
             
             if nav_result.get("status") != "success":
                 self.logger.error(f"[SMART_AUTH] Failed to navigate to app: {nav_result.get('error')}")
@@ -118,13 +136,13 @@ class SmartLoginFlow:
             # Step 3: Login required - perform authentication
             self.logger.info("[SMART_AUTH] Login page detected, performing authentication")
             
-            # Use the login_url if provided, otherwise use current URL (we're already on login page)
-            auth_url = login_url if login_url else current_url
-            
+            # We're already on the login page after navigation, so skip re-navigation
+            # Just pass the current URL for reference
             auth_result = self.login_flow.authenticate(
                 username=username,
                 password=password,
-                login_url=auth_url,
+                login_url=current_url,
+                skip_navigation=True,  # Already navigated - avoid double load
                 **kwargs
             )
             
@@ -160,6 +178,7 @@ class SmartLoginFlow:
         Checks for presence of common login page elements:
         - Username/email input field
         - Password input field
+        - WWID/login_id input field
         - Microsoft SSO indicators
         
         Args:
@@ -170,30 +189,28 @@ class SmartLoginFlow:
         """
         try:
             # Check for Microsoft SSO login indicators
-            # Look for username/email field (most reliable indicator)
-            login_selectors = [
+            # Look for username/email field (most reliable indicators)
+            # Use a combined selector to check all at once instead of sequentially
+            combined_selector = ','.join([
                 'input[type="email"]',
                 'input[name="loginfmt"]',
                 'input[name="username"]',
-                '#i0116',  # Microsoft-specific ID
-            ]
+                '#i0116'  # Microsoft-specific ID
+            ])
             
-            for selector in login_selectors:
-                try:
-                    element = WebDriverWait(self.driver, timeout).until(
-                        lambda d: d.find_element(By.CSS_SELECTOR, selector)
-                    )
-                    
-                    if element and element.is_displayed():
-                        self.logger.debug(f"[SMART_AUTH][DETECT] Login field found: {selector}")
-                        return True
+            try:
+                element = WebDriverWait(self.driver, 10, poll_frequency=0.5).until(
+                    lambda d: d.find_element(By.CSS_SELECTOR, combined_selector)
+                )
+                
+                if element and element.is_displayed():
+                    self.logger.debug(f"[SMART_AUTH][DETECT] Login field found")
+                    return True
                         
-                except TimeoutException:
-                    continue
-            
-            # No login fields found - likely already authenticated
-            self.logger.debug("[SMART_AUTH][DETECT] No login fields found - SSO session active")
-            return False
+            except TimeoutException:
+                # No login fields found - likely already authenticated
+                self.logger.debug("[SMART_AUTH][DETECT] No login fields found - SSO session active")
+                return False
             
         except Exception as e:
             self.logger.warning(f"[SMART_AUTH][DETECT] Error detecting login page: {e}")

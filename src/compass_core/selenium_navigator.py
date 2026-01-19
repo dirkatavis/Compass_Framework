@@ -103,7 +103,7 @@ class SeleniumNavigator(Navigator):
         """
         try:
             # Wait for document ready state
-            WebDriverWait(self.driver, timeout).until(
+            WebDriverWait(self.driver, 10, poll_frequency=0.5).until(
                 lambda driver: driver.execute_script("return document.readyState") == "complete"
             )
             
@@ -120,7 +120,7 @@ class SeleniumNavigator(Navigator):
             
             # Check for optional element presence
             if check_locator:
-                WebDriverWait(self.driver, timeout).until(
+                WebDriverWait(self.driver, 10, poll_frequency=0.5).until(
                     EC.presence_of_element_located(check_locator)
                 )
             
