@@ -54,6 +54,33 @@ except ImportError:
     # selenium not installed - StandardDriverManager not available
     pass
 
+# LoginFlow - authentication protocol and Selenium implementation
+try:
+    from .login_flow import LoginFlow
+    __all__.append('LoginFlow')
+    
+    from .selenium_login_flow import SeleniumLoginFlow
+    __all__.append('SeleniumLoginFlow')
+except ImportError:
+    # selenium not installed - LoginFlow components not available
+    pass
+
+# VehicleLookupFlow - batch MVA processing workflow
+try:
+    from .vehicle_lookup_flow import VehicleLookupFlow
+    __all__.append('VehicleLookupFlow')
+except ImportError:
+    # Dependencies not installed - VehicleLookupFlow not available
+    pass
+
+# CSV utilities - MVA list reading and results writing
+try:
+    from .csv_utils import read_mva_list, write_results_csv
+    __all__.extend(['read_mva_list', 'write_results_csv'])
+except ImportError:
+    # CSV utilities not available
+    pass
+
 # Windows-only imports - only available on Windows
 try:
     from .browser_version_checker import BrowserVersionChecker
