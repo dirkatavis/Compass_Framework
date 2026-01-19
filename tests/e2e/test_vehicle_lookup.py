@@ -17,6 +17,7 @@ from compass_core import (
     StandardDriverManager,
     SeleniumNavigator,
     SeleniumLoginFlow,
+    SmartLoginFlow,
     SeleniumVehicleDataActions,
     IniConfiguration,
     StandardLogger,
@@ -67,7 +68,81 @@ class TestVehicleLookupE2E(unittest.TestCase):
         not hasattr(unittest, '_e2e_enabled'),
         "E2E tests disabled - set unittest._e2e_enabled = True to enable"
     )
-    def test_login_flow_authentication(self):
+    def test_smart_login_with_sso_cache_hit(self):
+        """Test SmartLoginFlow when SSO session is already active."""
+        # Skip if credentials not configured
+        if not all([self.username, self.app_url]):
+            self.skipTest("Credentials/app_url not configured")
+        
+        # Initialize components
+        self.driver_manager = StandardDriverManager()
+        driver = self.driver_manager.get_or_create_driver(incognito=False)  # Use persistent session
+        self.navigator = SeleniumNavigator(driver, self.logger)
+        base_login_flow = SeleniumLoginFlow(driver, self.navigator, self.logger)
+        smart_login = SmartLoginFlow(driver, self.navigator, base_login_flow, self.logger)
+        
+        self.logger.info("Testing SmartLoginFlow with SSO cache...")
+        
+        # First authentication - should perform login
+        result1 = smart_login.authenticate(
+            username=self.username,
+            password=self.password,
+            app_url=self.app_url,
+            login_id=self.login_id,
+            login_url=self.login_url,
+            timeout=30
+        )
+        
+        self.assertEqual(result1.get("status"), "success")
+        self.logger.info(f"First auth: {result1.get('message')}, authenticated={result1.get('authenticated')}")
+        
+        # Second authentication - should skip login (SSO active)
+        result2 = smart_login.authenticate(
+            username=self.username,
+            password=self.password,
+            app_url=self.app_url,
+            timeout=30
+        )
+        
+        self.assertEqual(result2.get("status"), "success")
+        self.assertEqual(result2.get("authenticated"), False, 
+                        "Second auth should skip login (SSO session active)")
+        self.logger.info(f"✓ SmartLoginFlow correctly detected SSO session: {result2.get('message')}")
+    
+    @unittest.skipIf(
+        not hasattr(unittest, '_e2e_enabled'),
+        "E2E tests disabled - set unittest._e2e_enabled = True to enable"
+    )
+    def test_smart_login_with_sso_cache_miss(self):
+        """Test SmartLoginFlow when SSO session is missing (incognito mode)."""
+        # Skip if credentials not configured
+        if not all([self.username, self.password, self.app_url]):
+            self.skipTest("Credentials/app_url not configured")
+        
+        # Initialize components with incognito (forces cache miss)
+        self.driver_manager = StandardDriverManager()
+        driver = self.driver_manager.get_or_create_driver(incognito=True)
+        self.navigator = SeleniumNavigator(driver, self.logger)
+        base_login_flow = SeleniumLoginFlow(driver, self.navigator, self.logger)
+        smart_login = SmartLoginFlow(driver, self.navigator, base_login_flow, self.logger)
+        
+        self.logger.info("Testing SmartLoginFlow with incognito (cache miss)...")
+        
+        # Authentication - should perform login
+        result = smart_login.authenticate(
+            username=self.username,
+            password=self.password,
+            app_url=self.app_url,
+            login_id=self.login_id,
+            login_url=self.login_url,
+            timeout=30
+        )
+        
+        self.assertEqual(result.get("status"), "success")
+        self.assertEqual(result.get("authenticated"), True,
+                        "Should perform login when SSO cache missing")
+        self.logger.info(f"✓ SmartLoginFlow correctly performed login: {result.get('message')}")
+
         """Test LoginFlow with Microsoft SSO authentication."""
         # Skip if credentials not configured
         if not all([self.username, self.password, self.login_url]):

@@ -61,6 +61,9 @@ try:
     
     from .selenium_login_flow import SeleniumLoginFlow
     __all__.append('SeleniumLoginFlow')
+    
+    from .smart_login_flow import SmartLoginFlow
+    __all__.append('SmartLoginFlow')
 except ImportError:
     # selenium not installed - LoginFlow components not available
     pass
