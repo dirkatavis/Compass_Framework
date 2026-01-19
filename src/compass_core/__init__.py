@@ -38,6 +38,14 @@ except ImportError:
     # selenium or pm_actions not installed - SeleniumPmActions not available
     pass
 
+# Optional Vehicle Data Actions - available when selenium installed
+try:
+    from .selenium_vehicle_data_actions import SeleniumVehicleDataActions
+    __all__.append('SeleniumVehicleDataActions')
+except ImportError:
+    # selenium not installed - SeleniumVehicleDataActions not available
+    pass
+
 # DriverManager - requires selenium for WebDriver support
 try:
     from .standard_driver_manager import StandardDriverManager

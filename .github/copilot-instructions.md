@@ -20,7 +20,13 @@ Goal: Equip agents to work productively in this repo by codifying the big-pictur
   - E2E: `python run_tests.py --enable-e2e e2e`
   - All: `python run_tests.py all` (E2E skipped by default; enable with `--enable-e2e`)
 - **Direct unittest**: `python -m unittest discover tests -v` or per folder under [tests](tests).
-- **Test structure**: Protocol compliance in `tests/unit/test_*_interface.py`, implementations in `tests/unit/test_*.py`, cross-component in [tests/integration](tests/integration), browser automation in [tests/e2e](tests/e2e).
+- **Test structure**: 
+  - Protocol compliance in `tests/unit/test_*_interface.py` (verify protocol adherence using mock implementations)
+  - Implementation tests in `tests/unit/test_*.py` (test concrete classes)
+  - Cross-component in [tests/integration](tests/integration) (verify protocol interactions)
+  - Browser automation in [tests/e2e](tests/e2e) (full workflows with real WebDriver)
+- **E2E skip mechanism**: Tests check `hasattr(unittest, '_e2e_enabled')` and skip if false. Enabled via `unittest._e2e_enabled = True` or `--enable-e2e` flag.
+- **Test counts**: ~218 unit, ~7 integration, ~4 E2E (as of Jan 2026).
 
 ## Optional Dependencies & Platforms
 - **Selenium features**: Install extras to enable navigator/driver manager.
@@ -38,11 +44,44 @@ Goal: Equip agents to work productively in this repo by codifying the big-pictur
 - **Graceful degradation**: Missing deps → features unavailable, tests skip when platform/deps absent.
 - **Naming**: Implementations use explicit names (`JsonConfiguration`, `IniConfiguration`, `SeleniumNavigator`, `StandardDriverManager`, `StandardLoggerFactory`).
 
+## URL Verification Strategies (SSO & Redirects)
+- **Domain matching**: Use `verify_page(url="https://host.com/...", match="domain")` to tolerate SSO/multipass redirects while checking scheme+netloc.
+- **Prefix matching** (default): `match="prefix"` for strict path prefix verification.
+- **Exact matching**: `match="exact"` for absolute URL equality.
+- Example: `navigator.verify_page(url="https://login.microsoftonline.com", match="domain")` succeeds even if redirected to `/common/oauth2/...`.
+
+## PM Workflows & Business Flows
+- **Protocol-first flows**: Define `Workflow` protocol with `id()`, `plan()`, `run()` methods; implement in concrete classes (e.g., [pm_work_item_flow.py](src/compass_core/pm_work_item_flow.py)).
+- **PmActions protocol**: Abstract PM-specific actions (lighthouse status, workitem handling); implement in [pm_actions_selenium.py](src/compass_core/pm_actions_selenium.py).
+- **Flow orchestration**: Use `FlowContext` (mva, logger, params) to pass state; `WorkflowStep` for discrete actions.
+- **Graceful skips**: Flows return `{"status": "skipped", "reason": "..."}` for early exits (e.g., lighthouse rentable).
+
+## Page Object Model (POM) Patterns
+- **Location**: E2E POMs in [tests/e2e/pages](tests/e2e/pages) (e.g., [login_page.py](tests/e2e/pages/login_page.py)).
+- **Structure**: Locators as class constants (tuples), action methods, verification methods.
+- **Example**: `MicrosoftLoginPage` encapsulates email/password fields, next/signin buttons, error messages.
+- **Usage in flows**: Instantiate POM with driver, call action methods (e.g., `login_page.login(username, password)`).
+- **Keep POM in tests**: Page objects belong in test folders; business logic uses protocol abstractions, not POMs directly.
+
+## Driver Configuration & Incognito
+- **Config priority**: `webdriver.ini.local` > `webdriver.ini` (template). Local file gitignored.
+- **Driver paths**: Set in INI (`edge_path = drivers.local/msedgedriver.exe`) or use default fallback (`drivers.local/` then project root).
+- **Incognito mode**: `StandardDriverManager.get_or_create_driver(incognito=True)` adds `--inprivate` for Edge.
+- **Headless**: Combine `headless=True` and `incognito=True` as needed; note headless may alter auth flows.
+
 ## Usage Examples
 - Core engine: `from compass_core import CompassRunner; CompassRunner().run()`.
 - Configuration: `from compass_core import JsonConfiguration; cfg = JsonConfiguration(); data = cfg.load("settings.json"); cfg.validate()`.
 - Version check (Windows): `from compass_core import BrowserVersionChecker; BrowserVersionChecker().check_compatibility("chrome")`.
-- Navigation (optional): `from compass_core import SeleniumNavigator; nav = SeleniumNavigator(webdriver); nav.navigate_to("https://example.com", verify=True)`.
+- Navigation with SSO: `nav = SeleniumNavigator(driver); nav.navigate_to("https://app.com", verify=False); nav.verify_page(url="https://app.com", match="domain")`.
+- Driver with incognito: `dm = StandardDriverManager(); driver = dm.get_or_create_driver(incognito=True, headless=False)`.
+- PM flow: `flow = PmWorkItemFlow(); result = flow.run(FlowContext(mva="MVA123", logger=logger, params={...}))`.
+
+## UI Flow Samples
+- **Sample script**: [scripts/ui_flow_sample.py](scripts/ui_flow_sample.py) demonstrates login + optional MVA entry.
+- **Credentials**: Pass via CLI args (`--username`, `--password`) or env vars (`UI_SAMPLE_USERNAME`, `UI_SAMPLE_PASSWORD`).
+- **Locator syntax**: Use `css=.selector` or `xpath=//input[@name='field']` for `--mva-locator`.
+- **Run example**: `python scripts/ui_flow_sample.py --url https://login.microsoftonline.com/ --incognito --username user@example.com`.
 
 ## Build & Integration
 - Dev install: `pip install -e .` then run tests via [run_tests.py](run_tests.py).
