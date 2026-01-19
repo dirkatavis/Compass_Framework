@@ -15,10 +15,17 @@ from selenium.common.exceptions import TimeoutException
 from compass_core.login_flow import LoginFlow
 from compass_core.navigation import Navigator
 
+# WebDriver wait configuration
+DEFAULT_WAIT_TIMEOUT = 10  # seconds
+DEFAULT_POLL_FREQUENCY = 0.5  # seconds
 
-class SmartLoginFlow:
+
+class SmartLoginFlow(LoginFlow):
     """
     Intelligent login flow that only authenticates when necessary.
+    
+    Implements LoginFlow protocol with smart SSO cache detection.
+    Interprets the 'url' parameter as the target application URL.
     
     Workflow:
     1. Navigate to target application URL
@@ -55,7 +62,7 @@ class SmartLoginFlow:
         self,
         username: str,
         password: str,
-        app_url: str,
+        url: str,
         **kwargs
     ) -> Dict[str, Any]:
         """
@@ -64,11 +71,10 @@ class SmartLoginFlow:
         Args:
             username: User email/username
             password: User password
-            app_url: Target application URL
+            url: Target application URL
             **kwargs: Additional parameters:
                 - login_id: str (optional)
                 - timeout: int (default: 30)
-                - login_url: str (fallback if app redirects to different SSO)
         
         Returns:
             Dict with authentication result:
@@ -80,10 +86,9 @@ class SmartLoginFlow:
             }
         """
         timeout = kwargs.get('timeout', 30)
-        login_url = kwargs.get('login_url')
         
         self.logger.info(f"[SMART_AUTH] Starting smart authentication for: {username}")
-        self.logger.info(f"[SMART_AUTH] Target app URL: {app_url}")
+        self.logger.info(f"[SMART_AUTH] Target app URL: {url}")
         
         try:
             # Step 1: Navigate to target application
@@ -94,7 +99,7 @@ class SmartLoginFlow:
             from selenium.webdriver.common.alert import Alert
             
             try:
-                nav_result = self.navigator.navigate_to(app_url, verify=False, timeout=timeout)
+                nav_result = self.navigator.navigate_to(url, verify=False, timeout=timeout)
             except UnexpectedAlertPresentException:
                 self.logger.warning("[SMART_AUTH] Alert detected during navigation, dismissing...")
                 try:
@@ -106,7 +111,7 @@ class SmartLoginFlow:
                     self.logger.warning(f"[SMART_AUTH] Failed to dismiss alert: {e}")
                 
                 # Retry navigation after dismissing alert
-                nav_result = self.navigator.navigate_to(app_url, verify=False, timeout=timeout)
+                nav_result = self.navigator.navigate_to(url, verify=False, timeout=timeout)
             
             if nav_result.get("status") != "success":
                 self.logger.error(f"[SMART_AUTH] Failed to navigate to app: {nav_result.get('error')}")
@@ -141,7 +146,7 @@ class SmartLoginFlow:
             auth_result = self.login_flow.authenticate(
                 username=username,
                 password=password,
-                login_url=current_url,
+                url=current_url,
                 skip_navigation=True,  # Already navigated - avoid double load
                 **kwargs
             )
@@ -199,7 +204,7 @@ class SmartLoginFlow:
             ])
             
             try:
-                element = WebDriverWait(self.driver, 10, poll_frequency=0.5).until(
+                element = WebDriverWait(self.driver, timeout, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                     lambda d: d.find_element(By.CSS_SELECTOR, combined_selector)
                 )
                 

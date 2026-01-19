@@ -84,7 +84,7 @@ class TestVehicleLookupE2E(unittest.TestCase):
         result1 = smart_login.authenticate(
             username=self.username,
             password=self.password,
-            app_url=self.app_url,
+            url=self.app_url,
             login_id=self.login_id,
             timeout=30
         )
@@ -97,7 +97,7 @@ class TestVehicleLookupE2E(unittest.TestCase):
         result2 = smart_login.authenticate(
             username=self.username,
             password=self.password,
-            app_url=self.app_url,
+            url=self.app_url,
             login_id=self.login_id,
             timeout=30
         )
@@ -130,7 +130,7 @@ class TestVehicleLookupE2E(unittest.TestCase):
         result = smart_login.authenticate(
             username=self.username,
             password=self.password,
-            app_url=self.app_url,
+            url=self.app_url,
             login_id=self.login_id,
             timeout=60  # Increased timeout for stability
         )
@@ -164,7 +164,7 @@ class TestVehicleLookupE2E(unittest.TestCase):
         auth_result = smart_login.authenticate(
             username=self.username,
             password=self.password,
-            app_url=self.app_url,
+            url=self.app_url,
             login_id=self.login_id,
             timeout=30
         )
@@ -178,25 +178,24 @@ class TestVehicleLookupE2E(unittest.TestCase):
         
         # Step 3: Verify MVA echo
         self.logger.info("Step 3: Verifying MVA echo...")
-        echo_result = self.vehicle_actions.verify_mva_echo(self.test_mva, timeout=5)
-        self.assertEqual(echo_result.get("status"), "success",
-                        f"MVA echo verification failed: {echo_result.get('error')}")
+        echo_verified = self.vehicle_actions.verify_mva_echo(self.test_mva, timeout=5)
+        self.assertTrue(echo_verified, "MVA echo verification failed")
         
         # Step 4: Get VIN
         self.logger.info("Step 4: Retrieving VIN...")
-        vin_result = self.vehicle_actions.wait_for_property_loaded("VIN", timeout=12)
-        self.assertEqual(vin_result.get("status"), "success",
-                        f"Failed to get VIN: {vin_result.get('error')}")
-        vin = vin_result.get("value")
+        vin_loaded = self.vehicle_actions.wait_for_property_loaded("VIN", timeout=12)
+        self.assertTrue(vin_loaded, "VIN property did not load")
+        vin = self.vehicle_actions.get_vehicle_property("VIN", timeout=2)
+        self.assertIsNotNone(vin, "VIN should not be None")
         self.assertNotEqual(vin, "N/A", "VIN should not be N/A")
         self.logger.info(f"✓ VIN retrieved: {vin}")
         
         # Step 5: Get Description
         self.logger.info("Step 5: Retrieving Description...")
-        desc_result = self.vehicle_actions.wait_for_property_loaded("Desc", timeout=12)
-        self.assertEqual(desc_result.get("status"), "success",
-                        f"Failed to get Desc: {desc_result.get('error')}")
-        desc = desc_result.get("value")
+        desc_loaded = self.vehicle_actions.wait_for_property_loaded("Desc", timeout=12)
+        self.assertTrue(desc_loaded, "Description property did not load")
+        desc = self.vehicle_actions.get_vehicle_property("Desc", timeout=2)
+        self.assertIsNotNone(desc, "Description should not be None")
         self.assertNotEqual(desc, "N/A", "Description should not be N/A")
         self.logger.info(f"✓ Description retrieved: {desc}")
         

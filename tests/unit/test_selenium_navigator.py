@@ -86,8 +86,8 @@ class TestSeleniumNavigator(unittest.TestCase):
         
         result = self.navigator.verify_page()
         
-        # Should create WebDriverWait with driver and default timeout
-        mock_wait.assert_called_once_with(self.mock_driver, 15)
+        # Should create WebDriverWait with driver, default timeout, and poll frequency
+        mock_wait.assert_called_once_with(self.mock_driver, 10, poll_frequency=0.5)
         
         # Should wait for document.readyState complete
         wait_instance.until.assert_called_once()
@@ -137,8 +137,8 @@ class TestSeleniumNavigator(unittest.TestCase):
         
         self.navigator.verify_page(timeout=30)
         
-        # Should use custom timeout
-        mock_wait.assert_called_once_with(self.mock_driver, 30)
+        # Should use custom timeout with standard poll frequency
+        mock_wait.assert_called_once_with(self.mock_driver, 30, poll_frequency=0.5)
         
     def test_selenium_navigator_initialization(self):
         """Test SeleniumNavigator initialization."""

@@ -13,7 +13,9 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
 from compass_core.login_flow import LoginFlow
 from compass_core.navigation import Navigator
-
+# WebDriver wait configuration
+DEFAULT_WAIT_TIMEOUT = 10  # seconds
+DEFAULT_POLL_FREQUENCY = 0.5  # seconds
 
 class SeleniumLoginFlow:
     """
@@ -45,7 +47,7 @@ class SeleniumLoginFlow:
         self,
         username: str,
         password: str,
-        login_url: str,
+        url: str,
         **kwargs
     ) -> Dict[str, Any]:
         """
@@ -54,7 +56,7 @@ class SeleniumLoginFlow:
         Args:
             username: User email address
             password: User password
-            login_url: Microsoft login page URL
+            url: Microsoft login page URL (treated as direct login URL)
             **kwargs: Additional parameters:
                 - login_id: str (optional WWID - Compass-specific)
                 - timeout: int (default: 30)
@@ -80,7 +82,7 @@ class SeleniumLoginFlow:
         try:
             # Step 1: Navigate to login URL (unless already there)
             if not skip_navigation:
-                nav_result = self.navigator.navigate_to(login_url, verify=False, timeout=timeout)
+                nav_result = self.navigator.navigate_to(url, verify=False, timeout=timeout)
                 if nav_result.get("status") != "success":
                     self.logger.error(f"[LOGIN] Failed to navigate to login URL: {nav_result.get('error')}")
                     return {
@@ -89,7 +91,7 @@ class SeleniumLoginFlow:
                         "error": nav_result.get("error", "Unknown navigation error")
                     }
                 
-                self.logger.debug(f"[LOGIN] Navigated to: {login_url}")
+                self.logger.debug(f"[LOGIN] Navigated to: {url}")
             else:
                 self.logger.debug(f"[LOGIN] Skipping navigation - already on login page")
             
@@ -153,13 +155,13 @@ class SeleniumLoginFlow:
         try:
             # Wait for username input field
             # Microsoft uses: input[type="email"], input[name="loginfmt"]
-            username_field = WebDriverWait(self.driver, 10, poll_frequency=0.5).until(
+            username_field = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'input[type="email"], input[name="loginfmt"]'))
             )
             
             if not username_field.is_displayed() or not username_field.is_enabled():
                 self.logger.warning("[LOGIN][USERNAME] Field not ready, waiting...")
-                username_field = WebDriverWait(self.driver, 10, poll_frequency=0.5).until(
+                username_field = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                     lambda d: (
                         (field := d.find_element(By.CSS_SELECTOR, 'input[type="email"], input[name="loginfmt"]'))
                         and field.is_displayed()
@@ -173,7 +175,7 @@ class SeleniumLoginFlow:
             self.logger.debug(f"[LOGIN][USERNAME] Entered: {username}")
             
             # Click Next button
-            next_button = WebDriverWait(self.driver, 10, poll_frequency=0.5).until(
+            next_button = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[type="submit"], button[type="submit"]'))
             )
             next_button.click()
@@ -201,13 +203,13 @@ class SeleniumLoginFlow:
         try:
             # Wait for password input field
             # Microsoft uses: input[type="password"], input[name="passwd"]
-            password_field = WebDriverWait(self.driver, 10, poll_frequency=0.5).until(
+            password_field = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'input[type="password"], input[name="passwd"]'))
             )
             
             if not password_field.is_displayed() or not password_field.is_enabled():
                 self.logger.warning("[LOGIN][PASSWORD] Field not ready, waiting...")
-                password_field = WebDriverWait(self.driver, 10, poll_frequency=0.5).until(
+                password_field = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                     lambda d: (
                         (field := d.find_element(By.CSS_SELECTOR, 'input[type="password"], input[name="passwd"]'))
                         and field.is_displayed()
@@ -221,7 +223,7 @@ class SeleniumLoginFlow:
             self.logger.debug("[LOGIN][PASSWORD] Entered password")
             
             # Click Sign in button
-            signin_button = WebDriverWait(self.driver, 10, poll_frequency=0.5).until(
+            signin_button = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[type="submit"], button[type="submit"]'))
             )
             signin_button.click()
@@ -279,7 +281,7 @@ class SeleniumLoginFlow:
             for selector in button_selectors:
                 try:
                     self.logger.debug(f"[LOGIN][STAY_SIGNED_IN] Trying selector: {selector}")
-                    button = WebDriverWait(self.driver, 10, poll_frequency=0.5).until(
+                    button = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                         EC.element_to_be_clickable((By.CSS_SELECTOR, selector))
                     )
                     self.logger.debug(f"[LOGIN][STAY_SIGNED_IN] Found button with selector: {selector}")
@@ -322,13 +324,13 @@ class SeleniumLoginFlow:
             
             # Wait for WWID input field (Compass-specific selector)
             # Selector from working code: input[class*='fleet-operations-pwa__text-input__']
-            wwid_field = WebDriverWait(self.driver, 10, poll_frequency=0.5).until(
+            wwid_field = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "input[class*='fleet-operations-pwa__text-input__']"))
             )
             
             if not wwid_field.is_displayed() or not wwid_field.is_enabled():
                 self.logger.warning("[LOGIN][WWID] Field not ready, waiting...")
-                wwid_field = WebDriverWait(self.driver, 10, poll_frequency=0.5).until(
+                wwid_field = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                     lambda d: (
                         (field := d.find_element(By.CSS_SELECTOR, "input[class*='fleet-operations-pwa__text-input__']"))
                         and field.is_displayed()
@@ -344,7 +346,7 @@ class SeleniumLoginFlow:
             # Click Submit button (Compass-specific selector)
             # Selector from working code: //button[.//span[normalize-space()='Submit']]
             self.logger.debug("[LOGIN][WWID] Looking for Submit button...")
-            submit_button = WebDriverWait(self.driver, 10, poll_frequency=0.5).until(
+            submit_button = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                 EC.element_to_be_clickable((By.XPATH, "//button[.//span[normalize-space()='Submit']]"))
             )
             submit_button.click()
@@ -379,7 +381,7 @@ class SeleniumLoginFlow:
         """Verify login succeeded by checking for domain in URL."""
         try:
             # Wait for URL to change to expected domain
-            WebDriverWait(self.driver, 10, poll_frequency=0.5).until(
+            WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                 lambda d: expected_domain in d.current_url
             )
             self.logger.debug(f"[LOGIN][VERIFY] Successfully redirected to: {self.driver.current_url}")

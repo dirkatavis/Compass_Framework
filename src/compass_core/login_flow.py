@@ -20,7 +20,7 @@ class LoginFlow(Protocol):
         self,
         username: str,
         password: str,
-        login_url: str,
+        url: str,
         **kwargs
     ) -> Dict[str, Any]:
         """
@@ -29,7 +29,7 @@ class LoginFlow(Protocol):
         Args:
             username: User email or username
             password: User password
-            login_url: Login page URL (SSO entry point)
+            url: Target URL (app URL for smart flows, login URL for direct flows)
             **kwargs: Provider-specific parameters (e.g., login_id, tenant_id)
         
         Returns:

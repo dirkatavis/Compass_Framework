@@ -58,7 +58,7 @@ class TestSeleniumVehicleDataActions(unittest.TestCase):
         
         result = self.actions.enter_mva("50227203")
         
-        self.assertEqual(result['status'], 'ok')
+        self.assertEqual(result['status'], 'success')
         self.assertEqual(result['mva'], "50227203")
         mock_input.send_keys.assert_called()
     

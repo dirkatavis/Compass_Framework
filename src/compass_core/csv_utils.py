@@ -59,7 +59,7 @@ def read_mva_list(csv_path: str, normalize: bool = True) -> List[str]:
     try:
         with open(csv_path, newline='', encoding='utf-8') as f:
             reader = csv.reader(f)
-            rows = [row[0] for row in reader if row]  # Get first column, skip empty rows
+            rows = [row[0] for row in reader if row and len(row) > 0]  # Get first column, skip empty rows
             
             # Skip header if present
             if rows and (rows[0].startswith('#') or rows[0].lower().startswith('mva')):

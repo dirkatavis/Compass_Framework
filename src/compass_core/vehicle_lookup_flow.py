@@ -81,9 +81,8 @@ class VehicleLookupFlow:
                 - output_file: str (CSV output path)
                 - username: str
                 - password: str
-                - login_url: str
+                - app_url: str (application URL - SmartLoginFlow will handle SSO detection)
                 - login_id: str (optional)
-                - verify_domain: str (optional - for login verification)
                 - properties: List[str] (optional, default: ["VIN", "Desc"])
                 - timeout: int (optional, default: 12)
         
@@ -105,14 +104,14 @@ class VehicleLookupFlow:
             # Extract parameters
             username = params.get('username')
             password = params.get('password')
-            login_url = params.get('login_url')
+            app_url = params.get('app_url')
             output_file = params.get('output_file')
             properties = params.get('properties', ['VIN', 'Desc'])
             timeout = params.get('timeout', 12)
             
             # Validate required parameters
-            if not all([username, password, login_url, output_file]):
-                missing = [k for k in ['username', 'password', 'login_url', 'output_file'] if not params.get(k)]
+            if not all([username, password, app_url, output_file]):
+                missing = [k for k in ['username', 'password', 'app_url', 'output_file'] if not params.get(k)]
                 error_msg = f"Missing required parameters: {', '.join(missing)}"
                 self.logger.error(f"[WORKFLOW] {error_msg}")
                 return {
@@ -121,14 +120,13 @@ class VehicleLookupFlow:
                     "summary": "Workflow validation failed"
                 }
             
-            # STEP 1: Authenticate
+            # STEP 1: Authenticate (using url, SmartLoginFlow will handle SSO detection)
             self.logger.info("STEP 1: Authentication")
             auth_result = self.login_flow.authenticate(
                 username=username,
                 password=password,
-                login_url=login_url,
+                url=app_url,
                 login_id=params.get('login_id'),
-                verify_domain=params.get('verify_domain'),
                 timeout=timeout
             )
             
@@ -187,15 +185,18 @@ class VehicleLookupFlow:
                         continue
                     
                     # Verify echo
-                    echo_result = self.vehicle_actions.verify_mva_echo(mva, timeout=5)
-                    if echo_result.get("status") != "success":
-                        self.logger.warning(f"  MVA echo verification failed: {echo_result.get('error')}")
+                    echo_verified = self.vehicle_actions.verify_mva_echo(mva, timeout=5)
+                    if not echo_verified:
+                        self.logger.warning(f"  MVA echo verification failed")
                     
                     # Get properties
                     result = {"mva": mva}
                     for prop in properties:
-                        prop_result = self.vehicle_actions.wait_for_property_loaded(prop, timeout=timeout)
-                        value = prop_result.get("value", "N/A") if prop_result.get("status") == "success" else "N/A"
+                        # wait_for_property_loaded returns bool, then get the value
+                        if self.vehicle_actions.wait_for_property_loaded(prop, timeout=timeout):
+                            value = self.vehicle_actions.get_vehicle_property(prop, timeout=2) or "N/A"
+                        else:
+                            value = "N/A"
                         result[prop.lower()] = value
                         self.logger.debug(f"  {prop}: {value}")
                     
