@@ -110,7 +110,7 @@ class TestLoginReadFirstMvaE2E(unittest.TestCase):
         
         # Step 2: Create MVA collection with test MVAs
         self.logger.info("\n[STEP 2] Creating MVA collection...")
-        test_mvas = ['50227203']  # Happy path: use only valid MVA
+        test_mvas = ['50227203']  # Happy path: process single valid MVA
         collection = MvaCollection.from_list(test_mvas)
         
         self.logger.info(f"Created collection with {len(collection)} MVAs: {test_mvas}")
@@ -185,7 +185,7 @@ class TestLoginReadFirstMvaE2E(unittest.TestCase):
         self.logger.info(f"Progress: {collection.progress_percentage:.1f}%")
         
         self.assertEqual(collection.completed_count, 1, "Should have 1 completed MVA")
-        self.assertEqual(collection.pending_count, 2, "Should have 2 pending MVAs")
+        self.assertEqual(collection.pending_count, 0, "Should have 0 pending MVAs")
         
         self.logger.info("\n✅ E2E Test PASSED: Login + MVA Entry + Property Page Wait Complete!")
 
