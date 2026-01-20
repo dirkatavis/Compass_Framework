@@ -351,7 +351,7 @@ class SeleniumVehicleDataActions(VehicleDataActions):
         self._logger.info(f"[PROPERTY_PAGE] Waiting for property page with MVA: {mva_to_find}")
         
         def mva_in_properties(driver):
-            """Check if MVA appears in property section."""
+            """Check if MVA appears in property section with exact match."""
             try:
                 # Look for MVA text in the property section
                 # Try multiple selectors that might contain the MVA
@@ -365,8 +365,11 @@ class SeleniumVehicleDataActions(VehicleDataActions):
                     try:
                         element = driver.find_element(By.XPATH, selector)
                         if element and element.is_displayed():
-                            self._logger.debug(f"[PROPERTY_PAGE] Found MVA in property section using selector: {selector[:50]}...")
-                            return True
+                            # Verify the element text contains our exact MVA, not a different one
+                            element_text = element.text.strip()
+                            if mva_to_find in element_text:
+                                self._logger.debug(f"[PROPERTY_PAGE] Found MVA '{mva_to_find}' in element text: '{element_text[:50]}'")
+                                return True
                     except NoSuchElementException:
                         continue
                         

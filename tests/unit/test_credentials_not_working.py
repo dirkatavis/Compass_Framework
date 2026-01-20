@@ -12,9 +12,10 @@ from compass_core import IniConfiguration
 class TestCredentialReadingNotImplemented(unittest.TestCase):
     """Test that should FAIL to demonstrate missing credential support."""
     
+    @unittest.expectedFailure
     def test_read_credentials_from_local_config(self):
         """
-        This test SHOULD FAIL.
+        This test SHOULD FAIL (marked as expectedFailure).
         
         It demonstrates that IniConfiguration doesn't actually read
         the [credentials] and [app] sections from webdriver.ini.local yet.
@@ -47,9 +48,10 @@ class TestCredentialReadingNotImplemented(unittest.TestCase):
         print(f"  password: {'*' * len(password) if password else None}")
         print(f"  login_id: {login_id}")
     
+    @unittest.expectedFailure
     def test_read_app_urls_from_local_config(self):
         """
-        This test SHOULD FAIL.
+        This test SHOULD FAIL (marked as expectedFailure).
         
         It demonstrates that IniConfiguration doesn't read
         the [app] section yet.
