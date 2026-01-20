@@ -139,6 +139,50 @@ class TestSeleniumVehicleDataActions(unittest.TestCase):
         for method_name in required_methods:
             self.assertTrue(hasattr(self.actions, method_name))
             self.assertTrue(callable(getattr(self.actions, method_name)))
+    
+    def test_wait_for_property_page_loaded_element_found(self):
+        """Test wait_for_property_page_loaded when element with MVA is found (TDD)."""
+        from selenium.common.exceptions import NoSuchElementException
+        
+        # Mock element containing the MVA
+        mock_element = Mock()
+        mock_element.text = "50227203"
+        mock_element.is_displayed = Mock(return_value=True)
+        
+        # Mock driver.find_element to return the element
+        self.mock_driver.find_element = Mock(return_value=mock_element)
+        
+        result = self.actions.wait_for_property_page_loaded("50227203", timeout=2)
+        
+        self.assertTrue(result)
+        self.mock_driver.find_element.assert_called()
+    
+    def test_wait_for_property_page_loaded_element_not_found_timeout(self):
+        """Test wait_for_property_page_loaded when element never appears (timeout) (TDD)."""
+        from selenium.common.exceptions import NoSuchElementException, TimeoutException
+        
+        # Mock driver.find_element to always raise NoSuchElementException (element never appears)
+        self.mock_driver.find_element = Mock(side_effect=NoSuchElementException("Element not found"))
+        
+        result = self.actions.wait_for_property_page_loaded("50227203", timeout=1)
+        
+        self.assertFalse(result)
+        # Should have attempted multiple times due to polling
+        self.assertGreater(self.mock_driver.find_element.call_count, 1)
+    
+    def test_wait_for_property_page_loaded_wrong_mva_text(self):
+        """Test wait_for_property_page_loaded when element found but contains wrong MVA (TDD)."""
+        # Mock element but with different MVA text
+        mock_element = Mock()
+        mock_element.text = "99999999"  # Wrong MVA
+        mock_element.is_displayed = Mock(return_value=True)
+        
+        self.mock_driver.find_element = Mock(return_value=mock_element)
+        
+        result = self.actions.wait_for_property_page_loaded("50227203", timeout=1)
+        
+        # Should timeout because MVA doesn't match
+        self.assertFalse(result)
 
 
 if __name__ == '__main__':

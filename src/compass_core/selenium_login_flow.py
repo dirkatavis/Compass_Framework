@@ -209,14 +209,15 @@ class SeleniumLoginFlow:
             
             if not password_field.is_displayed() or not password_field.is_enabled():
                 self.logger.warning("[LOGIN][PASSWORD] Field not ready, waiting...")
-                password_field = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
+                WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                     lambda d: (
                         (field := d.find_element(By.CSS_SELECTOR, 'input[type="password"], input[name="passwd"]'))
                         and field.is_displayed()
                         and field.is_enabled()
-                        and field
                     )
                 )
+                # Re-find element to avoid stale reference
+                password_field = self.driver.find_element(By.CSS_SELECTOR, 'input[type="password"], input[name="passwd"]')
             
             password_field.clear()
             password_field.send_keys(password)

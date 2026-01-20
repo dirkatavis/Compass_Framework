@@ -1,0 +1,918 @@
+2026-01-19 17:02:34,595 - vehicle_lookup_client - INFO - ============================================================
+2026-01-19 17:02:34,596 - vehicle_lookup_client - INFO - Vehicle Lookup Client - Glass Info Retrieval
+2026-01-19 17:02:34,597 - vehicle_lookup_client - INFO - ============================================================
+2026-01-19 17:02:34,598 - vehicle_lookup_client - INFO - Loading configuration from: ../../webdriver.ini.local
+2026-01-19 17:02:34,600 - vehicle_lookup_client - INFO - Reading MVA list from: ../../data/sample_mva_list.csv
+2026-01-19 17:02:34,602 - compass_core.csv_utils - INFO - [CSV] Read 4 MVAs from: ../../data/sample_mva_list.csv
+2026-01-19 17:02:34,603 - vehicle_lookup_client - INFO - Found 4 MVAs to process
+2026-01-19 17:02:34,604 - vehicle_lookup_client - INFO - Initializing browser...
+2026-01-19 17:02:34,792 - compass_core.standard_driver_manager - INFO - [DRIVER] Detected Browser=144.0.3719.82, Driver=144.0.3719.82
+2026-01-19 17:02:34,792 - compass_core.standard_driver_manager - INFO - [DRIVER] Launching Edge - Browser 144.0.3719.82, Driver 144.0.3719.82
+2026-01-19 17:02:34,793 - compass_core.standard_driver_manager - INFO - [DRIVER] InPrivate mode enabled
+2026-01-19 17:02:34,795 - selenium.webdriver.common.driver_finder - DEBUG - Skipping Selenium Manager; path to MicrosoftEdge driver specified in Service class: C:\Temp\Code\Compass_Framework\drivers.local\msedgedriver.exe
+2026-01-19 17:02:34,825 - selenium.webdriver.common.service - DEBUG - Started executable: `C:\Temp\Code\Compass_Framework\drivers.local\msedgedriver.exe` in a child process with pid: 11324 using 0 to output -3
+2026-01-19 17:02:35,371 - selenium.webdriver.remote.remote_connection - DEBUG - POST http://localhost:57624/session {'capabilities': {'firstMatch': [{}], 'alwaysMatch': {'browserName': 'MicrosoftEdge', 'pageLoadStrategy': <PageLoadStrategy.normal: 'normal'>, 'ms:edgeOptions': {'prefs': {'profile.default_content_setting_values.geolocation': 2}, 'excludeSwitches': ['enable-automation'], 'useAutomationExtension': False, 'extensions': [], 'args': ['--start-maximized', '--disable-blink-features=AutomationControlled', '--inprivate']}}}}
+2026-01-19 17:02:35,372 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:57624
+2026-01-19 17:02:38,445 - urllib3.connectionpool - DEBUG - http://localhost:57624 "POST /session HTTP/1.1" 200 0
+2026-01-19 17:02:38,531 - selenium.webdriver.remote.remote_connection - DEBUG - Remote response: status=200 | data={"value":{"capabilities":{"acceptInsecureCerts":false,"browserName":"MicrosoftEdge","browserVersion":"144.0.3719.82","fedcm:accounts":true,"goog:processID":6012,"ms:edgeOptions":{"debuggerAddress":"localhost:57627"},"msedge":{"msedgedriverVersion":"144.0.3719.82 (f6f6e1fcd9e657331ac288db133ef45210223f60)","userDataDir":"C:\\Users\\howardon\\AppData\\Local\\Temp\\scoped_dir11324_969333254"},"networkConnectionEnabled":false,"pageLoadStrategy":"normal","platformName":"windows","proxy":{},"setWindowRect":true,"strictFileInteractability":false,"timeouts":{"implicit":0,"pageLoad":300000,"script":30000},"unhandledPromptBehavior":"dismiss and notify","webauthn:extension:credBlob":true,"webauthn:extension:largeBlob":true,"webauthn:extension:minPinLength":true,"webauthn:extension:prf":true,"webauthn:virtualAuthenticators":true},"sessionId":"5f21b02ee5be2d4f692987aedc1726df"}} | headers=HTTPHeaderDict({'Content-Length': '878', 'Content-Type': 'application/json; charset=utf-8', 'cache-control': 'no-cache'})
+2026-01-19 17:02:38,666 - selenium.webdriver.remote.remote_connection - DEBUG - Finished Request
+2026-01-19 17:02:38,709 - selenium.webdriver.remote.remote_connection - DEBUG - POST http://localhost:57624/session/5f21b02ee5be2d4f692987aedc1726df/window/maximize {}
+2026-01-19 17:02:39,174 - urllib3.connectionpool - DEBUG - http://localhost:57624 "POST /session/5f21b02ee5be2d4f692987aedc1726df/window/maximize HTTP/1.1" 200 0
+2026-01-19 17:02:39,253 - selenium.webdriver.remote.remote_connection - DEBUG - Remote response: status=200 | data={"value":{"height":1056,"width":1936,"x":-8,"y":-8}} | headers=HTTPHeaderDict({'Content-Length': '52', 'Content-Type': 'application/json; charset=utf-8', 'cache-control': 'no-cache'})
+2026-01-19 17:02:39,255 - selenium.webdriver.remote.remote_connection - DEBUG - Finished Request
+2026-01-19 17:02:39,346 - selenium.webdriver.remote.remote_connection - DEBUG - POST http://localhost:57624/session/5f21b02ee5be2d4f692987aedc1726df/timeouts {'implicit': 10000}
+2026-01-19 17:02:39,511 - urllib3.connectionpool - DEBUG - http://localhost:57624 "POST /session/5f21b02ee5be2d4f692987aedc1726df/timeouts HTTP/1.1" 200 0
+2026-01-19 17:02:39,515 - selenium.webdriver.remote.remote_connection - DEBUG - Remote response: status=200 | data={"value":null} | headers=HTTPHeaderDict({'Content-Length': '14', 'Content-Type': 'application/json; charset=utf-8', 'cache-control': 'no-cache'})
+2026-01-19 17:02:39,518 - selenium.webdriver.remote.remote_connection - DEBUG - Finished Request
+2026-01-19 17:02:39,521 - vehicle_lookup_client - ERROR - Fatal error: SeleniumNavigator.__init__() got an unexpected keyword argument 'logger'
+Traceback (most recent call last):
+  File "C:\Temp\Code\Compass_Framework\clients\vehicle_lookup\main.py", line 98, in main
+    navigator = SeleniumNavigator(driver, logger=logger)
+TypeError: SeleniumNavigator.__init__() got an unexpected keyword argument 'logger'
+2026-01-19 17:02:39,526 - vehicle_lookup_client - INFO - Closing browser...
+2026-01-19 17:02:39,533 - compass_core.standard_driver_manager - INFO - [DRIVER] Quitting Edge WebDriver...
+2026-01-19 17:02:39,536 - selenium.webdriver.remote.remote_connection - DEBUG - DELETE http://localhost:57624/session/5f21b02ee5be2d4f692987aedc1726df {}
+2026-01-19 17:02:41,667 - urllib3.connectionpool - DEBUG - http://localhost:57624 "DELETE /session/5f21b02ee5be2d4f692987aedc1726df HTTP/1.1" 200 0
+2026-01-19 17:02:41,668 - selenium.webdriver.remote.remote_connection - DEBUG - Remote response: status=200 | data={"value":null} | headers=HTTPHeaderDict({'Content-Length': '14', 'Content-Type': 'application/json; charset=utf-8', 'cache-control': 'no-cache'})
+2026-01-19 17:02:41,669 - selenium.webdriver.remote.remote_connection - DEBUG - Finished Request
+2026-01-19 17:03:02,798 - vehicle_lookup_client - INFO - ============================================================
+2026-01-19 17:03:02,799 - vehicle_lookup_client - INFO - Vehicle Lookup Client - Glass Info Retrieval
+2026-01-19 17:03:02,799 - vehicle_lookup_client - INFO - ============================================================
+2026-01-19 17:03:02,800 - vehicle_lookup_client - INFO - Loading configuration from: ../../webdriver.ini.local
+2026-01-19 17:03:02,802 - vehicle_lookup_client - INFO - Reading MVA list from: ../../data/sample_mva_list.csv
+2026-01-19 17:03:02,803 - compass_core.csv_utils - INFO - [CSV] Read 4 MVAs from: ../../data/sample_mva_list.csv
+2026-01-19 17:03:02,804 - vehicle_lookup_client - INFO - Found 4 MVAs to process
+2026-01-19 17:03:02,806 - vehicle_lookup_client - INFO - Initializing browser...
+2026-01-19 17:03:02,956 - compass_core.standard_driver_manager - INFO - [DRIVER] Detected Browser=144.0.3719.82, Driver=144.0.3719.82
+2026-01-19 17:03:02,957 - compass_core.standard_driver_manager - INFO - [DRIVER] Launching Edge - Browser 144.0.3719.82, Driver 144.0.3719.82
+2026-01-19 17:03:02,958 - compass_core.standard_driver_manager - INFO - [DRIVER] InPrivate mode enabled
+2026-01-19 17:03:06,454 - vehicle_lookup_client - INFO - Performing authentication...
+2026-01-19 17:03:06,487 - vehicle_lookup_client - ERROR - Fatal error: 'wwid'
+Traceback (most recent call last):
+  File "C:\Temp\Code\Compass_Framework\clients\vehicle_lookup\main.py", line 108, in main
+    wwid=config_data['credentials']['wwid'],
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+KeyError: 'wwid'
+2026-01-19 17:03:06,565 - vehicle_lookup_client - INFO - Closing browser...
+2026-01-19 17:03:06,590 - compass_core.standard_driver_manager - INFO - [DRIVER] Quitting Edge WebDriver...
+2026-01-19 17:04:04,762 - vehicle_lookup_client - INFO - ============================================================
+2026-01-19 17:04:04,763 - vehicle_lookup_client - INFO - Vehicle Lookup Client - Glass Info Retrieval
+2026-01-19 17:04:04,764 - vehicle_lookup_client - INFO - ============================================================
+2026-01-19 17:04:04,764 - vehicle_lookup_client - INFO - Loading configuration from: ../../webdriver.ini.local
+2026-01-19 17:04:04,766 - vehicle_lookup_client - INFO - Reading MVA list from: ../../data/sample_mva_list.csv
+2026-01-19 17:04:04,768 - compass_core.csv_utils - INFO - [CSV] Read 4 MVAs from: ../../data/sample_mva_list.csv
+2026-01-19 17:04:04,768 - vehicle_lookup_client - INFO - Found 4 MVAs to process
+2026-01-19 17:04:04,770 - vehicle_lookup_client - INFO - Initializing browser...
+2026-01-19 17:04:04,926 - compass_core.standard_driver_manager - INFO - [DRIVER] Detected Browser=144.0.3719.82, Driver=144.0.3719.82
+2026-01-19 17:04:04,927 - compass_core.standard_driver_manager - INFO - [DRIVER] Launching Edge - Browser 144.0.3719.82, Driver 144.0.3719.82
+2026-01-19 17:04:04,928 - compass_core.standard_driver_manager - INFO - [DRIVER] InPrivate mode enabled
+2026-01-19 17:04:09,145 - vehicle_lookup_client - INFO - Performing authentication...
+2026-01-19 17:04:09,153 - vehicle_lookup_client - ERROR - Fatal error: SmartLoginFlow.__init__() got an unexpected keyword argument 'username'
+Traceback (most recent call last):
+  File "C:\Temp\Code\Compass_Framework\clients\vehicle_lookup\main.py", line 103, in main
+    login_flow = SmartLoginFlow(
+        driver=driver,
+    ...<5 lines>...
+        logger=logger
+    )
+TypeError: SmartLoginFlow.__init__() got an unexpected keyword argument 'username'
+2026-01-19 17:04:09,161 - vehicle_lookup_client - INFO - Closing browser...
+2026-01-19 17:04:09,163 - compass_core.standard_driver_manager - INFO - [DRIVER] Quitting Edge WebDriver...
+2026-01-19 17:05:27,575 - vehicle_lookup_client - INFO - ============================================================
+2026-01-19 17:05:27,575 - vehicle_lookup_client - INFO - Vehicle Lookup Client - Glass Info Retrieval
+2026-01-19 17:05:27,576 - vehicle_lookup_client - INFO - ============================================================
+2026-01-19 17:05:27,576 - vehicle_lookup_client - INFO - Loading configuration from: ../../webdriver.ini.local
+2026-01-19 17:05:27,578 - vehicle_lookup_client - INFO - Reading MVA list from: ../../data/sample_mva_list.csv
+2026-01-19 17:05:27,579 - compass_core.csv_utils - INFO - [CSV] Read 4 MVAs from: ../../data/sample_mva_list.csv
+2026-01-19 17:05:27,579 - vehicle_lookup_client - INFO - Found 4 MVAs to process
+2026-01-19 17:05:27,580 - vehicle_lookup_client - INFO - Initializing browser...
+2026-01-19 17:05:27,726 - compass_core.standard_driver_manager - INFO - [DRIVER] Detected Browser=144.0.3719.82, Driver=144.0.3719.82
+2026-01-19 17:05:27,726 - compass_core.standard_driver_manager - INFO - [DRIVER] Launching Edge - Browser 144.0.3719.82, Driver 144.0.3719.82
+2026-01-19 17:05:27,727 - compass_core.standard_driver_manager - INFO - [DRIVER] InPrivate mode enabled
+2026-01-19 17:05:31,397 - vehicle_lookup_client - INFO - Performing authentication...
+2026-01-19 17:05:31,443 - vehicle_lookup_client - ERROR - Fatal error: SeleniumLoginFlow.__init__() got an unexpected keyword argument 'username'
+Traceback (most recent call last):
+  File "C:\Temp\Code\Compass_Framework\clients\vehicle_lookup\main.py", line 106, in main
+    base_login = SeleniumLoginFlow(
+        driver=driver,
+    ...<3 lines>...
+        logger=logger
+    )
+TypeError: SeleniumLoginFlow.__init__() got an unexpected keyword argument 'username'
+2026-01-19 17:05:31,533 - vehicle_lookup_client - INFO - Closing browser...
+2026-01-19 17:05:31,588 - compass_core.standard_driver_manager - INFO - [DRIVER] Quitting Edge WebDriver...
+2026-01-19 17:06:34,402 - vehicle_lookup_client - INFO - ============================================================
+2026-01-19 17:06:34,402 - vehicle_lookup_client - INFO - Vehicle Lookup Client - Glass Info Retrieval
+2026-01-19 17:06:34,403 - vehicle_lookup_client - INFO - ============================================================
+2026-01-19 17:06:34,403 - vehicle_lookup_client - INFO - Loading configuration from: ../../webdriver.ini.local
+2026-01-19 17:06:34,405 - vehicle_lookup_client - INFO - Reading MVA list from: ../../data/sample_mva_list.csv
+2026-01-19 17:06:34,407 - compass_core.csv_utils - INFO - [CSV] Read 4 MVAs from: ../../data/sample_mva_list.csv
+2026-01-19 17:06:34,407 - vehicle_lookup_client - INFO - Found 4 MVAs to process
+2026-01-19 17:06:34,408 - vehicle_lookup_client - INFO - Initializing browser...
+2026-01-19 17:06:34,602 - compass_core.standard_driver_manager - INFO - [DRIVER] Detected Browser=144.0.3719.82, Driver=144.0.3719.82
+2026-01-19 17:06:34,603 - compass_core.standard_driver_manager - INFO - [DRIVER] Launching Edge - Browser 144.0.3719.82, Driver 144.0.3719.82
+2026-01-19 17:06:34,603 - compass_core.standard_driver_manager - INFO - [DRIVER] InPrivate mode enabled
+2026-01-19 17:06:37,881 - vehicle_lookup_client - INFO - Performing authentication...
+2026-01-19 17:06:38,050 - vehicle_lookup_client - INFO - [SMART_AUTH] Starting smart authentication for: xe96693@co.abg.com
+2026-01-19 17:06:38,309 - vehicle_lookup_client - INFO - [SMART_AUTH] Target app URL: https://avisbudget.palantirfoundry.com/workspace/fleet-operations-pwa/health
+2026-01-19 17:06:44,627 - vehicle_lookup_client - INFO - [SMART_AUTH] Login page detected, performing authentication
+2026-01-19 17:06:44,628 - vehicle_lookup_client - INFO - [LOGIN] Starting authentication flow for: xe96693@co.abg.com
+2026-01-19 17:06:44,998 - vehicle_lookup_client - WARNING - [LOGIN][PASSWORD] Field not ready, waiting...
+2026-01-19 17:06:50,679 - vehicle_lookup_client - INFO - [LOGIN][STAY_SIGNED_IN] Clicked 'No' on Stay signed in prompt
+2026-01-19 17:06:52,752 - vehicle_lookup_client - INFO - [LOGIN][WWID] Looking for WWID input field...
+2026-01-19 17:06:55,570 - vehicle_lookup_client - WARNING - [LOGIN][WWID] Field not ready, waiting...
+2026-01-19 17:06:56,478 - vehicle_lookup_client - INFO - [LOGIN][WWID] Entered WWID: e96693
+2026-01-19 17:06:56,591 - vehicle_lookup_client - INFO - [LOGIN][WWID] Clicked Submit button
+2026-01-19 17:06:58,601 - vehicle_lookup_client - INFO - [LOGIN][WWID] After submit, current URL: https://avisbudget.palantirfoundry.com/workspace/fleet-operations-pwa/health
+2026-01-19 17:06:58,601 - vehicle_lookup_client - INFO - [LOGIN] Authentication successful for: xe96693@co.abg.com
+2026-01-19 17:06:58,602 - vehicle_lookup_client - INFO - [SMART_AUTH] Authentication successful: Authenticated successfully as xe96693@co.abg.com
+2026-01-19 17:06:58,615 - vehicle_lookup_client - INFO - 
+Processing 4 MVAs...
+2026-01-19 17:06:58,615 - vehicle_lookup_client - INFO - 
+[1/4] Processing MVA: 50227203
+2026-01-19 17:07:09,637 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 50227203
+2026-01-19 17:07:13,249 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 50227203
+2026-01-19 17:07:13,271 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 50227203
+2026-01-19 17:07:13,377 - vehicle_lookup_client - INFO -   Progress: 25.0%
+2026-01-19 17:07:13,379 - vehicle_lookup_client - INFO - 
+[2/4] Processing MVA: 12345678
+2026-01-19 17:07:24,746 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 12345678
+2026-01-19 17:07:34,817 - vehicle_lookup_client - INFO - 
+[3/4] Processing MVA: 98765432
+2026-01-19 17:07:45,815 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 98765432
+2026-01-19 17:07:55,888 - vehicle_lookup_client - INFO - 
+[4/4] Processing MVA: 11223344
+2026-01-19 17:08:06,867 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 11223344
+2026-01-19 17:08:16,913 - vehicle_lookup_client - INFO - 
+Writing results to: GlassInfo.csv
+2026-01-19 17:08:16,914 - vehicle_lookup_client - ERROR - Fatal error: _path_normpath: path should be string, bytes or os.PathLike, not list
+Traceback (most recent call last):
+  File "C:\Temp\Code\Compass_Framework\clients\vehicle_lookup\main.py", line 172, in main
+    write_results_csv(str(output_path), results)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Temp\Code\Compass_Framework\src\compass_core\csv_utils.py", line 109, in write_results_csv
+    abs_path = os.path.abspath(output_path)
+  File "<frozen ntpath>", line 576, in abspath
+TypeError: _path_normpath: path should be string, bytes or os.PathLike, not list
+2026-01-19 17:08:16,918 - vehicle_lookup_client - INFO - Closing browser...
+2026-01-19 17:08:16,919 - compass_core.standard_driver_manager - INFO - [DRIVER] Quitting Edge WebDriver...
+2026-01-20 06:15:54,075 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:15:54,076 - vehicle_lookup_client - INFO - Vehicle Lookup Client - Glass Info Retrieval
+2026-01-20 06:15:54,077 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:15:54,077 - vehicle_lookup_client - INFO - Loading configuration from: ../../webdriver.ini.local
+2026-01-20 06:15:54,081 - vehicle_lookup_client - INFO - Reading MVA list from: ../../data/sample_mva_list.csv
+2026-01-20 06:15:54,084 - compass_core.csv_utils - INFO - [CSV] Read 12 MVAs from: ../../data/sample_mva_list.csv
+2026-01-20 06:15:54,085 - vehicle_lookup_client - INFO - Found 12 MVAs to process
+2026-01-20 06:15:54,086 - vehicle_lookup_client - INFO - Initializing browser...
+2026-01-20 06:15:54,355 - compass_core.standard_driver_manager - INFO - [DRIVER] Detected Browser=144.0.3719.82, Driver=144.0.3719.82
+2026-01-20 06:15:54,356 - compass_core.standard_driver_manager - INFO - [DRIVER] Launching Edge - Browser 144.0.3719.82, Driver 144.0.3719.82
+2026-01-20 06:15:54,357 - compass_core.standard_driver_manager - INFO - [DRIVER] InPrivate mode enabled
+2026-01-20 06:16:00,249 - vehicle_lookup_client - INFO - Performing authentication...
+2026-01-20 06:16:00,251 - vehicle_lookup_client - INFO - [SMART_AUTH] Starting smart authentication for: xe96693@co.abg.com
+2026-01-20 06:16:00,255 - vehicle_lookup_client - INFO - [SMART_AUTH] Target app URL: https://avisbudget.palantirfoundry.com/workspace/fleet-operations-pwa/health
+2026-01-20 06:16:05,440 - vehicle_lookup_client - INFO - [SMART_AUTH] Login page detected, performing authentication
+2026-01-20 06:16:05,441 - vehicle_lookup_client - INFO - [LOGIN] Starting authentication flow for: xe96693@co.abg.com
+2026-01-20 06:16:05,830 - vehicle_lookup_client - WARNING - [LOGIN][PASSWORD] Field not ready, waiting...
+2026-01-20 06:16:06,857 - vehicle_lookup_client - ERROR - [LOGIN][PASSWORD] Error entering password: Message: stale element reference: stale element not found in the current frame
+  (Session info: MicrosoftEdge=144.0.3719.82); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#staleelementreferenceexception
+Stacktrace:
+Symbols not available. Dumping unresolved backtrace:
+	0x7ff607885ab5
+	0x7ff607885b14
+	0x7ff607bd2844
+	0x7ff6075e4089
+	0x7ff6075e67ac
+	0x7ff60766325b
+	0x7ff6076475ea
+	0x7ff60761d6b7
+	0x7ff6076628f7
+	0x7ff60761cbcc
+	0x7ff60761be26
+	0x7ff60761c9f3
+	0x7ff6076e0214
+	0x7ff6076dc685
+	0x7ff6076ece73
+	0x7ff6078a0de8
+	0x7ff6078a96b6
+	0x7ff60788d194
+	0x7ff60788d2d9
+	0x7ff60787b172
+	0x7ffd50077374
+	0x7ffd50bdcc91
+
+2026-01-20 06:16:06,863 - vehicle_lookup_client - ERROR - [SMART_AUTH] Authentication failed: Message: stale element reference: stale element not found in the current frame
+  (Session info: MicrosoftEdge=144.0.3719.82); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#staleelementreferenceexception
+Stacktrace:
+Symbols not available. Dumping unresolved backtrace:
+	0x7ff607885ab5
+	0x7ff607885b14
+	0x7ff607bd2844
+	0x7ff6075e4089
+	0x7ff6075e67ac
+	0x7ff60766325b
+	0x7ff6076475ea
+	0x7ff60761d6b7
+	0x7ff6076628f7
+	0x7ff60761cbcc
+	0x7ff60761be26
+	0x7ff60761c9f3
+	0x7ff6076e0214
+	0x7ff6076dc685
+	0x7ff6076ece73
+	0x7ff6078a0de8
+	0x7ff6078a96b6
+	0x7ff60788d194
+	0x7ff60788d2d9
+	0x7ff60787b172
+	0x7ffd50077374
+	0x7ffd50bdcc91
+
+2026-01-20 06:16:06,878 - vehicle_lookup_client - ERROR - Login failed: Message: stale element reference: stale element not found in the current frame
+  (Session info: MicrosoftEdge=144.0.3719.82); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#staleelementreferenceexception
+Stacktrace:
+Symbols not available. Dumping unresolved backtrace:
+	0x7ff607885ab5
+	0x7ff607885b14
+	0x7ff607bd2844
+	0x7ff6075e4089
+	0x7ff6075e67ac
+	0x7ff60766325b
+	0x7ff6076475ea
+	0x7ff60761d6b7
+	0x7ff6076628f7
+	0x7ff60761cbcc
+	0x7ff60761be26
+	0x7ff60761c9f3
+	0x7ff6076e0214
+	0x7ff6076dc685
+	0x7ff6076ece73
+	0x7ff6078a0de8
+	0x7ff6078a96b6
+	0x7ff60788d194
+	0x7ff60788d2d9
+	0x7ff60787b172
+	0x7ffd50077374
+	0x7ffd50bdcc91
+
+2026-01-20 06:16:06,892 - vehicle_lookup_client - INFO - Closing browser...
+2026-01-20 06:16:06,899 - compass_core.standard_driver_manager - INFO - [DRIVER] Quitting Edge WebDriver...
+2026-01-20 06:16:40,829 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:16:40,830 - vehicle_lookup_client - INFO - Vehicle Lookup Client - Glass Info Retrieval
+2026-01-20 06:16:40,830 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:16:40,830 - vehicle_lookup_client - INFO - Loading configuration from: ../../webdriver.ini.local
+2026-01-20 06:16:40,832 - vehicle_lookup_client - INFO - Reading MVA list from: ../../data/sample_mva_list.csv
+2026-01-20 06:16:40,833 - compass_core.csv_utils - INFO - [CSV] Read 12 MVAs from: ../../data/sample_mva_list.csv
+2026-01-20 06:16:40,834 - vehicle_lookup_client - INFO - Found 12 MVAs to process
+2026-01-20 06:16:40,834 - vehicle_lookup_client - INFO - Initializing browser...
+2026-01-20 06:16:41,024 - compass_core.standard_driver_manager - INFO - [DRIVER] Detected Browser=144.0.3719.82, Driver=144.0.3719.82
+2026-01-20 06:16:41,024 - compass_core.standard_driver_manager - INFO - [DRIVER] Launching Edge - Browser 144.0.3719.82, Driver 144.0.3719.82
+2026-01-20 06:16:41,025 - compass_core.standard_driver_manager - INFO - [DRIVER] InPrivate mode enabled
+2026-01-20 06:16:45,407 - vehicle_lookup_client - INFO - Performing authentication...
+2026-01-20 06:16:45,474 - vehicle_lookup_client - INFO - [SMART_AUTH] Starting smart authentication for: xe96693@co.abg.com
+2026-01-20 06:16:45,595 - vehicle_lookup_client - INFO - [SMART_AUTH] Target app URL: https://avisbudget.palantirfoundry.com/workspace/fleet-operations-pwa/health
+2026-01-20 06:16:51,785 - vehicle_lookup_client - INFO - [SMART_AUTH] Login page detected, performing authentication
+2026-01-20 06:16:51,785 - vehicle_lookup_client - INFO - [LOGIN] Starting authentication flow for: xe96693@co.abg.com
+2026-01-20 06:16:52,097 - vehicle_lookup_client - WARNING - [LOGIN][PASSWORD] Field not ready, waiting...
+2026-01-20 06:16:57,662 - vehicle_lookup_client - INFO - [LOGIN][STAY_SIGNED_IN] Clicked 'No' on Stay signed in prompt
+2026-01-20 06:16:59,675 - vehicle_lookup_client - INFO - [LOGIN][WWID] Looking for WWID input field...
+2026-01-20 06:17:02,667 - vehicle_lookup_client - WARNING - [LOGIN][WWID] Field not ready, waiting...
+2026-01-20 06:17:03,371 - vehicle_lookup_client - INFO - [LOGIN][WWID] Entered WWID: e96693
+2026-01-20 06:17:03,479 - vehicle_lookup_client - INFO - [LOGIN][WWID] Clicked Submit button
+2026-01-20 06:17:05,488 - vehicle_lookup_client - INFO - [LOGIN][WWID] After submit, current URL: https://avisbudget.palantirfoundry.com/workspace/fleet-operations-pwa/health
+2026-01-20 06:17:05,489 - vehicle_lookup_client - INFO - [LOGIN] Authentication successful for: xe96693@co.abg.com
+2026-01-20 06:17:05,490 - vehicle_lookup_client - INFO - [SMART_AUTH] Authentication successful: Authenticated successfully as xe96693@co.abg.com
+2026-01-20 06:17:05,501 - vehicle_lookup_client - INFO - 
+Processing 12 MVAs...
+2026-01-20 06:17:05,502 - vehicle_lookup_client - INFO - 
+[1/12] Processing MVA: 56903346
+2026-01-20 06:17:16,643 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 56903346
+2026-01-20 06:17:20,107 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 56903346
+2026-01-20 06:17:20,141 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 56903346
+2026-01-20 06:17:20,242 - vehicle_lookup_client - INFO -   Progress: 8.3%
+2026-01-20 06:17:20,243 - vehicle_lookup_client - INFO - 
+[2/12] Processing MVA: 58520626
+2026-01-20 06:17:31,284 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 58520626
+2026-01-20 06:17:35,472 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 58520626
+2026-01-20 06:17:35,495 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 58520626
+2026-01-20 06:17:35,577 - vehicle_lookup_client - INFO -   Progress: 16.7%
+2026-01-20 06:17:35,577 - vehicle_lookup_client - INFO - 
+[3/12] Processing MVA: 54708986
+2026-01-20 06:17:46,620 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 54708986
+2026-01-20 06:17:50,029 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 54708986
+2026-01-20 06:17:50,055 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 54708986
+2026-01-20 06:17:50,126 - vehicle_lookup_client - INFO -   Progress: 25.0%
+2026-01-20 06:17:50,127 - vehicle_lookup_client - INFO - 
+[4/12] Processing MVA: 55165806
+2026-01-20 06:18:01,288 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 55165806
+2026-01-20 06:18:04,648 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 55165806
+2026-01-20 06:18:04,690 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 55165806
+2026-01-20 06:18:04,750 - vehicle_lookup_client - INFO -   Progress: 33.3%
+2026-01-20 06:18:04,753 - vehicle_lookup_client - INFO - 
+[5/12] Processing MVA: 54451972
+2026-01-20 06:18:15,843 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 54451972
+2026-01-20 06:18:19,164 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 54451972
+2026-01-20 06:18:19,186 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 54451972
+2026-01-20 06:18:19,264 - vehicle_lookup_client - INFO -   Progress: 41.7%
+2026-01-20 06:18:19,265 - vehicle_lookup_client - INFO - 
+[6/12] Processing MVA: 59336060
+2026-01-20 06:18:30,484 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 59336060
+2026-01-20 06:18:33,883 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 59336060
+2026-01-20 06:18:33,916 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 59336060
+2026-01-20 06:18:33,979 - vehicle_lookup_client - INFO -   Progress: 50.0%
+2026-01-20 06:18:33,979 - vehicle_lookup_client - INFO - 
+[7/12] Processing MVA: 59137481
+2026-01-20 06:18:44,961 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 59137481
+2026-01-20 06:18:48,241 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 59137481
+2026-01-20 06:18:48,266 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 59137481
+2026-01-20 06:18:48,338 - vehicle_lookup_client - INFO -   Progress: 58.3%
+2026-01-20 06:18:48,339 - vehicle_lookup_client - INFO - 
+[8/12] Processing MVA: 58252821
+2026-01-20 06:18:59,420 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 58252821
+2026-01-20 06:19:02,750 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 58252821
+2026-01-20 06:19:02,766 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 58252821
+2026-01-20 06:19:02,831 - vehicle_lookup_client - INFO -   Progress: 66.7%
+2026-01-20 06:19:02,832 - vehicle_lookup_client - INFO - 
+[9/12] Processing MVA: 59073803
+2026-01-20 06:19:14,361 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 59073803
+2026-01-20 06:19:17,753 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 59073803
+2026-01-20 06:19:17,788 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 59073803
+2026-01-20 06:19:17,873 - vehicle_lookup_client - INFO -   Progress: 75.0%
+2026-01-20 06:19:17,873 - vehicle_lookup_client - INFO - 
+[10/12] Processing MVA: 57880200
+2026-01-20 06:19:28,991 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 57880200
+2026-01-20 06:19:34,916 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 57880200
+2026-01-20 06:19:34,936 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 57880200
+2026-01-20 06:19:35,035 - vehicle_lookup_client - INFO -   Progress: 83.3%
+2026-01-20 06:19:35,035 - vehicle_lookup_client - INFO - 
+[11/12] Processing MVA: 55945234
+2026-01-20 06:19:46,574 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 55945234
+2026-01-20 06:19:50,160 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 55945234
+2026-01-20 06:19:50,182 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 55945234
+2026-01-20 06:19:50,250 - vehicle_lookup_client - INFO -   Progress: 91.7%
+2026-01-20 06:19:50,250 - vehicle_lookup_client - INFO - 
+[12/12] Processing MVA: 56241953
+2026-01-20 06:20:01,361 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 56241953
+2026-01-20 06:20:04,790 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 56241953
+2026-01-20 06:20:04,810 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 56241953
+2026-01-20 06:20:04,881 - vehicle_lookup_client - INFO -   Progress: 100.0%
+2026-01-20 06:20:04,882 - vehicle_lookup_client - INFO - 
+Writing results to: GlassInfo.csv
+2026-01-20 06:20:04,885 - compass_core.csv_utils - INFO - [CSV] Wrote 12 results to: C:\Temp\Code\Compass_Framework\clients\vehicle_lookup\GlassInfo.csv
+2026-01-20 06:20:04,886 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:20:04,887 - vehicle_lookup_client - INFO - Summary:
+2026-01-20 06:20:04,887 - vehicle_lookup_client - INFO -   Total MVAs: 12
+2026-01-20 06:20:04,889 - vehicle_lookup_client - INFO -   Completed: 12
+2026-01-20 06:20:04,890 - vehicle_lookup_client - INFO -   Failed: 0
+2026-01-20 06:20:04,890 - vehicle_lookup_client - INFO -   Success Rate: 100.0%
+2026-01-20 06:20:04,891 - vehicle_lookup_client - INFO -   Output: C:\Temp\Code\Compass_Framework\clients\vehicle_lookup\GlassInfo.csv
+2026-01-20 06:20:04,891 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:20:04,892 - vehicle_lookup_client - INFO - Closing browser...
+2026-01-20 06:20:04,892 - compass_core.standard_driver_manager - INFO - [DRIVER] Quitting Edge WebDriver...
+2026-01-20 06:27:12,634 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:27:12,635 - vehicle_lookup_client - INFO - Vehicle Lookup Client - Glass Info Retrieval
+2026-01-20 06:27:12,635 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:27:12,635 - vehicle_lookup_client - INFO - Loading configuration from: ../../webdriver.ini.local
+2026-01-20 06:27:12,638 - vehicle_lookup_client - INFO - Clearing previous output file: GlassInfo.csv
+2026-01-20 06:27:12,639 - vehicle_lookup_client - INFO - Reading MVA list from: ../../data/sample_mva_list.csv
+2026-01-20 06:27:12,641 - compass_core.csv_utils - INFO - [CSV] Read 12 MVAs from: ../../data/sample_mva_list.csv
+2026-01-20 06:27:12,642 - vehicle_lookup_client - INFO - Found 12 MVAs to process
+2026-01-20 06:27:12,643 - vehicle_lookup_client - INFO - Initializing browser...
+2026-01-20 06:27:12,818 - compass_core.standard_driver_manager - INFO - [DRIVER] Detected Browser=144.0.3719.82, Driver=144.0.3719.82
+2026-01-20 06:27:12,818 - compass_core.standard_driver_manager - INFO - [DRIVER] Launching Edge - Browser 144.0.3719.82, Driver 144.0.3719.82
+2026-01-20 06:27:12,819 - compass_core.standard_driver_manager - INFO - [DRIVER] InPrivate mode enabled
+2026-01-20 06:27:17,456 - vehicle_lookup_client - INFO - Performing authentication...
+2026-01-20 06:27:17,588 - vehicle_lookup_client - INFO - [SMART_AUTH] Starting smart authentication for: xe96693@co.abg.com
+2026-01-20 06:27:17,779 - vehicle_lookup_client - INFO - [SMART_AUTH] Target app URL: https://avisbudget.palantirfoundry.com/workspace/fleet-operations-pwa/health
+2026-01-20 06:27:23,336 - vehicle_lookup_client - INFO - [SMART_AUTH] Login page detected, performing authentication
+2026-01-20 06:27:23,336 - vehicle_lookup_client - INFO - [LOGIN] Starting authentication flow for: xe96693@co.abg.com
+2026-01-20 06:27:23,810 - vehicle_lookup_client - WARNING - [LOGIN][PASSWORD] Field not ready, waiting...
+2026-01-20 06:27:32,267 - vehicle_lookup_client - INFO - [LOGIN][STAY_SIGNED_IN] Clicked 'No' on Stay signed in prompt
+2026-01-20 06:27:34,399 - vehicle_lookup_client - INFO - [LOGIN][WWID] Looking for WWID input field...
+2026-01-20 06:27:34,454 - vehicle_lookup_client - WARNING - [LOGIN][WWID] Field not ready, waiting...
+2026-01-20 06:27:35,144 - vehicle_lookup_client - INFO - [LOGIN][WWID] Entered WWID: e96693
+2026-01-20 06:27:35,246 - vehicle_lookup_client - INFO - [LOGIN][WWID] Clicked Submit button
+2026-01-20 06:27:37,255 - vehicle_lookup_client - INFO - [LOGIN][WWID] After submit, current URL: https://avisbudget.palantirfoundry.com/workspace/fleet-operations-pwa/health
+2026-01-20 06:27:37,256 - vehicle_lookup_client - INFO - [LOGIN] Authentication successful for: xe96693@co.abg.com
+2026-01-20 06:27:37,256 - vehicle_lookup_client - INFO - [SMART_AUTH] Authentication successful: Authenticated successfully as xe96693@co.abg.com
+2026-01-20 06:27:37,267 - vehicle_lookup_client - INFO - 
+Processing 12 MVAs...
+2026-01-20 06:27:37,267 - vehicle_lookup_client - INFO - 
+[1/12] Processing MVA: 56903346
+2026-01-20 06:27:48,378 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 56903346
+2026-01-20 06:27:51,874 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 56903346
+2026-01-20 06:27:51,898 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 56903346
+2026-01-20 06:27:51,990 - vehicle_lookup_client - INFO -   Progress: 8.3%
+2026-01-20 06:27:51,990 - vehicle_lookup_client - INFO - 
+[2/12] Processing MVA: 58520626
+2026-01-20 06:28:03,062 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 58520626
+2026-01-20 06:28:06,668 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 58520626
+2026-01-20 06:28:06,695 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 58520626
+2026-01-20 06:28:06,788 - vehicle_lookup_client - INFO -   Progress: 16.7%
+2026-01-20 06:28:06,789 - vehicle_lookup_client - INFO - 
+[3/12] Processing MVA: 54708986
+2026-01-20 06:28:17,852 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 54708986
+2026-01-20 06:28:21,239 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 54708986
+2026-01-20 06:28:21,258 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 54708986
+2026-01-20 06:28:21,330 - vehicle_lookup_client - INFO -   Progress: 25.0%
+2026-01-20 06:28:21,330 - vehicle_lookup_client - INFO - 
+[4/12] Processing MVA: 55165806
+2026-01-20 06:28:32,374 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 55165806
+2026-01-20 06:28:35,814 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 55165806
+2026-01-20 06:28:35,834 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 55165806
+2026-01-20 06:28:35,915 - vehicle_lookup_client - INFO -   Progress: 33.3%
+2026-01-20 06:28:35,915 - vehicle_lookup_client - INFO - 
+[5/12] Processing MVA: 54451972
+2026-01-20 06:28:47,073 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 54451972
+2026-01-20 06:28:57,127 - vehicle_lookup_client - INFO - 
+[6/12] Processing MVA: 59336060
+2026-01-20 06:29:08,199 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 59336060
+2026-01-20 06:29:11,575 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 59336060
+2026-01-20 06:29:11,598 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 59336060
+2026-01-20 06:29:11,686 - vehicle_lookup_client - INFO -   Progress: 50.0%
+2026-01-20 06:29:11,686 - vehicle_lookup_client - INFO - 
+[7/12] Processing MVA: 59137481
+2026-01-20 06:29:22,808 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 59137481
+2026-01-20 06:29:26,304 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 59137481
+2026-01-20 06:29:26,412 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 59137481
+2026-01-20 06:29:26,487 - vehicle_lookup_client - INFO -   Progress: 58.3%
+2026-01-20 06:29:26,488 - vehicle_lookup_client - INFO - 
+[8/12] Processing MVA: 58252821
+2026-01-20 06:29:38,041 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 58252821
+2026-01-20 06:29:41,363 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 58252821
+2026-01-20 06:29:41,381 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 58252821
+2026-01-20 06:29:41,456 - vehicle_lookup_client - INFO -   Progress: 66.7%
+2026-01-20 06:29:41,456 - vehicle_lookup_client - INFO - 
+[9/12] Processing MVA: 59073803
+2026-01-20 06:29:52,555 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 59073803
+2026-01-20 06:29:56,035 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 59073803
+2026-01-20 06:29:56,049 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 59073803
+2026-01-20 06:29:56,120 - vehicle_lookup_client - INFO -   Progress: 75.0%
+2026-01-20 06:29:56,120 - vehicle_lookup_client - INFO - 
+[10/12] Processing MVA: 57880200
+2026-01-20 06:30:07,215 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 57880200
+2026-01-20 06:30:11,188 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 57880200
+2026-01-20 06:30:11,220 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 57880200
+2026-01-20 06:30:11,305 - vehicle_lookup_client - INFO -   Progress: 83.3%
+2026-01-20 06:30:11,305 - vehicle_lookup_client - INFO - 
+[11/12] Processing MVA: 55945234
+2026-01-20 06:30:22,577 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 55945234
+2026-01-20 06:30:26,085 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 55945234
+2026-01-20 06:30:26,125 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 55945234
+2026-01-20 06:30:27,527 - vehicle_lookup_client - INFO -   Progress: 91.7%
+2026-01-20 06:30:27,528 - vehicle_lookup_client - INFO - 
+[12/12] Processing MVA: 56241953
+2026-01-20 06:30:38,971 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 56241953
+2026-01-20 06:30:43,319 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 56241953
+2026-01-20 06:30:43,365 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 56241953
+2026-01-20 06:30:43,496 - vehicle_lookup_client - INFO -   Progress: 100.0%
+2026-01-20 06:30:43,496 - vehicle_lookup_client - INFO - 
+Writing results to: GlassInfo.csv
+2026-01-20 06:30:43,501 - compass_core.csv_utils - INFO - [CSV] Wrote 12 results to: C:\Temp\Code\Compass_Framework\clients\vehicle_lookup\GlassInfo.csv
+2026-01-20 06:30:43,503 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:30:43,504 - vehicle_lookup_client - INFO - Summary:
+2026-01-20 06:30:43,506 - vehicle_lookup_client - INFO -   Total MVAs: 12
+2026-01-20 06:30:43,520 - vehicle_lookup_client - INFO -   Completed: 11
+2026-01-20 06:30:43,525 - vehicle_lookup_client - INFO -   Failed: 1
+2026-01-20 06:30:43,527 - vehicle_lookup_client - INFO -   Success Rate: 100.0%
+2026-01-20 06:30:43,529 - vehicle_lookup_client - INFO -   Output: C:\Temp\Code\Compass_Framework\clients\vehicle_lookup\GlassInfo.csv
+2026-01-20 06:30:43,529 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:30:43,539 - vehicle_lookup_client - INFO - Closing browser...
+2026-01-20 06:30:43,540 - compass_core.standard_driver_manager - INFO - [DRIVER] Quitting Edge WebDriver...
+2026-01-20 06:40:10,979 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:40:10,980 - vehicle_lookup_client - INFO - Vehicle Lookup Client - Glass Info Retrieval
+2026-01-20 06:40:10,980 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:40:10,981 - vehicle_lookup_client - INFO - Loading configuration from: ../../webdriver.ini.local
+2026-01-20 06:40:10,983 - vehicle_lookup_client - INFO - Clearing previous output file: GlassInfo.csv
+2026-01-20 06:40:10,984 - vehicle_lookup_client - INFO - Reading MVA list from: ../../data/sample_mva_list.csv
+2026-01-20 06:40:10,987 - compass_core.csv_utils - INFO - [CSV] Read 12 MVAs from: ../../data/sample_mva_list.csv
+2026-01-20 06:40:10,989 - vehicle_lookup_client - INFO - Found 12 MVAs to process
+2026-01-20 06:40:10,991 - vehicle_lookup_client - INFO - Initializing browser...
+2026-01-20 06:40:11,202 - compass_core.standard_driver_manager - INFO - [DRIVER] Detected Browser=144.0.3719.82, Driver=144.0.3719.82
+2026-01-20 06:40:11,202 - compass_core.standard_driver_manager - INFO - [DRIVER] Launching Edge - Browser 144.0.3719.82, Driver 144.0.3719.82
+2026-01-20 06:40:11,203 - compass_core.standard_driver_manager - INFO - [DRIVER] InPrivate mode enabled
+2026-01-20 06:40:16,439 - vehicle_lookup_client - INFO - Performing authentication...
+2026-01-20 06:40:16,575 - vehicle_lookup_client - INFO - [SMART_AUTH] Starting smart authentication for: xe96693@co.abg.com
+2026-01-20 06:40:16,917 - vehicle_lookup_client - INFO - [SMART_AUTH] Target app URL: https://avisbudget.palantirfoundry.com/workspace/fleet-operations-pwa/health
+2026-01-20 06:40:22,767 - vehicle_lookup_client - INFO - [SMART_AUTH] Login page detected, performing authentication
+2026-01-20 06:40:22,767 - vehicle_lookup_client - INFO - [LOGIN] Starting authentication flow for: xe96693@co.abg.com
+2026-01-20 06:40:23,508 - vehicle_lookup_client - WARNING - [LOGIN][PASSWORD] Field not ready, waiting...
+2026-01-20 06:40:29,092 - vehicle_lookup_client - INFO - [LOGIN][STAY_SIGNED_IN] Clicked 'No' on Stay signed in prompt
+2026-01-20 06:40:31,102 - vehicle_lookup_client - INFO - [LOGIN][WWID] Looking for WWID input field...
+2026-01-20 06:40:33,599 - vehicle_lookup_client - WARNING - [LOGIN][WWID] Field not ready, waiting...
+2026-01-20 06:40:34,291 - vehicle_lookup_client - INFO - [LOGIN][WWID] Entered WWID: e96693
+2026-01-20 06:40:34,406 - vehicle_lookup_client - INFO - [LOGIN][WWID] Clicked Submit button
+2026-01-20 06:40:36,417 - vehicle_lookup_client - INFO - [LOGIN][WWID] After submit, current URL: https://avisbudget.palantirfoundry.com/workspace/fleet-operations-pwa/health
+2026-01-20 06:40:36,418 - vehicle_lookup_client - INFO - [LOGIN] Authentication successful for: xe96693@co.abg.com
+2026-01-20 06:40:36,419 - vehicle_lookup_client - INFO - [SMART_AUTH] Authentication successful: Authenticated successfully as xe96693@co.abg.com
+2026-01-20 06:40:36,429 - vehicle_lookup_client - INFO - 
+Processing 12 MVAs...
+2026-01-20 06:40:36,430 - vehicle_lookup_client - INFO - 
+[1/12] Processing MVA: 56903346
+2026-01-20 06:40:47,482 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 56903346
+2026-01-20 06:40:50,942 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 56903346
+2026-01-20 06:40:50,963 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 56903346
+2026-01-20 06:40:50,964 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:40:51,001 - vehicle_lookup_client - INFO -     MVA: 056903346
+2026-01-20 06:40:51,030 - vehicle_lookup_client - INFO -     VIN: 3FMCR9CN0SRE34030
+2026-01-20 06:40:51,057 - vehicle_lookup_client - INFO -     Desc: FORD BRONCO SPORT
+2026-01-20 06:40:51,057 - vehicle_lookup_client - INFO -   Summary - MVA: 056903346, VIN: 3FMCR9CN0SRE34030, Desc: FORD BRONCO SPORT
+2026-01-20 06:40:51,058 - vehicle_lookup_client - INFO -   Progress: 8.3%
+2026-01-20 06:40:51,059 - vehicle_lookup_client - INFO - 
+[2/12] Processing MVA: 58520626
+2026-01-20 06:41:02,111 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 58520626
+2026-01-20 06:41:05,522 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 58520626
+2026-01-20 06:41:05,546 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 58520626
+2026-01-20 06:41:05,547 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:41:05,572 - vehicle_lookup_client - INFO -     MVA: 058520626
+2026-01-20 06:41:05,595 - vehicle_lookup_client - INFO -     VIN: 1FMDE7BH5SLA63283
+2026-01-20 06:41:05,619 - vehicle_lookup_client - INFO -     Desc: FORD BRONCO 4DR 4WD
+2026-01-20 06:41:05,620 - vehicle_lookup_client - INFO -   Summary - MVA: 058520626, VIN: 1FMDE7BH5SLA63283, Desc: FORD BRONCO 4DR 4WD
+2026-01-20 06:41:05,621 - vehicle_lookup_client - INFO -   Progress: 16.7%
+2026-01-20 06:41:05,621 - vehicle_lookup_client - INFO - 
+[3/12] Processing MVA: 54708986
+2026-01-20 06:41:16,768 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 54708986
+2026-01-20 06:41:20,063 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 54708986
+2026-01-20 06:41:20,084 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 54708986
+2026-01-20 06:41:20,086 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:41:20,114 - vehicle_lookup_client - INFO -     MVA: 054708986
+2026-01-20 06:41:20,138 - vehicle_lookup_client - INFO -     VIN: 3GNAXUEG9RL256495
+2026-01-20 06:41:20,160 - vehicle_lookup_client - INFO -     Desc: CHEVROLET EQUINOX 4WD
+2026-01-20 06:41:20,161 - vehicle_lookup_client - INFO -   Summary - MVA: 054708986, VIN: 3GNAXUEG9RL256495, Desc: CHEVROLET EQUINOX 4WD
+2026-01-20 06:41:20,161 - vehicle_lookup_client - INFO -   Progress: 25.0%
+2026-01-20 06:41:20,162 - vehicle_lookup_client - INFO - 
+[4/12] Processing MVA: 55165806
+2026-01-20 06:41:31,303 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 55165806
+2026-01-20 06:41:34,630 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 55165806
+2026-01-20 06:41:34,661 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 55165806
+2026-01-20 06:41:34,663 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:41:34,693 - vehicle_lookup_client - INFO -     MVA: 055165806
+2026-01-20 06:41:34,731 - vehicle_lookup_client - INFO -     VIN: 1FBAX2YG5RKA28797
+2026-01-20 06:41:34,770 - vehicle_lookup_client - INFO -     Desc: FORD TRANSIT WAGON
+2026-01-20 06:41:34,771 - vehicle_lookup_client - INFO -   Summary - MVA: 055165806, VIN: 1FBAX2YG5RKA28797, Desc: FORD TRANSIT WAGON
+2026-01-20 06:41:34,773 - vehicle_lookup_client - INFO -   Progress: 33.3%
+2026-01-20 06:41:34,774 - vehicle_lookup_client - INFO - 
+[5/12] Processing MVA: 54451972
+2026-01-20 06:41:45,949 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 54451972
+2026-01-20 06:41:49,397 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 54451972
+2026-01-20 06:41:49,470 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 54451972
+2026-01-20 06:41:49,471 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:41:49,500 - vehicle_lookup_client - INFO -     MVA: 054451972
+2026-01-20 06:41:49,522 - vehicle_lookup_client - INFO -     VIN: 1C4RJHAG0S8656962
+2026-01-20 06:41:49,542 - vehicle_lookup_client - INFO -     Desc: JEEP GRAND CHEROKEE 4WD
+2026-01-20 06:41:49,543 - vehicle_lookup_client - INFO -   Summary - MVA: 054451972, VIN: 1C4RJHAG0S8656962, Desc: JEEP GRAND CHEROKEE 4WD
+2026-01-20 06:41:49,545 - vehicle_lookup_client - INFO -   Progress: 41.7%
+2026-01-20 06:41:49,545 - vehicle_lookup_client - INFO - 
+[6/12] Processing MVA: 59336060
+2026-01-20 06:42:00,916 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 59336060
+2026-01-20 06:42:04,264 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 59336060
+2026-01-20 06:42:04,283 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 59336060
+2026-01-20 06:42:04,284 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:42:04,305 - vehicle_lookup_client - INFO -     MVA: 059336060
+2026-01-20 06:42:04,326 - vehicle_lookup_client - INFO -     VIN: 3GNAXHEG2TL296562
+2026-01-20 06:42:04,347 - vehicle_lookup_client - INFO -     Desc: CHEVROLET EQUINOX 2WD
+2026-01-20 06:42:04,348 - vehicle_lookup_client - INFO -   Summary - MVA: 059336060, VIN: 3GNAXHEG2TL296562, Desc: CHEVROLET EQUINOX 2WD
+2026-01-20 06:42:04,348 - vehicle_lookup_client - INFO -   Progress: 50.0%
+2026-01-20 06:42:04,349 - vehicle_lookup_client - INFO - 
+[7/12] Processing MVA: 59137481
+2026-01-20 06:42:15,424 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 59137481
+2026-01-20 06:42:18,848 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 59137481
+2026-01-20 06:42:18,879 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 59137481
+2026-01-20 06:42:18,880 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:42:18,900 - vehicle_lookup_client - INFO -     MVA: 059137481
+2026-01-20 06:42:18,920 - vehicle_lookup_client - INFO -     VIN: 3GNAXHEG5TL283997
+2026-01-20 06:42:18,940 - vehicle_lookup_client - INFO -     Desc: CHEVROLET EQUINOX 2WD
+2026-01-20 06:42:18,942 - vehicle_lookup_client - INFO -   Summary - MVA: 059137481, VIN: 3GNAXHEG5TL283997, Desc: CHEVROLET EQUINOX 2WD
+2026-01-20 06:42:18,944 - vehicle_lookup_client - INFO -   Progress: 58.3%
+2026-01-20 06:42:18,945 - vehicle_lookup_client - INFO - 
+[8/12] Processing MVA: 58252821
+2026-01-20 06:42:30,738 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 58252821
+2026-01-20 06:42:34,291 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 58252821
+2026-01-20 06:42:34,305 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 58252821
+2026-01-20 06:42:34,306 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:42:34,327 - vehicle_lookup_client - INFO -     MVA: 058252821
+2026-01-20 06:42:34,350 - vehicle_lookup_client - INFO -     VIN: 1FMDE7BH8SLA42959
+2026-01-20 06:42:34,367 - vehicle_lookup_client - INFO -     Desc: FORD BRONCO 4DR 4WD
+2026-01-20 06:42:34,368 - vehicle_lookup_client - INFO -   Summary - MVA: 058252821, VIN: 1FMDE7BH8SLA42959, Desc: FORD BRONCO 4DR 4WD
+2026-01-20 06:42:34,369 - vehicle_lookup_client - INFO -   Progress: 66.7%
+2026-01-20 06:42:34,369 - vehicle_lookup_client - INFO - 
+[9/12] Processing MVA: 59073803
+2026-01-20 06:42:45,580 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 59073803
+2026-01-20 06:42:48,955 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 59073803
+2026-01-20 06:42:48,988 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 59073803
+2026-01-20 06:42:48,990 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:42:49,016 - vehicle_lookup_client - INFO -     MVA: 059073803
+2026-01-20 06:42:49,036 - vehicle_lookup_client - INFO -     VIN: KNDEPCAA0T7860244
+2026-01-20 06:42:49,057 - vehicle_lookup_client - INFO -     Desc: KIA SELTOS AWD
+2026-01-20 06:42:49,058 - vehicle_lookup_client - INFO -   Summary - MVA: 059073803, VIN: KNDEPCAA0T7860244, Desc: KIA SELTOS AWD
+2026-01-20 06:42:49,059 - vehicle_lookup_client - INFO -   Progress: 75.0%
+2026-01-20 06:42:49,059 - vehicle_lookup_client - INFO - 
+[10/12] Processing MVA: 57880200
+2026-01-20 06:43:00,131 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 57880200
+2026-01-20 06:43:04,211 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 57880200
+2026-01-20 06:43:04,408 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 57880200
+2026-01-20 06:43:04,409 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:43:04,443 - vehicle_lookup_client - INFO -     MVA: 057880200
+2026-01-20 06:43:04,503 - vehicle_lookup_client - INFO -     VIN: JM3KFBCM4S0695093
+2026-01-20 06:43:04,631 - vehicle_lookup_client - INFO -     Desc: MAZDA CX-5 AWD
+2026-01-20 06:43:04,631 - vehicle_lookup_client - INFO -   Summary - MVA: 057880200, VIN: JM3KFBCM4S0695093, Desc: MAZDA CX-5 AWD
+2026-01-20 06:43:04,632 - vehicle_lookup_client - INFO -   Progress: 83.3%
+2026-01-20 06:43:04,632 - vehicle_lookup_client - INFO - 
+[11/12] Processing MVA: 55945234
+2026-01-20 06:43:15,707 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 55945234
+2026-01-20 06:43:19,133 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 55945234
+2026-01-20 06:43:19,152 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 55945234
+2026-01-20 06:43:19,154 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:43:19,179 - vehicle_lookup_client - INFO -     MVA: 055945234
+2026-01-20 06:43:19,211 - vehicle_lookup_client - INFO -     VIN: 4T1DAACK6SU066495
+2026-01-20 06:43:19,237 - vehicle_lookup_client - INFO -     Desc: TOYOTA CAMRY HYBRID
+2026-01-20 06:43:19,238 - vehicle_lookup_client - INFO -   Summary - MVA: 055945234, VIN: 4T1DAACK6SU066495, Desc: TOYOTA CAMRY HYBRID
+2026-01-20 06:43:19,238 - vehicle_lookup_client - INFO -   Progress: 91.7%
+2026-01-20 06:43:19,239 - vehicle_lookup_client - INFO - 
+[12/12] Processing MVA: 56241953
+2026-01-20 06:43:31,974 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 56241953
+2026-01-20 06:43:36,405 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 56241953
+2026-01-20 06:43:36,578 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 56241953
+2026-01-20 06:43:36,579 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:43:36,602 - vehicle_lookup_client - INFO -     MVA: 056241953
+2026-01-20 06:43:36,626 - vehicle_lookup_client - INFO -     VIN: 2C4RC1BG2SR526489
+2026-01-20 06:43:36,654 - vehicle_lookup_client - INFO -     Desc: CHRYSLER PACIFICA VAN
+2026-01-20 06:43:36,655 - vehicle_lookup_client - INFO -   Summary - MVA: 056241953, VIN: 2C4RC1BG2SR526489, Desc: CHRYSLER PACIFICA VAN
+2026-01-20 06:43:36,659 - vehicle_lookup_client - INFO -   Progress: 100.0%
+2026-01-20 06:43:36,660 - vehicle_lookup_client - INFO - 
+Writing results to: GlassInfo.csv
+2026-01-20 06:43:36,665 - compass_core.csv_utils - INFO - [CSV] Wrote 12 results to: C:\Temp\Code\Compass_Framework\clients\vehicle_lookup\GlassInfo.csv
+2026-01-20 06:43:36,669 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:43:36,671 - vehicle_lookup_client - INFO - Summary:
+2026-01-20 06:43:36,672 - vehicle_lookup_client - INFO -   Total MVAs: 12
+2026-01-20 06:43:36,672 - vehicle_lookup_client - INFO -   Completed: 12
+2026-01-20 06:43:36,673 - vehicle_lookup_client - INFO -   Failed: 0
+2026-01-20 06:43:36,673 - vehicle_lookup_client - INFO -   Success Rate: 100.0%
+2026-01-20 06:43:36,676 - vehicle_lookup_client - INFO -   Output: C:\Temp\Code\Compass_Framework\clients\vehicle_lookup\GlassInfo.csv
+2026-01-20 06:43:36,677 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:43:36,681 - vehicle_lookup_client - INFO - Closing browser...
+2026-01-20 06:43:36,686 - compass_core.standard_driver_manager - INFO - [DRIVER] Quitting Edge WebDriver...
+2026-01-20 06:44:49,457 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:44:49,457 - vehicle_lookup_client - INFO - Vehicle Lookup Client - Glass Info Retrieval
+2026-01-20 06:44:49,458 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:44:49,459 - vehicle_lookup_client - INFO - Loading configuration from: ../../webdriver.ini.local
+2026-01-20 06:44:49,461 - vehicle_lookup_client - INFO - Clearing previous output file: GlassInfo.csv
+2026-01-20 06:44:49,463 - vehicle_lookup_client - INFO - Reading MVA list from: ../../data/sample_mva_list.csv
+2026-01-20 06:44:49,465 - compass_core.csv_utils - INFO - [CSV] Read 12 MVAs from: ../../data/sample_mva_list.csv
+2026-01-20 06:44:49,466 - vehicle_lookup_client - INFO - Found 12 MVAs to process
+2026-01-20 06:44:49,468 - vehicle_lookup_client - INFO - Initializing browser...
+2026-01-20 06:44:49,677 - compass_core.standard_driver_manager - INFO - [DRIVER] Detected Browser=144.0.3719.82, Driver=144.0.3719.82
+2026-01-20 06:44:49,678 - compass_core.standard_driver_manager - INFO - [DRIVER] Launching Edge - Browser 144.0.3719.82, Driver 144.0.3719.82
+2026-01-20 06:44:49,679 - compass_core.standard_driver_manager - INFO - [DRIVER] InPrivate mode enabled
+2026-01-20 06:44:53,978 - vehicle_lookup_client - INFO - Performing authentication...
+2026-01-20 06:44:54,110 - vehicle_lookup_client - INFO - [SMART_AUTH] Starting smart authentication for: xe96693@co.abg.com
+2026-01-20 06:44:54,112 - vehicle_lookup_client - INFO - [SMART_AUTH] Target app URL: https://avisbudget.palantirfoundry.com/workspace/fleet-operations-pwa/health
+2026-01-20 06:45:01,954 - vehicle_lookup_client - INFO - [SMART_AUTH] Login page detected, performing authentication
+2026-01-20 06:45:01,955 - vehicle_lookup_client - INFO - [LOGIN] Starting authentication flow for: xe96693@co.abg.com
+2026-01-20 06:45:02,339 - vehicle_lookup_client - WARNING - [LOGIN][PASSWORD] Field not ready, waiting...
+2026-01-20 06:45:07,922 - vehicle_lookup_client - INFO - [LOGIN][STAY_SIGNED_IN] Clicked 'No' on Stay signed in prompt
+2026-01-20 06:45:09,930 - vehicle_lookup_client - INFO - [LOGIN][WWID] Looking for WWID input field...
+2026-01-20 06:45:13,882 - vehicle_lookup_client - WARNING - [LOGIN][WWID] Field not ready, waiting...
+2026-01-20 06:45:14,566 - vehicle_lookup_client - INFO - [LOGIN][WWID] Entered WWID: e96693
+2026-01-20 06:45:14,661 - vehicle_lookup_client - INFO - [LOGIN][WWID] Clicked Submit button
+2026-01-20 06:45:16,670 - vehicle_lookup_client - INFO - [LOGIN][WWID] After submit, current URL: https://avisbudget.palantirfoundry.com/workspace/fleet-operations-pwa/health
+2026-01-20 06:45:16,671 - vehicle_lookup_client - INFO - [LOGIN] Authentication successful for: xe96693@co.abg.com
+2026-01-20 06:45:16,672 - vehicle_lookup_client - INFO - [SMART_AUTH] Authentication successful: Authenticated successfully as xe96693@co.abg.com
+2026-01-20 06:45:16,681 - vehicle_lookup_client - INFO - 
+Processing 12 MVAs...
+2026-01-20 06:45:16,682 - vehicle_lookup_client - INFO - 
+[1/12] Processing MVA: 56903346
+2026-01-20 06:45:28,059 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 56903346
+2026-01-20 06:45:31,511 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 56903346
+2026-01-20 06:45:31,529 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 56903346
+2026-01-20 06:45:31,530 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:45:31,560 - vehicle_lookup_client - INFO -     MVA: 056903346
+2026-01-20 06:45:31,581 - vehicle_lookup_client - INFO -     VIN: 3FMCR9CN0SRE34030
+2026-01-20 06:45:31,602 - vehicle_lookup_client - INFO -     Desc: FORD BRONCO SPORT
+2026-01-20 06:45:31,603 - vehicle_lookup_client - INFO -   Summary - MVA: 056903346, VIN: 3FMCR9CN0SRE34030, Desc: FORD BRONCO SPORT
+2026-01-20 06:45:31,603 - vehicle_lookup_client - INFO -   Progress: 8.3%
+2026-01-20 06:45:31,603 - vehicle_lookup_client - INFO - 
+[2/12] Processing MVA: 58520626
+2026-01-20 06:46:43,416 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:46:43,417 - vehicle_lookup_client - INFO - Vehicle Lookup Client - Glass Info Retrieval
+2026-01-20 06:46:43,417 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:46:43,418 - vehicle_lookup_client - INFO - Loading configuration from: ../../webdriver.ini.local
+2026-01-20 06:46:43,420 - vehicle_lookup_client - INFO - Reading MVA list from: ../../data/sample_mva_list.csv
+2026-01-20 06:46:43,421 - compass_core.csv_utils - INFO - [CSV] Read 1 MVAs from: ../../data/sample_mva_list.csv
+2026-01-20 06:46:43,422 - vehicle_lookup_client - INFO - Found 1 MVAs to process
+2026-01-20 06:46:43,423 - vehicle_lookup_client - INFO - Initializing browser...
+2026-01-20 06:46:43,562 - compass_core.standard_driver_manager - INFO - [DRIVER] Detected Browser=144.0.3719.82, Driver=144.0.3719.82
+2026-01-20 06:46:43,562 - compass_core.standard_driver_manager - INFO - [DRIVER] Launching Edge - Browser 144.0.3719.82, Driver 144.0.3719.82
+2026-01-20 06:46:43,562 - compass_core.standard_driver_manager - INFO - [DRIVER] InPrivate mode enabled
+2026-01-20 06:46:46,594 - vehicle_lookup_client - INFO - Performing authentication...
+2026-01-20 06:46:46,661 - vehicle_lookup_client - INFO - [SMART_AUTH] Starting smart authentication for: xe96693@co.abg.com
+2026-01-20 06:46:46,661 - vehicle_lookup_client - INFO - [SMART_AUTH] Target app URL: https://avisbudget.palantirfoundry.com/workspace/fleet-operations-pwa/health
+2026-01-20 06:46:52,182 - vehicle_lookup_client - INFO - [SMART_AUTH] Login page detected, performing authentication
+2026-01-20 06:46:52,183 - vehicle_lookup_client - INFO - [LOGIN] Starting authentication flow for: xe96693@co.abg.com
+2026-01-20 06:46:52,500 - vehicle_lookup_client - WARNING - [LOGIN][PASSWORD] Field not ready, waiting...
+2026-01-20 06:46:57,376 - vehicle_lookup_client - INFO - [LOGIN][STAY_SIGNED_IN] Clicked 'No' on Stay signed in prompt
+2026-01-20 06:46:59,381 - vehicle_lookup_client - INFO - [LOGIN][WWID] Looking for WWID input field...
+2026-01-20 06:47:01,923 - vehicle_lookup_client - WARNING - [LOGIN][WWID] Field not ready, waiting...
+2026-01-20 06:47:02,600 - vehicle_lookup_client - INFO - [LOGIN][WWID] Entered WWID: e96693
+2026-01-20 06:47:02,698 - vehicle_lookup_client - INFO - [LOGIN][WWID] Clicked Submit button
+2026-01-20 06:47:04,708 - vehicle_lookup_client - INFO - [LOGIN][WWID] After submit, current URL: https://avisbudget.palantirfoundry.com/workspace/fleet-operations-pwa/health
+2026-01-20 06:47:04,709 - vehicle_lookup_client - INFO - [LOGIN] Authentication successful for: xe96693@co.abg.com
+2026-01-20 06:47:04,709 - vehicle_lookup_client - INFO - [SMART_AUTH] Authentication successful: Authenticated successfully as xe96693@co.abg.com
+2026-01-20 06:47:04,719 - vehicle_lookup_client - INFO - 
+Processing 1 MVAs...
+2026-01-20 06:47:04,720 - vehicle_lookup_client - INFO - 
+[1/1] Processing MVA: 56903346
+2026-01-20 06:47:16,132 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 56903346
+2026-01-20 06:47:19,656 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 56903346
+2026-01-20 06:47:19,678 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 56903346
+2026-01-20 06:47:19,679 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:47:19,717 - vehicle_lookup_client - INFO -     MVA: 056903346
+2026-01-20 06:47:19,744 - vehicle_lookup_client - INFO -     VIN: 3FMCR9CN0SRE34030
+2026-01-20 06:47:19,769 - vehicle_lookup_client - INFO -     Desc: FORD BRONCO SPORT
+2026-01-20 06:47:19,769 - vehicle_lookup_client - INFO -   Summary - MVA: 056903346, VIN: 3FMCR9CN0SRE34030, Desc: FORD BRONCO SPORT
+2026-01-20 06:47:19,770 - vehicle_lookup_client - INFO -   Progress: 100.0%
+2026-01-20 06:47:19,770 - vehicle_lookup_client - INFO - 
+Writing results to: GlassInfo.csv
+2026-01-20 06:47:19,773 - compass_core.csv_utils - INFO - [CSV] Wrote 1 results to: C:\Temp\Code\Compass_Framework\clients\vehicle_lookup\GlassInfo.csv
+2026-01-20 06:47:19,773 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:47:19,774 - vehicle_lookup_client - INFO - Summary:
+2026-01-20 06:47:19,778 - vehicle_lookup_client - INFO -   Total MVAs: 1
+2026-01-20 06:47:19,780 - vehicle_lookup_client - INFO -   Completed: 1
+2026-01-20 06:47:19,780 - vehicle_lookup_client - INFO -   Failed: 0
+2026-01-20 06:47:19,781 - vehicle_lookup_client - INFO -   Success Rate: 100.0%
+2026-01-20 06:47:19,783 - vehicle_lookup_client - INFO -   Output: C:\Temp\Code\Compass_Framework\clients\vehicle_lookup\GlassInfo.csv
+2026-01-20 06:47:19,784 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:47:19,784 - vehicle_lookup_client - INFO - Closing browser...
+2026-01-20 06:47:19,785 - compass_core.standard_driver_manager - INFO - [DRIVER] Quitting Edge WebDriver...
+2026-01-20 06:49:30,943 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:49:30,945 - vehicle_lookup_client - INFO - Vehicle Lookup Client - Glass Info Retrieval
+2026-01-20 06:49:30,945 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:49:30,946 - vehicle_lookup_client - INFO - Loading configuration from: ../../webdriver.ini.local
+2026-01-20 06:49:30,950 - vehicle_lookup_client - INFO - Clearing previous output file: GlassInfo.csv
+2026-01-20 06:49:30,953 - vehicle_lookup_client - INFO - Reading MVA list from: ../../data/sample_mva_list.csv
+2026-01-20 06:49:30,957 - compass_core.csv_utils - INFO - [CSV] Read 12 MVAs from: ../../data/sample_mva_list.csv
+2026-01-20 06:49:30,959 - vehicle_lookup_client - INFO - Found 12 MVAs to process
+2026-01-20 06:49:30,963 - vehicle_lookup_client - INFO - Initializing browser...
+2026-01-20 06:49:31,183 - compass_core.standard_driver_manager - INFO - [DRIVER] Detected Browser=144.0.3719.82, Driver=144.0.3719.82
+2026-01-20 06:49:31,184 - compass_core.standard_driver_manager - INFO - [DRIVER] Launching Edge - Browser 144.0.3719.82, Driver 144.0.3719.82
+2026-01-20 06:49:31,184 - compass_core.standard_driver_manager - INFO - [DRIVER] InPrivate mode enabled
+2026-01-20 06:49:35,574 - vehicle_lookup_client - INFO - Performing authentication...
+2026-01-20 06:49:35,641 - vehicle_lookup_client - INFO - [SMART_AUTH] Starting smart authentication for: xe96693@co.abg.com
+2026-01-20 06:49:35,735 - vehicle_lookup_client - INFO - [SMART_AUTH] Target app URL: https://avisbudget.palantirfoundry.com/workspace/fleet-operations-pwa/health
+2026-01-20 06:49:41,512 - vehicle_lookup_client - INFO - [SMART_AUTH] Login page detected, performing authentication
+2026-01-20 06:49:41,512 - vehicle_lookup_client - INFO - [LOGIN] Starting authentication flow for: xe96693@co.abg.com
+2026-01-20 06:49:42,203 - vehicle_lookup_client - WARNING - [LOGIN][PASSWORD] Field not ready, waiting...
+2026-01-20 06:49:45,944 - vehicle_lookup_client - INFO - [LOGIN][STAY_SIGNED_IN] Clicked 'No' on Stay signed in prompt
+2026-01-20 06:49:47,949 - vehicle_lookup_client - INFO - [LOGIN][WWID] Looking for WWID input field...
+2026-01-20 06:49:51,769 - vehicle_lookup_client - WARNING - [LOGIN][WWID] Field not ready, waiting...
+2026-01-20 06:49:52,471 - vehicle_lookup_client - INFO - [LOGIN][WWID] Entered WWID: e96693
+2026-01-20 06:49:52,575 - vehicle_lookup_client - INFO - [LOGIN][WWID] Clicked Submit button
+2026-01-20 06:49:54,584 - vehicle_lookup_client - INFO - [LOGIN][WWID] After submit, current URL: https://avisbudget.palantirfoundry.com/workspace/fleet-operations-pwa/health
+2026-01-20 06:49:54,585 - vehicle_lookup_client - INFO - [LOGIN] Authentication successful for: xe96693@co.abg.com
+2026-01-20 06:49:54,586 - vehicle_lookup_client - INFO - [SMART_AUTH] Authentication successful: Authenticated successfully as xe96693@co.abg.com
+2026-01-20 06:49:54,613 - vehicle_lookup_client - INFO - 
+Processing 12 MVAs...
+2026-01-20 06:49:54,614 - vehicle_lookup_client - INFO - 
+[1/12] Processing MVA: 56903346
+2026-01-20 06:50:05,626 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 56903346
+2026-01-20 06:50:09,088 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 56903346
+2026-01-20 06:50:09,117 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 56903346
+2026-01-20 06:50:09,117 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:50:09,155 - vehicle_lookup_client - INFO -     MVA: 056903346
+2026-01-20 06:50:09,179 - vehicle_lookup_client - INFO -     VIN: 3FMCR9CN0SRE34030
+2026-01-20 06:50:09,201 - vehicle_lookup_client - INFO -     Desc: FORD BRONCO SPORT
+2026-01-20 06:50:09,202 - vehicle_lookup_client - INFO -   Summary - MVA: 056903346, VIN: 3FMCR9CN0SRE34030, Desc: FORD BRONCO SPORT
+2026-01-20 06:50:09,202 - vehicle_lookup_client - INFO -   Progress: 8.3%
+2026-01-20 06:50:09,203 - vehicle_lookup_client - INFO - 
+[2/12] Processing MVA: 58520626
+2026-01-20 06:50:20,281 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 58520626
+2026-01-20 06:50:23,791 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 58520626
+2026-01-20 06:50:23,813 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 58520626
+2026-01-20 06:50:23,814 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:50:23,843 - vehicle_lookup_client - INFO -     MVA: 058520626
+2026-01-20 06:50:23,866 - vehicle_lookup_client - INFO -     VIN: 1FMDE7BH5SLA63283
+2026-01-20 06:50:23,891 - vehicle_lookup_client - INFO -     Desc: FORD BRONCO 4DR 4WD
+2026-01-20 06:50:23,892 - vehicle_lookup_client - INFO -   Summary - MVA: 058520626, VIN: 1FMDE7BH5SLA63283, Desc: FORD BRONCO 4DR 4WD
+2026-01-20 06:50:23,893 - vehicle_lookup_client - INFO -   Progress: 16.7%
+2026-01-20 06:50:23,893 - vehicle_lookup_client - INFO - 
+[3/12] Processing MVA: 54708986
+2026-01-20 06:50:34,996 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 54708986
+2026-01-20 06:50:38,447 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 54708986
+2026-01-20 06:50:38,469 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 54708986
+2026-01-20 06:50:38,470 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:50:38,497 - vehicle_lookup_client - INFO -     MVA: 054708986
+2026-01-20 06:50:38,520 - vehicle_lookup_client - INFO -     VIN: 3GNAXUEG9RL256495
+2026-01-20 06:50:38,544 - vehicle_lookup_client - INFO -     Desc: CHEVROLET EQUINOX 4WD
+2026-01-20 06:50:38,544 - vehicle_lookup_client - INFO -   Summary - MVA: 054708986, VIN: 3GNAXUEG9RL256495, Desc: CHEVROLET EQUINOX 4WD
+2026-01-20 06:50:38,545 - vehicle_lookup_client - INFO -   Progress: 25.0%
+2026-01-20 06:50:38,548 - vehicle_lookup_client - INFO - 
+[4/12] Processing MVA: 55165806
+2026-01-20 06:50:49,592 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 55165806
+2026-01-20 06:50:53,014 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 55165806
+2026-01-20 06:50:53,038 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 55165806
+2026-01-20 06:50:53,038 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:50:53,067 - vehicle_lookup_client - INFO -     MVA: 055165806
+2026-01-20 06:50:53,095 - vehicle_lookup_client - INFO -     VIN: 1FBAX2YG5RKA28797
+2026-01-20 06:50:53,119 - vehicle_lookup_client - INFO -     Desc: FORD TRANSIT WAGON
+2026-01-20 06:50:53,120 - vehicle_lookup_client - INFO -   Summary - MVA: 055165806, VIN: 1FBAX2YG5RKA28797, Desc: FORD TRANSIT WAGON
+2026-01-20 06:50:53,121 - vehicle_lookup_client - INFO -   Progress: 33.3%
+2026-01-20 06:50:53,122 - vehicle_lookup_client - INFO - 
+[5/12] Processing MVA: 54451972
+2026-01-20 06:51:04,251 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 54451972
+2026-01-20 06:51:07,694 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 54451972
+2026-01-20 06:51:07,720 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 54451972
+2026-01-20 06:51:07,721 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:51:07,750 - vehicle_lookup_client - INFO -     MVA: 054451972
+2026-01-20 06:51:07,770 - vehicle_lookup_client - INFO -     VIN: 1C4RJHAG0S8656962
+2026-01-20 06:51:07,794 - vehicle_lookup_client - INFO -     Desc: JEEP GRAND CHEROKEE 4WD
+2026-01-20 06:51:07,795 - vehicle_lookup_client - INFO -   Summary - MVA: 054451972, VIN: 1C4RJHAG0S8656962, Desc: JEEP GRAND CHEROKEE 4WD
+2026-01-20 06:51:07,795 - vehicle_lookup_client - INFO -   Progress: 41.7%
+2026-01-20 06:51:07,796 - vehicle_lookup_client - INFO - 
+[6/12] Processing MVA: 59336060
+2026-01-20 06:51:18,872 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 59336060
+2026-01-20 06:51:22,296 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 59336060
+2026-01-20 06:51:22,322 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 59336060
+2026-01-20 06:51:22,323 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:51:22,350 - vehicle_lookup_client - INFO -     MVA: 059336060
+2026-01-20 06:51:22,375 - vehicle_lookup_client - INFO -     VIN: 3GNAXHEG2TL296562
+2026-01-20 06:51:22,402 - vehicle_lookup_client - INFO -     Desc: CHEVROLET EQUINOX 2WD
+2026-01-20 06:51:22,403 - vehicle_lookup_client - INFO -   Summary - MVA: 059336060, VIN: 3GNAXHEG2TL296562, Desc: CHEVROLET EQUINOX 2WD
+2026-01-20 06:51:22,404 - vehicle_lookup_client - INFO -   Progress: 50.0%
+2026-01-20 06:51:22,404 - vehicle_lookup_client - INFO - 
+[7/12] Processing MVA: 59137481
+2026-01-20 06:51:33,476 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 59137481
+2026-01-20 06:51:36,874 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 59137481
+2026-01-20 06:51:36,894 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 59137481
+2026-01-20 06:51:36,895 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:51:36,948 - vehicle_lookup_client - INFO -     MVA: 059137481
+2026-01-20 06:51:36,969 - vehicle_lookup_client - INFO -     VIN: 3GNAXHEG5TL283997
+2026-01-20 06:51:36,989 - vehicle_lookup_client - INFO -     Desc: CHEVROLET EQUINOX 2WD
+2026-01-20 06:51:36,991 - vehicle_lookup_client - INFO -   Summary - MVA: 059137481, VIN: 3GNAXHEG5TL283997, Desc: CHEVROLET EQUINOX 2WD
+2026-01-20 06:51:36,992 - vehicle_lookup_client - INFO -   Progress: 58.3%
+2026-01-20 06:51:36,993 - vehicle_lookup_client - INFO - 
+[8/12] Processing MVA: 58252821
+2026-01-20 06:51:48,058 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 58252821
+2026-01-20 06:51:51,401 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 58252821
+2026-01-20 06:51:51,421 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 58252821
+2026-01-20 06:51:51,422 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:51:51,443 - vehicle_lookup_client - INFO -     MVA: 058252821
+2026-01-20 06:51:51,468 - vehicle_lookup_client - INFO -     VIN: 1FMDE7BH8SLA42959
+2026-01-20 06:51:51,490 - vehicle_lookup_client - INFO -     Desc: FORD BRONCO 4DR 4WD
+2026-01-20 06:51:51,491 - vehicle_lookup_client - INFO -   Summary - MVA: 058252821, VIN: 1FMDE7BH8SLA42959, Desc: FORD BRONCO 4DR 4WD
+2026-01-20 06:51:51,492 - vehicle_lookup_client - INFO -   Progress: 66.7%
+2026-01-20 06:51:51,493 - vehicle_lookup_client - INFO - 
+[9/12] Processing MVA: 59073803
+2026-01-20 06:52:02,575 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 59073803
+2026-01-20 06:52:06,006 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 59073803
+2026-01-20 06:52:06,034 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 59073803
+2026-01-20 06:52:06,035 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:52:06,059 - vehicle_lookup_client - INFO -     MVA: 059073803
+2026-01-20 06:52:06,082 - vehicle_lookup_client - INFO -     VIN: KNDEPCAA0T7860244
+2026-01-20 06:52:06,098 - vehicle_lookup_client - INFO -     Desc: KIA SELTOS AWD
+2026-01-20 06:52:06,099 - vehicle_lookup_client - INFO -   Summary - MVA: 059073803, VIN: KNDEPCAA0T7860244, Desc: KIA SELTOS AWD
+2026-01-20 06:52:06,099 - vehicle_lookup_client - INFO -   Progress: 75.0%
+2026-01-20 06:52:06,100 - vehicle_lookup_client - INFO - 
+[10/12] Processing MVA: 57880200
+2026-01-20 06:52:17,180 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 57880200
+2026-01-20 06:52:20,567 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 57880200
+2026-01-20 06:52:20,583 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 57880200
+2026-01-20 06:52:20,583 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:52:20,615 - vehicle_lookup_client - INFO -     MVA: 057880200
+2026-01-20 06:52:20,638 - vehicle_lookup_client - INFO -     VIN: JM3KFBCM4S0695093
+2026-01-20 06:52:20,658 - vehicle_lookup_client - INFO -     Desc: MAZDA CX-5 AWD
+2026-01-20 06:52:20,658 - vehicle_lookup_client - INFO -   Summary - MVA: 057880200, VIN: JM3KFBCM4S0695093, Desc: MAZDA CX-5 AWD
+2026-01-20 06:52:20,659 - vehicle_lookup_client - INFO -   Progress: 83.3%
+2026-01-20 06:52:20,659 - vehicle_lookup_client - INFO - 
+[11/12] Processing MVA: 55945234
+2026-01-20 06:52:31,820 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 55945234
+2026-01-20 06:52:35,213 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 55945234
+2026-01-20 06:52:35,236 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 55945234
+2026-01-20 06:52:35,237 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:52:35,265 - vehicle_lookup_client - INFO -     MVA: 055945234
+2026-01-20 06:52:35,300 - vehicle_lookup_client - INFO -     VIN: 4T1DAACK6SU066495
+2026-01-20 06:52:35,324 - vehicle_lookup_client - INFO -     Desc: TOYOTA CAMRY HYBRID
+2026-01-20 06:52:35,325 - vehicle_lookup_client - INFO -   Summary - MVA: 055945234, VIN: 4T1DAACK6SU066495, Desc: TOYOTA CAMRY HYBRID
+2026-01-20 06:52:35,327 - vehicle_lookup_client - INFO -   Progress: 91.7%
+2026-01-20 06:52:35,328 - vehicle_lookup_client - INFO - 
+[12/12] Processing MVA: 56241953
+2026-01-20 06:52:46,588 - vehicle_lookup_client - INFO - [MVA] Entered MVA: 56241953
+2026-01-20 06:52:50,082 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Waiting for property page with MVA: 56241953
+2026-01-20 06:52:50,105 - vehicle_lookup_client - INFO - [PROPERTY_PAGE] Property page loaded successfully with MVA: 56241953
+2026-01-20 06:52:50,106 - vehicle_lookup_client - INFO -   Retrieving properties: MVA, VIN, Desc
+2026-01-20 06:52:50,133 - vehicle_lookup_client - INFO -     MVA: 056241953
+2026-01-20 06:52:50,156 - vehicle_lookup_client - INFO -     VIN: 2C4RC1BG2SR526489
+2026-01-20 06:52:50,189 - vehicle_lookup_client - INFO -     Desc: CHRYSLER PACIFICA VAN
+2026-01-20 06:52:50,191 - vehicle_lookup_client - INFO -   Summary - MVA: 056241953, VIN: 2C4RC1BG2SR526489, Desc: CHRYSLER PACIFICA VAN
+2026-01-20 06:52:50,195 - vehicle_lookup_client - INFO -   Progress: 100.0%
+2026-01-20 06:52:50,196 - vehicle_lookup_client - INFO - 
+Writing results to: GlassInfo.csv
+2026-01-20 06:52:50,202 - compass_core.csv_utils - INFO - [CSV] Wrote 12 results to: C:\Temp\Code\Compass_Framework\clients\vehicle_lookup\GlassInfo.csv
+2026-01-20 06:52:50,203 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:52:50,213 - vehicle_lookup_client - INFO - Summary:
+2026-01-20 06:52:50,214 - vehicle_lookup_client - INFO -   Total MVAs: 12
+2026-01-20 06:52:50,215 - vehicle_lookup_client - INFO -   Completed: 12
+2026-01-20 06:52:50,216 - vehicle_lookup_client - INFO -   Failed: 0
+2026-01-20 06:52:50,216 - vehicle_lookup_client - INFO -   Success Rate: 100.0%
+2026-01-20 06:52:50,217 - vehicle_lookup_client - INFO -   Output: C:\Temp\Code\Compass_Framework\clients\vehicle_lookup\GlassInfo.csv
+2026-01-20 06:52:50,219 - vehicle_lookup_client - INFO - ============================================================
+2026-01-20 06:52:50,221 - vehicle_lookup_client - INFO - Closing browser...
+2026-01-20 06:52:50,222 - compass_core.standard_driver_manager - INFO - [DRIVER] Quitting Edge WebDriver...
