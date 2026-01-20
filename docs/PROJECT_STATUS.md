@@ -12,18 +12,46 @@ Note: This document is the authoritative source for current status and completio
 - Test suite organized (unit, integration, E2E) with E2E gated; see [docs/TESTING.md](docs/TESTING.md).
 - Package builds via [pyproject.toml](pyproject.toml); version synchronization covered in [src/compass_core/engine.py](src/compass_core/engine.py).
 
-## **Recent Updates (2026-01-17)**
-- PR #16 merged: Roadmap added — see [ROADMAP.md](ROADMAP.md).
-- PR #17 merged: Selenium-backed PM actions (`SeleniumPmActions`) introduced with unit tests; exported conditionally in the public API.
-- PR #20 merged: Workflow protocols added — see [src/compass_core/workflow.py](src/compass_core/workflow.py); `StandardWorkflowManager` exported via [src/compass_core/__init__.py](src/compass_core/__init__.py).
-- PR #22 merged: `PmActions` protocol added — see [src/compass_core/pm_actions.py](src/compass_core/pm_actions.py), enabling protocol-first PM flow actions.
-- Test suite status: 227 passed, 0 failed, 4 skipped (all green).
-- Branch housekeeping: merged feature branches pruned locally and remotely.
+## **Recent Updates (2026-01-19)**
+- **MVA Collection (TDD)**: Data structures for MVA tracking and iteration
+  - `MvaCollection` - collection with iteration, filtering, progress tracking
+  - `MvaItem` - individual MVA with status (pending/processing/completed/failed)
+  - `MvaStatus` - status enumeration
+  - 28 unit tests written BEFORE implementation (proper TDD)
+  - Total test count: 358 unit tests (355 passing, 3 expected credential failures)
+- **CSV utilities tests added**: 21 comprehensive unit tests for `read_mva_list()` and `write_results_csv()`
+  - Test coverage for normalization, error handling, UTF-8 encoding, edge cases
+- PR #23 merged: LoginFlow protocol and implementations
+  - `LoginFlow` protocol with `authenticate()` method
+  - `SeleniumLoginFlow` for Microsoft SSO
+  - `SmartLoginFlow` with SSO cache detection
+  - API standardization: `login_url` → `url` parameter (BREAKING CHANGE)
+  - 35 new unit tests for login flows (7 protocol + 15 SeleniumLoginFlow + 13 SmartLoginFlow)
+- PR #23 merged: VehicleLookupFlow workflow
+  - Batch MVA processing workflow implementing Workflow protocol
+  - Replaces legacy GlassDataParser.py functionality
+  - 16 new unit tests with comprehensive coverage
+- PR #23 merged: CSV utilities
+  - `read_mva_list()` - MVA list reading with normalization
+  - `write_results_csv()` - Results writing with error handling
+- **Client script added**: `vehicle_lookup_client.py` - production-ready CLI for batch MVA lookup
+- **Gap analysis**: Documented legacy script migration status in [GAP_ANALYSIS.md](GAP_ANALYSIS.md)
+- Previous updates:
+  - PR #16: Roadmap added — see [ROADMAP.md](ROADMAP.md)
+  - PR #17: Selenium-backed PM actions (`SeleniumPmActions`)
+  - PR #20: Workflow protocols — see [src/compass_core/workflow.py](src/compass_core/workflow.py)
+  - PR #22: `PmActions` protocol — see [src/compass_core/pm_actions.py](src/compass_core/pm_actions.py)
 
 ## 🎯 **Refactoring Goal**
 Extract the monolithic **DevCompass** framework into clean, testable **Compass Framework** with protocol-based architecture.
 
-## 📊 **Refactoring Progress: 100% Complete**
+## 📊 **Refactoring Progress: 100% Complete + Vehicle Lookup**
+
+**Core Framework**: 8/8 protocols extracted and implemented  
+**Test Coverage**: 358 unit tests (355 passing, 3 expected credential failures)  
+**Client Scripts**: Production-ready vehicle lookup client  
+**Legacy Migration**: GlassDataParser.py functionality fully replicated  
+**Data Structures**: MVA collection management (TDD)
 
 ### 🏗️ **ORIGINAL ARCHITECTURE (DevCompass)**
 ```
@@ -56,7 +84,7 @@ Compass_Framework/src/compass_core/
 └── tests/                      # Comprehensive protocol tests
 ```
 
-## 🔄 **EXTRACTED & DECOUPLED (5/5 Core Protocols - COMPLETE)**
+## 🔄 **EXTRACTED & DECOUPLED (8/8 Core Protocols - COMPLETE)**
 
 ### ✅ **1. Navigation Logic** 
 - **FROM**: `DevCompass/pages/` + `DevCompass/flows/` (tightly coupled page objects)
@@ -87,6 +115,24 @@ Compass_Framework/src/compass_core/
 - **TO**: `DriverManager Protocol` → `StandardDriverManager`
 - **Decoupling**: WebDriver lifecycle, version compatibility, configuration-driven setup
 - **Status**: ✅ Complete (covered by tests)
+
+### ✅ **6. Authentication Flow** 
+- **FROM**: `DevCompass/flows/LoginFlow` (hardcoded login_handler)
+- **TO**: `LoginFlow Protocol` → `SeleniumLoginFlow` + `SmartLoginFlow`
+- **Decoupling**: Protocol-based authentication, SSO cache detection, testable flows
+- **Status**: ✅ Complete (35 unit tests, E2E validated)
+
+### ✅ **7. Vehicle Data Actions** 
+- **FROM**: `DevCompass/pages/vehicle_properties_page.py` + inline functions
+- **TO**: `VehicleDataActions Protocol` → `SeleniumVehicleDataActions`
+- **Decoupling**: Property retrieval, MVA input, validation
+- **Status**: ✅ Complete (covered by unit tests)
+
+### ✅ **8. Batch Processing Workflow** 
+- **FROM**: `GlassDataParser.py` (monolithic script)
+- **TO**: `VehicleLookupFlow` implementing `Workflow` protocol
+- **Decoupling**: Orchestrated workflow with dependency injection, CSV utilities
+- **Status**: ✅ Complete (16 unit tests, client script ready)
 
 ## 🧪 **Testing Transformation**
 - **DevCompass**: `tests/unit` (probably coupled to implementation)

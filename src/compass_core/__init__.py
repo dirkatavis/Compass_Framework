@@ -84,6 +84,14 @@ except ImportError:
     # CSV utilities not available
     pass
 
+# MVA collection management - data structures for MVA tracking
+try:
+    from .mva_collection import MvaCollection, MvaItem, MvaStatus
+    __all__.extend(['MvaCollection', 'MvaItem', 'MvaStatus'])
+except ImportError:
+    # MVA collection not available
+    pass
+
 # Windows-only imports - only available on Windows
 try:
     from .browser_version_checker import BrowserVersionChecker

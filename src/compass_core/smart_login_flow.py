@@ -125,9 +125,21 @@ class SmartLoginFlow(LoginFlow):
             current_url = self.driver.current_url
             self.logger.debug(f"[SMART_AUTH] Current URL after navigation: {current_url}")
             
+            # Give the page a moment to settle and trigger any SSO redirects
+            import time
+            time.sleep(2)
+            
+            # Check if URL changed after waiting (indicates redirect in progress)
+            new_url = self.driver.current_url
+            if new_url != current_url:
+                self.logger.debug(f"[SMART_AUTH] URL changed after wait: {new_url}")
+                current_url = new_url
+                # Wait a bit more for redirect to complete
+                time.sleep(2)
+            
             # Step 2: Detect if we're on a login page
             self.logger.debug("[SMART_AUTH] Step 2: Detect login page")
-            login_required = self._detect_login_page(timeout=5)
+            login_required = self._detect_login_page(timeout=DEFAULT_WAIT_TIMEOUT)  # Use global constant
             
             if not login_required:
                 # SSO session active - already authenticated
@@ -176,7 +188,7 @@ class SmartLoginFlow(LoginFlow):
                 "error": str(e)
             }
     
-    def _detect_login_page(self, timeout: int = 5) -> bool:
+    def _detect_login_page(self, timeout: int = DEFAULT_WAIT_TIMEOUT) -> bool:
         """
         Detect if current page is a login page.
         
