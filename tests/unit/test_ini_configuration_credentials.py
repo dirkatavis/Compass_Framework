@@ -106,9 +106,8 @@ edge_path = test.exe
         temp_file.close()
         
         try:
-            # Create fresh config and load temp file explicitly
-            fresh_config = IniConfiguration()
-            fresh_config.load(temp_file.name)
+            # Pass config_path to prevent auto-loading webdriver.ini.local
+            fresh_config = IniConfiguration(config_path=temp_file.name)
             username = fresh_config.get('credentials.username')
             self.assertIsNone(username, "Empty credentials section should return None for username")
         finally:
@@ -124,7 +123,7 @@ edge_path = test.exe
         temp_file.close()
         
         try:
-            # Create fresh config and load temp file explicitly
+            # Create fresh config and load temp file
             fresh_config = IniConfiguration()
             fresh_config.load(temp_file.name)
             username = fresh_config.get('credentials.username')

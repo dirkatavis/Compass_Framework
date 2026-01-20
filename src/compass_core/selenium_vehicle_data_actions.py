@@ -365,9 +365,10 @@ class SeleniumVehicleDataActions(VehicleDataActions):
                     try:
                         element = driver.find_element(By.XPATH, selector)
                         if element and element.is_displayed():
-                            # Verify the element text contains our exact MVA, not a different one
+                            # Verify the element text exactly matches our MVA (or contains it as a word)
                             element_text = element.text.strip()
-                            if mva_to_find in element_text:
+                            # Check if MVA appears as exact match or word boundary
+                            if element_text == mva_to_find or f" {mva_to_find} " in f" {element_text} ":
                                 self._logger.debug(f"[PROPERTY_PAGE] Found MVA '{mva_to_find}' in element text: '{element_text[:50]}'")
                                 return True
                     except NoSuchElementException:

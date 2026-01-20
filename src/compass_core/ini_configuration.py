@@ -58,7 +58,8 @@ class IniConfiguration(Configuration):
         if not file_path.exists():
             raise FileNotFoundError(f"Configuration file not found: {file_path}")
         
-        # Read the INI file
+        # Clear existing config and read the INI file fresh
+        self.config.clear()
         self.config.read(file_path)
         self.config_path = file_path
         
