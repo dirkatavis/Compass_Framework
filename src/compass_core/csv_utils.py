@@ -135,3 +135,108 @@ def write_results_csv(results: List[Dict[str, Any]], output_path: str) -> None:
     except Exception as e:
         logger.error(f"[CSV] Error writing results file: {e}")
         raise IOError(f"Failed to write results to {output_path}: {e}")
+
+
+def read_workitem_list(csv_path: str) -> List[Dict[str, str]]:
+    """
+    Read workitem list from CSV file.
+    
+    Expected CSV format with columns: MVA, DamageType, CorrectionAction
+    
+    Features:
+    - Normalizes MVAs to 8 digits
+    - Skips header rows (starting with '#' or 'MVA')
+    - Ignores comment lines (starting with '#')
+    - Handles empty rows
+    
+    Args:
+        csv_path: Path to CSV file
+    
+    Returns:
+        List of dictionaries with keys: 'mva', 'damage_type', 'sub_damage_type', 'correction_action'
+    
+    Raises:
+        FileNotFoundError: If CSV file doesn't exist
+        ValueError: If CSV is empty, invalid, or missing required columns
+    
+    Example CSV format:
+        # Workitem List
+        MVA,DamageType,SubDamageType,CorrectionAction
+        50227203,Glass Damage,Windshield,Regular maintenance required
+        12345678,Body Damage,Front Bumper,Repair front bumper
+    """
+    if not os.path.exists(csv_path):
+        logger.error(f"[CSV] File not found: {csv_path}")
+        raise FileNotFoundError(f"CSV file not found: {csv_path}")
+    
+    def normalize_mva(raw: str) -> str:
+        """Normalize MVA to 8 digits."""
+        s = raw.strip()
+        # Extract digits
+        digits = ''.join(c for c in s if c.isdigit())
+        if len(digits) >= 8:
+            return digits[:8]
+        elif len(digits) > 0:
+            return digits.zfill(8)
+        return s  # Return as-is if no digits
+    
+    workitems = []
+    
+    try:
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            
+            # Verify required columns
+            if not reader.fieldnames:
+                raise ValueError("CSV file is empty or has no headers")
+            
+            required_cols = {'mva', 'damagetype', 'subdamagetype', 'correctionaction'}
+            actual_cols = {col.lower().strip() for col in reader.fieldnames}
+            
+            if not required_cols.issubset(actual_cols):
+                raise ValueError(f"CSV missing required columns. Expected: {required_cols}, Found: {actual_cols}")
+            
+            # Map column names (case-insensitive)
+            col_map = {col.lower().strip(): col for col in reader.fieldnames}
+            mva_col = col_map.get('mva', 'MVA')
+            damage_col = col_map.get('damagetype', 'DamageType')
+            sub_damage_col = col_map.get('subdamagetype', 'SubDamageType')
+            action_col = col_map.get('correctionaction', 'CorrectionAction')
+            
+            for row in reader:
+                # Skip comment lines
+                if row.get(mva_col, '').strip().startswith('#'):
+                    continue
+                
+                # Skip empty rows
+                if not row.get(mva_col, '').strip():
+                    continue
+                
+                # Extract and normalize data
+                mva = normalize_mva(row[mva_col])
+                damage_type = row.get(damage_col, '').strip()
+                sub_damage_type = row.get(sub_damage_col, '').strip()
+                correction_action = row.get(action_col, '').strip()
+                
+                if mva and damage_type and sub_damage_type and correction_action:
+                    workitems.append({
+                        'mva': mva,
+                        'damage_type': damage_type,
+                        'sub_damage_type': sub_damage_type,
+                        'correction_action': correction_action
+                    })
+        
+        if not workitems:
+            raise ValueError(f"No valid workitems found in {csv_path}")
+        
+        logger.info(f"[CSV] Read {len(workitems)} workitems from: {csv_path}")
+        return workitems
+        
+    except csv.Error as e:
+        logger.error(f"[CSV] Error parsing CSV: {e}")
+        raise ValueError(f"Invalid CSV format in {csv_path}: {e}")
+    except Exception as e:
+        if isinstance(e, (FileNotFoundError, ValueError)):
+            raise
+        logger.error(f"[CSV] Unexpected error reading workitems: {e}")
+        raise IOError(f"Failed to read workitems from {csv_path}: {e}")

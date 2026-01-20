@@ -144,14 +144,9 @@ def main():
                 if entry_result['status'] != 'success':
                     raise Exception(f"MVA entry failed: {entry_result.get('error')}")
                 
-                # Verify echo
-                logger.debug(f"  Verifying MVA echo...")
-                if not vehicle_actions.verify_mva_echo(mva_item.mva):
-                    raise Exception("MVA echo verification failed")
-                
-                # Wait for property page
+                # Wait for property page (MVA property field to appear)
                 logger.debug(f"  Waiting for property page...")
-                if not vehicle_actions.wait_for_property_page_loaded(mva_item.mva, timeout=15):
+                if not vehicle_actions.wait_for_property_page_loaded(mva_item.mva):
                     raise Exception("Property page did not load")
                 
                 # Retrieve properties

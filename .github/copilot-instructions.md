@@ -26,7 +26,7 @@ Goal: Equip agents to work productively in this repo by codifying the big-pictur
   - Cross-component in [tests/integration](tests/integration) (verify protocol interactions)
   - Browser automation in [tests/e2e](tests/e2e) (full workflows with real WebDriver)
 - **E2E skip mechanism**: Tests check `hasattr(unittest, '_e2e_enabled')` and skip if false. Enabled via `unittest._e2e_enabled = True` or `--enable-e2e` flag.
-- **Test counts**: ~218 unit, ~7 integration, ~4 E2E (as of Jan 2026).
+- **Test counts**: 361 unit tests (360 passing, 1 known failure), ~7 integration, ~4 E2E (as of Jan 20, 2026).
 
 ## Optional Dependencies & Platforms
 - **Selenium features**: Install extras to enable navigator/driver manager.
@@ -51,10 +51,12 @@ Goal: Equip agents to work productively in this repo by codifying the big-pictur
 - Example: `navigator.verify_page(url="https://login.microsoftonline.com", match="domain")` succeeds even if redirected to `/common/oauth2/...`.
 
 ## PM Workflows & Business Flows
-- **Protocol-first flows**: Define `Workflow` protocol with `id()`, `plan()`, `run()` methods; implement in concrete classes (e.g., [pm_work_item_flow.py](src/compass_core/pm_work_item_flow.py)).
+- **Protocol-first flows**: Define `Workflow` protocol with `id()`, `plan()`, `run()` methods; implement in concrete classes (e.g., [pm_work_item_flow.py](src/compass_core/pm_work_item_flow.py), [vehicle_lookup_flow.py](src/compass_core/vehicle_lookup_flow.py)).
 - **PmActions protocol**: Abstract PM-specific actions (lighthouse status, workitem handling); implement in [pm_actions_selenium.py](src/compass_core/pm_actions_selenium.py).
-- **Flow orchestration**: Use `FlowContext` (mva, logger, params) to pass state; `WorkflowStep` for discrete actions.
-- **Graceful skips**: Flows return `{"status": "skipped", "reason": "..."}` for early exits (e.g., lighthouse rentable).
+- **VehicleLookupFlow**: Batch vehicle property lookup workflow implementing `Workflow` protocol; orchestrates login, MVA iteration, property retrieval, CSV output.
+- **Flow context**: Flows receive `params: Dict[str, Any]` with runtime configuration (URLs, credentials, file paths, timeouts).
+- **WorkflowStep**: Discrete action abstraction with `name` and `description` in `plan()` return value; used for visibility and tracking.
+- **Graceful skips**: Flows return `{"status": "skipped", "reason": "..."}` for early exits (e.g., lighthouse rentable, no data).
 
 ## Page Object Model (POM) Patterns
 - **Location**: E2E POMs in [tests/e2e/pages](tests/e2e/pages) (e.g., [login_page.py](tests/e2e/pages/login_page.py)).
@@ -85,8 +87,24 @@ Goal: Equip agents to work productively in this repo by codifying the big-pictur
 
 ## Build & Integration
 - Dev install: `pip install -e .` then run tests via [run_tests.py](run_tests.py).
+- Selenium support: `pip install -e .[selenium]` (alias: `.[web]`) enables Navigator, DriverManager, LoginFlow, VehicleLookupFlow.
 - Build: `python -m build` (artifacts ignored per .gitignore). 
-- Client integration: install this repo into client projects via editable installs (see project docs) and validate client integration before pushing.
+- Client integration: See [clients/](clients/) for real-world usage examples; install framework in client projects via editable installs.
+
+## Client Integration Pattern
+- **Structure**: Clients in [clients/](clients/) demonstrate framework usage with real workflows.
+- **vehicle_lookup**: Batch MVA processing client using `VehicleLookupFlow` to retrieve glass data (MVA, VIN, Description) from CSV lists.
+- **create_missing_workitems**: Workitem creation/verification client that finds existing workitems or creates new ones based on CSV specifications (MVA, DamageType, CorrectionAction).
+- **Shared config**: Clients use framework's `webdriver.ini.local` for credentials and sample data files in `data/` for test input.
+- **Development flow**: Framework-first (add protocol/implementation) → Test → Client validation → Iterate.
+- **Client execution**: From repo root, activate venv (`.\.venv-1\Scripts\Activate.ps1`), then `cd clients/<client_name>; python main.py` or `python CreateMissingWorkItems.py`.
+
+## Vehicle Lookup & Batch Processing
+- **VehicleLookupFlow**: Orchestrates complete MVA→property workflow: authenticate, read MVA list, iterate lookups, write CSV results.
+- **MvaCollection**: State tracking for batch MVA processing with `MvaItem` (status: pending/processing/completed/failed) and progress methods (`pending_count()`, `completed_count()`, `progress_percentage()`).
+- **CSV utilities**: `read_mva_list(csv_path)` normalizes 8-digit MVAs, skips headers/comments; `write_results_csv(csv_path, results)` writes structured output; `read_workitem_list(csv_path)` reads workitem specifications.
+- **MVA normalization**: Leading 8 digits preferred; if <8 digits, left-pad with zeros; preserves raw in comments if normalized differs.
+- **VehicleDataActions protocol**: `enter_mva()`, `get_vehicle_property()`, `get_vehicle_properties()`, `verify_mva_echo()`, `wait_for_property_loaded()`.
 
 If any section is unclear or missing, tell me which workflows or files need elaboration and I’ll refine this guide.
 

@@ -1,0 +1,76 @@
+2026-01-20 14:08:24,656 - create_missing_workitems - INFO - ============================================================
+2026-01-20 14:08:24,656 - create_missing_workitems - INFO - Create Missing WorkItems Client
+2026-01-20 14:08:24,657 - create_missing_workitems - INFO - Session started: 2026-01-20 14:08:24
+2026-01-20 14:08:24,657 - create_missing_workitems - INFO - ============================================================
+2026-01-20 14:08:24,658 - create_missing_workitems - INFO - Loading configuration from: ../../webdriver.ini.local
+2026-01-20 14:08:24,660 - create_missing_workitems - INFO - Reading workitem list from: ../../data/sample_workitems.csv
+2026-01-20 14:08:24,661 - compass_core.csv_utils - INFO - [CSV] Read 1 workitems from: ../../data/sample_workitems.csv
+2026-01-20 14:08:24,662 - create_missing_workitems - INFO - Found 1 workitems to process
+2026-01-20 14:08:24,663 - create_missing_workitems - INFO - Initializing browser...
+2026-01-20 14:08:24,825 - compass_core.standard_driver_manager - INFO - [DRIVER] Detected Browser=144.0.3719.82, Driver=144.0.3719.82
+2026-01-20 14:08:24,826 - compass_core.standard_driver_manager - INFO - [DRIVER] Launching Edge - Browser 144.0.3719.82, Driver 144.0.3719.82
+2026-01-20 14:08:24,826 - compass_core.standard_driver_manager - INFO - [DRIVER] InPrivate mode enabled
+2026-01-20 14:08:30,003 - create_missing_workitems - INFO - Performing authentication...
+2026-01-20 14:08:30,053 - create_missing_workitems - INFO - [SMART_AUTH] Starting smart authentication for: xe96693@co.abg.com
+2026-01-20 14:08:30,161 - create_missing_workitems - INFO - [SMART_AUTH] Target app URL: https://avisbudget.palantirfoundry.com/workspace/fleet-operations-pwa/health
+2026-01-20 14:08:35,730 - create_missing_workitems - INFO - [SMART_AUTH] Login page detected, performing authentication
+2026-01-20 14:08:35,731 - create_missing_workitems - INFO - [LOGIN] Starting authentication flow for: xe96693@co.abg.com
+2026-01-20 14:08:36,217 - create_missing_workitems - WARNING - [LOGIN][PASSWORD] Field not ready, waiting...
+2026-01-20 14:08:41,199 - create_missing_workitems - INFO - [LOGIN][STAY_SIGNED_IN] Clicked 'No' on Stay signed in prompt
+2026-01-20 14:08:43,214 - create_missing_workitems - INFO - [LOGIN][WWID] Looking for WWID input field...
+2026-01-20 14:08:46,204 - create_missing_workitems - WARNING - [LOGIN][WWID] Field not ready, waiting...
+2026-01-20 14:08:47,053 - create_missing_workitems - INFO - [LOGIN][WWID] Entered WWID: e96693
+2026-01-20 14:08:47,183 - create_missing_workitems - INFO - [LOGIN][WWID] Clicked Submit button
+2026-01-20 14:08:49,195 - create_missing_workitems - INFO - [LOGIN][WWID] After submit, current URL: https://avisbudget.palantirfoundry.com/workspace/fleet-operations-pwa/health
+2026-01-20 14:08:49,196 - create_missing_workitems - INFO - [LOGIN] Authentication successful for: xe96693@co.abg.com
+2026-01-20 14:08:49,197 - create_missing_workitems - INFO - [SMART_AUTH] Authentication successful: Authenticated successfully as xe96693@co.abg.com
+2026-01-20 14:08:49,208 - create_missing_workitems - INFO - 
+Processing 1 workitems...
+2026-01-20 14:08:49,209 - create_missing_workitems - INFO - 
+[1/1] Processing MVA: 50227203
+2026-01-20 14:08:49,210 - create_missing_workitems - INFO -   Damage Type: Glass Damage
+2026-01-20 14:08:49,210 - create_missing_workitems - INFO -   Sub-Damage Type: Windshield Crack
+2026-01-20 14:08:49,211 - create_missing_workitems - INFO -   Correction: Regular maintenance required
+2026-01-20 14:09:00,335 - create_missing_workitems - INFO - [MVA] Entered MVA: 50227203
+2026-01-20 14:09:00,336 - create_missing_workitems - INFO - [PROPERTY_PAGE] Waiting for MVA property field with value: 50227203
+2026-01-20 14:09:05,530 - create_missing_workitems - INFO - [PROPERTY_PAGE] MVA property field loaded - Expected: 50227203, Found: 050227203
+2026-01-20 14:09:43,964 - create_missing_workitems - INFO - 
+============================================================
+2026-01-20 14:09:43,968 - create_missing_workitems - INFO - SUMMARY
+2026-01-20 14:09:43,970 - create_missing_workitems - INFO - ============================================================
+2026-01-20 14:09:43,971 - create_missing_workitems - INFO - Total Processed: 1
+2026-01-20 14:09:43,972 - create_missing_workitems - INFO -   Found Existing: 0
+2026-01-20 14:09:43,972 - create_missing_workitems - INFO -   Created New:    0
+2026-01-20 14:09:43,973 - create_missing_workitems - INFO -   Failed:         1
+2026-01-20 14:09:43,974 - create_missing_workitems - WARNING - 
+Failed Items:
+2026-01-20 14:09:43,975 - create_missing_workitems - WARNING -   - 50227203: Creation failed: timeout: Message: 
+Stacktrace:
+Symbols not available. Dumping unresolved backtrace:
+	0x7ff775a85ab5
+	0x7ff775a85b14
+	0x7ff775dd2844
+	0x7ff775826a9a
+	0x7ff775826d35
+	0x7ff775864b07
+	0x7ff77581d6b7
+	0x7ff7758628f7
+	0x7ff77581cbcc
+	0x7ff77581be26
+	0x7ff77581c9f3
+	0x7ff7758e0214
+	0x7ff7758dc685
+	0x7ff7758ece73
+	0x7ff775aa0de8
+	0x7ff775aa96b6
+	0x7ff775a8d194
+	0x7ff775a8d2d9
+	0x7ff775a7b172
+	0x7ffd50077374
+	0x7ffd50bdcc91
+
+2026-01-20 14:09:43,981 - create_missing_workitems - INFO - ============================================================
+2026-01-20 14:09:43,982 - create_missing_workitems - INFO - Session completed: 2026-01-20 14:09:43
+2026-01-20 14:09:43,983 - create_missing_workitems - INFO - 
+Closing browser...
+2026-01-20 14:09:43,984 - compass_core.standard_driver_manager - INFO - [DRIVER] Quitting Edge WebDriver...

@@ -10,6 +10,12 @@ Retrieves glass information (MVA, VIN, Description) for lists of MVAs and export
 **Status:** Active development  
 **Framework Version:** 0.1.0+
 
+### create_missing_workitems/
+Finds or creates workitems from CSV specifications (MVA, DamageType, CorrectionAction).
+
+**Status:** Active development  
+**Framework Version:** 0.1.0+
+
 ## Setup
 
 All clients use the framework's virtual environment:
