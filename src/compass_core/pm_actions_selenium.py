@@ -9,6 +9,7 @@ the returned status dictionaries for error handling.
 from __future__ import annotations
 from typing import Dict, Any, Optional
 import time
+import logging
 
 try:
     from selenium.webdriver.remote.webdriver import WebDriver
@@ -68,6 +69,7 @@ class SeleniumPmActions(PmActions):
         self.wait = WebDriverWait(driver, timeout)
         self.timeout = timeout
         self.step_delay = step_delay
+        self._logger = logging.getLogger(__name__)
 
     def _find_pm_complaint_tiles(self) -> list:
         """Locate PM complaint tiles on the current page.
@@ -373,31 +375,31 @@ class SeleniumPmActions(PmActions):
                 WebDriverWait(self.driver, 5).until(
                     EC.invisibility_of_element_located((By.CSS_SELECTOR, "span.bp6-toast-message"))
                 )
-                print("[PREP] Waited for toast messages to disappear")
+                self._logger.debug("[PREP] Waited for toast messages to disappear")
             except TimeoutException:
                 # No toast or already gone, that's fine
                 pass
             
             # Step 1: Click "Add Work Item" button
-            print("[STEP1] Clicking Add Work Item button...")
+            self._logger.info("[STEP1] Clicking Add Work Item button...")
             create_btn_xpath = "//button[contains(@class, 'fleet-operations-pwa__create-item-button__') and .//span[contains(text(), 'Add Work Item')]] | //button[normalize-space()='Add Work Item']"
             
             create_btn = WebDriverWait(self.driver, 15).until(
                 EC.element_to_be_clickable((By.XPATH, create_btn_xpath))
             )
             create_btn.click()
-            print("[STEP1] OK - Clicked Add Work Item")
+            self._logger.info("[STEP1] OK - Clicked Add Work Item")
             if self.step_delay > 0:
                 time.sleep(self.step_delay)
             
             # Step 2: Wait for "Create Work Item" page/dialog to load
-            print("[STEP2] Waiting for Add New Complaint button...")
+            self._logger.info("[STEP2] Waiting for Add New Complaint button...")
             # Use class-based selector for reliability with dynamic hash suffix
             add_complaint_xpath = "//button[contains(@class, 'fleet-operations-pwa__nextButton__')]"
             WebDriverWait(self.driver, 10).until(
                 EC.presence_of_element_located((By.XPATH, add_complaint_xpath))
             )
-            print("[STEP2] OK - Create Work Item page loaded")
+            self._logger.info("[STEP2] OK - Create Work Item page loaded")
             if self.step_delay > 0:
                 time.sleep(self.step_delay)
             
@@ -405,95 +407,95 @@ class SeleniumPmActions(PmActions):
             # TODO: Implement logic to select existing complaint if match found
             # For now, always click "Add New Complaint"
             
-            print("[STEP3] Clicking Add New Complaint button...")
+            self._logger.info("[STEP3] Clicking Add New Complaint button...")
             add_complaint_btn = WebDriverWait(self.driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, add_complaint_xpath))
             )
             add_complaint_btn.click()
-            print("[STEP3] OK - Clicked Add New Complaint")
+            self._logger.info("[STEP3] OK - Clicked Add New Complaint")
             if self.step_delay > 0:
                 time.sleep(self.step_delay)
             
             # Step 4: Answer "Is vehicle drivable?" question
-            print("[STEP4] Waiting for 'Is vehicle drivable?' question...")
+            self._logger.info("[STEP4] Waiting for 'Is vehicle drivable?' question...")
             drivable_yes_btn = WebDriverWait(self.driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'fleet-operations-pwa__drivable-option-button__')][.//h1[text()='Yes']]"))
             )
             drivable_yes_btn.click()
-            print("[STEP4] OK - Selected 'Yes' for drivable")
+            self._logger.info("[STEP4] OK - Selected 'Yes' for drivable")
             if self.step_delay > 0:
                 time.sleep(self.step_delay)
             
             # Step 5: Wait for damage type selection screen to appear
-            print("[STEP5] Waiting for damage type buttons...")
+            self._logger.info("[STEP5] Waiting for damage type buttons...")
             damage_button_xpath = f"//button[contains(@class, 'fleet-operations-pwa__damage-option-button__') and .//h1[text()='{damage_type}']]"
             
             # Wait for the damage type button to be present
             WebDriverWait(self.driver, 15).until(
                 EC.presence_of_element_located((By.XPATH, damage_button_xpath))
             )
-            print("[STEP5] OK - Damage type buttons visible")
+            self._logger.info("[STEP5] OK - Damage type buttons visible")
             if self.step_delay > 0:
                 time.sleep(self.step_delay)
             
             # Step 6: Select damage type/category - REQUIRED
-            print(f"[STEP6] Selecting damage type: {damage_type}...")
+            self._logger.info(f"[STEP6] Selecting damage type: {damage_type}...")
             
             damage_selector = WebDriverWait(self.driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, damage_button_xpath))
             )
             damage_selector.click()
-            print(f"[STEP6] OK - Selected {damage_type}")
+            self._logger.info(f"[STEP6] OK - Selected {damage_type}")
             if self.step_delay > 0:
                 time.sleep(self.step_delay)
             
             # Step 7: Select sub-damage type - REQUIRED
-            print(f"[STEP7] Selecting sub-damage type: {sub_damage_type}...")
+            self._logger.info(f"[STEP7] Selecting sub-damage type: {sub_damage_type}...")
             sub_damage_button_xpath = f"//button[contains(@class, 'fleet-operations-pwa__damage-option-button__') and .//h1[text()='{sub_damage_type}']]"            
             sub_damage_selector = WebDriverWait(self.driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, sub_damage_button_xpath))
             )
             sub_damage_selector.click()
-            print(f"[STEP7] OK - Selected {sub_damage_type}")
+            self._logger.info(f"[STEP7] OK - Selected {sub_damage_type}")
             if self.step_delay > 0:
                 time.sleep(self.step_delay)
             
             # Step 8: Enter correction action in textarea - REQUIRED
-            print("[STEP8] Entering correction action...")
+            self._logger.info("[STEP8] Entering correction action...")
             action_field = WebDriverWait(self.driver, 10).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, "textarea.bp6-text-area"))
             )
             action_field.clear()
             action_field.send_keys(correction_action)
-            print("[STEP8] OK - Entered correction action")
+            self._logger.info("[STEP8] OK - Entered correction action")
             if self.step_delay > 0:
                 time.sleep(self.step_delay)
             
             # Step 9: Click Complete/Submit button - REQUIRED
-            print("[STEP9] Clicking Complete/Submit button...")
+            self._logger.info("[STEP9] Clicking Complete/Submit button...")
             complete_btn = WebDriverWait(self.driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Complete') or contains(text(), 'Submit') or contains(text(), 'Next')]"))
             )
             complete_btn.click()
-            print("[STEP9] OK - Clicked Complete/Submit")
+            self._logger.info("[STEP9] OK - Clicked Complete/Submit")
             if self.step_delay > 0:
                 time.sleep(self.step_delay)
             
             # Step 10: Wait for form to close
-            print("[STEP10] Waiting for form to close...")
+            self._logger.info("[STEP10] Waiting for form to close...")
             try:
                 WebDriverWait(self.driver, 15).until(
                     EC.invisibility_of_element_located((By.CSS_SELECTOR, "div.bp6-dialog, div.bp6-overlay"))
                 )
             except TimeoutException:
                 pass  # Form might already be closed
-            print("[STEP10] OK - Form closed, workitem created!")
+            self._logger.info("[STEP10] OK - Form closed, workitem created!")
             
             return {"status": "success", "damage_type": damage_type, "action": correction_action}
             
         except TimeoutException as e:
-            print(f"[TIMEOUT] {str(e)}")
+            self._logger.error(f"[TIMEOUT] {str(e)}")
             return {"status": "failed", "reason": f"timeout: {str(e)}"}
         except Exception as e:
-            print(f"[EXCEPTION] {str(e)}")
+            self._logger.error(f"[EXCEPTION] {str(e)}")
             return {"status": "failed", "reason": f"exception: {str(e)}"}
