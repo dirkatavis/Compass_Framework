@@ -25,19 +25,24 @@ MVA list format:
 
 ## Usage
 
+### Navigate to Client Directory
+```powershell
+cd clients/vehicle_lookup
+```
+
 ### With CSV Input
 ```powershell
-python scripts/vehicle_lookup_client.py --input data/vehicle_lookup_sample.csv --output results.csv
+python main.py --input ../../data/vehicle_lookup_sample.csv --output VehicleLookup_results.csv
 ```
 
-### With Direct MVA List
+### With Verbose Logging
 ```powershell
-python scripts/vehicle_lookup_client.py --mva 50227203,12345678 --output results.csv
+python main.py --verbose
 ```
 
-### With Custom Properties
+### With Incognito Mode (Forces Fresh Login)
 ```powershell
-python scripts/vehicle_lookup_client.py --input data/mva.csv --output results.csv --properties VIN,Desc,Year
+python main.py --incognito
 ```
 
 ## Output Format

@@ -335,7 +335,7 @@ driver_manager.quit_driver()
 
 ### Example 2: Batch Processing
 
-See [scripts/vehicle_lookup_client.py](../scripts/vehicle_lookup_client.py) for full example.
+See [clients/vehicle_lookup/main.py](../clients/vehicle_lookup/main.py) for full example.
 
 ---
 

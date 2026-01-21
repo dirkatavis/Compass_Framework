@@ -12,7 +12,7 @@ The Compass Framework has **successfully replicated** all core functionality fro
 **Implementation Status** (as of Jan 19 2026):
 - ✅ **Test Coverage**: 358 unit tests (355 passing, 3 expected credential failures)
 - ✅ **Protocols**: LoginFlow + VehicleLookupFlow + VehicleDataActions + 5 core protocols
-- ✅ **Client Script**: `vehicle_lookup_client.py` - production-ready CLI
+- ✅ **Client Applications**: clients/vehicle_lookup/ and clients/create_missing_workitems/ - production-ready
 - ✅ **E2E Validation**: 1 active E2E test (Microsoft SSO + vehicle lookup)
 - ✅ **CSV Utilities**: read_mva_list() + write_results_csv() with normalization + 21 unit tests
 - ✅ **MVA Collection**: MvaCollection + MvaItem + MvaStatus for tracking (TDD) + 28 unit tests
