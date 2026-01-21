@@ -204,16 +204,18 @@ def read_workitem_list(csv_path: str) -> List[Dict[str, str]]:
             action_col = col_map.get('correctionaction', 'CorrectionAction')
             
             for row in reader:
+                mva_value = (row.get(mva_col) or '').strip()
+
                 # Skip comment lines
-                if row.get(mva_col, '').strip().startswith('#'):
+                if mva_value.startswith('#'):
                     continue
                 
                 # Skip empty rows
-                if not row.get(mva_col, '').strip():
+                if not mva_value:
                     continue
                 
                 # Extract and normalize data (handle None values from csv.DictReader)
-                mva = normalize_mva(row[mva_col] or '')
+                mva = normalize_mva(mva_value)
                 damage_type = (row.get(damage_col) or '').strip()
                 sub_damage_type = (row.get(sub_damage_col) or '').strip()
                 correction_action = (row.get(action_col) or '').strip()

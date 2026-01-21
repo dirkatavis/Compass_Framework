@@ -84,11 +84,11 @@ $env:COMPASS_LOGIN_ID = "YOUR_WWID"
 # Navigate to client directory
 cd clients/vehicle_lookup
 
-# Process MVAs from default input (data/sample_mva_list.csv)
+# Process MVAs from default input (data/vehicle_lookup_sample.csv)
 python main.py
 
 # Custom input/output
-python main.py --input ../../data/sample_mva_list.csv --output GlassInfo.csv
+python main.py --input ../../data/vehicle_lookup_sample.csv --output VehicleLookup_results.csv
 ```
 
 ### Command Line Options

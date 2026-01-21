@@ -7,6 +7,7 @@ Currently includes inline POM logic; will be extracted to separate POMs in futur
 from typing import Dict, Any, Optional, List
 import time
 import logging
+import os
 
 try:
     from selenium.webdriver.remote.webdriver import WebDriver
@@ -22,11 +23,13 @@ except ImportError:
     
 from .vehicle_data_actions import VehicleDataActions
 
-# WebDriver wait configuration
-DEFAULT_WAIT_TIMEOUT = 30  # seconds - increased for slow app performance
-DEFAULT_POLL_FREQUENCY = 0.5  # seconds
-FIELD_READY_TIMEOUT = 15  # seconds - increased for slow app performance
-FIELD_READY_POLL = 0.25  # seconds - faster polling for field checks
+# WebDriver wait configuration (configurable via env for debugging)
+DEBUG_WAIT_MULTIPLIER = float(os.getenv("COMPASS_DEBUG_WAIT_MULTIPLIER", "1.0"))
+DEFAULT_WAIT_TIMEOUT = float(os.getenv("COMPASS_DEFAULT_WAIT_TIMEOUT", "10")) * DEBUG_WAIT_MULTIPLIER
+DEFAULT_POLL_FREQUENCY = float(os.getenv("COMPASS_DEFAULT_POLL_FREQUENCY", "0.5"))
+FIELD_READY_TIMEOUT = float(os.getenv("COMPASS_FIELD_READY_TIMEOUT", "5")) * DEBUG_WAIT_MULTIPLIER
+FIELD_READY_POLL = float(os.getenv("COMPASS_FIELD_READY_POLL", "0.25"))
+PROPERTY_PAGE_TIMEOUT = float(os.getenv("COMPASS_PROPERTY_PAGE_TIMEOUT", "30")) * DEBUG_WAIT_MULTIPLIER
 
 
 class SeleniumVehicleDataActions(VehicleDataActions):
@@ -320,7 +323,7 @@ class SeleniumVehicleDataActions(VehicleDataActions):
             self._logger.error(f"[PROPERTY] Error waiting for property '{label}': {e}")
             return False
     
-    def wait_for_property_page_loaded(self, expected_mva: str, timeout: int = 120) -> bool:
+    def wait_for_property_page_loaded(self, expected_mva: str, timeout: Optional[float] = None) -> bool:
         """
         Wait for property page to load by detecting MVA property field.
         
@@ -347,6 +350,9 @@ class SeleniumVehicleDataActions(VehicleDataActions):
         
         self._logger.info(f"[PROPERTY_PAGE] Waiting for MVA property field with value: {mva_to_find}")
         
+        if timeout is None:
+            timeout = PROPERTY_PAGE_TIMEOUT
+
         try:
             # Wait for the MVA property - look for property-value div that's a sibling of property-name div containing "MVA"
             # Using contains() for class names to handle dynamic hash suffixes

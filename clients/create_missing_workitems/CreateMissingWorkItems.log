@@ -1,8 +1,0 @@
-2026-01-21 06:41:36,058 - create_missing_workitems - INFO - ============================================================
-2026-01-21 06:41:36,107 - create_missing_workitems - INFO - Create Missing WorkItems Client
-2026-01-21 06:41:36,120 - create_missing_workitems - INFO - Session started: 2026-01-21 06:41:36
-2026-01-21 06:41:36,126 - create_missing_workitems - INFO - ============================================================
-2026-01-21 06:41:36,127 - create_missing_workitems - INFO - Loading configuration from: ../../webdriver.ini.local
-2026-01-21 06:41:36,132 - create_missing_workitems - INFO - Reading workitem list from: ../../data/create_missing_workitems_sample.csv
-2026-01-21 06:41:36,135 - compass_core.csv_utils - ERROR - [CSV] Unexpected error reading workitems: 'NoneType' object has no attribute 'strip'
-2026-01-21 06:41:36,137 - create_missing_workitems - ERROR - Failed to read workitem list: Failed to read workitems from ../../data/create_missing_workitems_sample.csv: 'NoneType' object has no attribute 'strip'

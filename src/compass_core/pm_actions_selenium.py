@@ -314,12 +314,14 @@ class SeleniumPmActions(PmActions):
                             "description": description
                         })
                         
-                except Exception:
+                except Exception as exc:
+                    self._logger.debug(f"[WORKITEMS] Failed to parse workitem element: {type(exc).__name__}: {exc}")
                     continue
             
             return workitems
             
-        except Exception:
+        except Exception as exc:
+            self._logger.debug(f"[WORKITEMS] Failed to read workitems: {type(exc).__name__}: {exc}")
             return []
 
     def find_workitem(self, mva: str, damage_type: str, sub_damage_type: str, correction_action: str) -> Optional[Dict[str, Any]]:

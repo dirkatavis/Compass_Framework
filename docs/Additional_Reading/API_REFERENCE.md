@@ -236,7 +236,7 @@ results = collection.to_results_list()
 from compass_core import read_mva_list, write_results_csv
 
 # Read MVA list from CSV
-mvas = read_mva_list('data/sample_mva_list.csv')
+mvas = read_mva_list('data/vehicle_lookup_sample.csv')
 print(f"Found {len(mvas)} MVAs")
 # Returns: ['50227203', '12345678', ...]
 

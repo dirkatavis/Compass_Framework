@@ -3,7 +3,7 @@
 Vehicle Lookup Client - Glass Info Retrieval
 
 Reads MVAs from CSV, retrieves vehicle properties (MVA, VIN, Description),
-and writes results to GlassInfo.csv.
+and writes results to VehicleLookup_results.csv.
 
 Usage:
     python main.py --input mva_list.csv --config ../webdriver.ini.local

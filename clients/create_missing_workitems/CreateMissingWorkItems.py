@@ -62,11 +62,16 @@ def setup_logging(verbose: bool = False) -> logging.Logger:
 
 def main():
     parser = argparse.ArgumentParser(description='Create or find workitems from CSV list')
+
+    repo_root = Path(__file__).resolve().parents[2]
+    default_input = repo_root / 'data' / 'create_missing_workitems_sample.csv'
+    default_config = repo_root / 'webdriver.ini.local'
+
     parser.add_argument('--input', '-i',
-                       default='../../data/create_missing_workitems_sample.csv',
+                       default=str(default_input),
                        help='Input CSV file with workitem specifications')
     parser.add_argument('--config', '-c',
-                       default='../../webdriver.ini.local',
+                       default=str(default_config),
                        help='Configuration file with credentials')
     parser.add_argument('--headless', action='store_true',
                        help='Run browser in headless mode')

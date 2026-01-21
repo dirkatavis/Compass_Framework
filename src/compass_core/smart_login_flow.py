@@ -307,8 +307,9 @@ class SmartLoginFlow(LoginFlow):
                     if sso_field and sso_field.is_displayed():
                         # Both WWID and SSO fields present - not WWID-only
                         return False
-                except:
-                    pass  # No SSO fields - this is WWID-only
+                except Exception as exc:
+                    self.logger.debug(f"[SMART_AUTH][DETECT] No SSO fields detected ({type(exc).__name__}: {exc})")
+                    # No SSO fields - this is WWID-only
                 
                 self.logger.debug("[SMART_AUTH][DETECT] WWID-only page detected (auto-login)")
                 return True
