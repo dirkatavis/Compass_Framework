@@ -8,7 +8,7 @@ import os
 import tempfile
 import csv
 from unittest.mock import patch, mock_open
-from compass_core.csv_utils import read_mva_list, write_results_csv
+from compass_core.csv_utils import read_mva_list, read_workitem_list, write_results_csv
 
 
 class TestReadMvaList(unittest.TestCase):
@@ -251,6 +251,108 @@ class TestWriteResultsCsv(unittest.TestCase):
         rows = self._read_csv(output_path)
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]['mva'], '22222222')
+
+
+class TestReadWorkitemList(unittest.TestCase):
+    """Test read_workitem_list() function."""
+
+    def setUp(self):
+        """Create temporary test directory."""
+        self.temp_dir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        """Clean up temporary files."""
+        import shutil
+        if os.path.exists(self.temp_dir):
+            shutil.rmtree(self.temp_dir)
+
+    def _create_csv(self, filename: str, content: str) -> str:
+        """Helper to create test CSV file."""
+        filepath = os.path.join(self.temp_dir, filename)
+        with open(filepath, 'w', newline='', encoding='utf-8') as f:
+            f.write(content)
+        return filepath
+
+    def test_read_workitem_list_basic(self):
+        """Test reading valid workitem list."""
+        csv_path = self._create_csv(
+            'workitems.csv',
+            'MVA,DamageType,SubDamageType,CorrectionAction\n'
+            '50227203,Glass Damage,Windshield,Replace\n'
+            '12345678,Body Damage,Front Bumper,Repair\n'
+        )
+        workitems = read_workitem_list(csv_path)
+        self.assertEqual(len(workitems), 2)
+        self.assertEqual(workitems[0]['mva'], '50227203')
+        self.assertEqual(workitems[0]['damage_type'], 'Glass Damage')
+        self.assertEqual(workitems[0]['sub_damage_type'], 'Windshield')
+        self.assertEqual(workitems[0]['correction_action'], 'Replace')
+
+    def test_read_workitem_list_case_insensitive_headers(self):
+        """Test header mapping is case-insensitive."""
+        csv_path = self._create_csv(
+            'workitems_case.csv',
+            'mva,damagetype,subdamagetype,correctionaction\n'
+            '50227203,PM,PM Gas,Regular maintenance\n'
+        )
+        workitems = read_workitem_list(csv_path)
+        self.assertEqual(len(workitems), 1)
+        self.assertEqual(workitems[0]['mva'], '50227203')
+
+    def test_read_workitem_list_skips_comments_and_empty(self):
+        """Test skipping comment rows and empty MVA rows."""
+        csv_path = self._create_csv(
+            'workitems_comments.csv',
+            'MVA,DamageType,SubDamageType,CorrectionAction\n'
+            '# Comment,PM,PM Gas,Ignored\n'
+            ',PM,PM Gas,Ignored\n'
+            '50227203,PM,PM Gas,Valid\n'
+        )
+        workitems = read_workitem_list(csv_path)
+        self.assertEqual(len(workitems), 1)
+        self.assertEqual(workitems[0]['correction_action'], 'Valid')
+
+    def test_read_workitem_list_normalizes_mva(self):
+        """Test MVA normalization (digits extraction + zero padding)."""
+        csv_path = self._create_csv(
+            'workitems_norm.csv',
+            'MVA,DamageType,SubDamageType,CorrectionAction\n'
+            'MVA-50227203X,PM,PM Gas,Action\n'
+            '12345,PM,PM Gas,Action\n'
+        )
+        workitems = read_workitem_list(csv_path)
+        self.assertEqual(workitems[0]['mva'], '50227203')
+        self.assertEqual(workitems[1]['mva'], '00012345')
+
+    def test_read_workitem_list_missing_columns(self):
+        """Test error on missing required columns."""
+        csv_path = self._create_csv(
+            'workitems_missing_cols.csv',
+            'MVA,DamageType,CorrectionAction\n'
+            '50227203,PM,Action\n'
+        )
+        with self.assertRaises(ValueError) as context:
+            read_workitem_list(csv_path)
+        self.assertIn('missing required columns', str(context.exception).lower())
+
+    def test_read_workitem_list_empty_headers(self):
+        """Test error when CSV has no headers."""
+        csv_path = self._create_csv('workitems_empty.csv', '')
+        with self.assertRaises(ValueError) as context:
+            read_workitem_list(csv_path)
+        self.assertIn('no headers', str(context.exception).lower())
+
+    def test_read_workitem_list_all_invalid_rows(self):
+        """Test error when all rows are invalid or missing required fields."""
+        csv_path = self._create_csv(
+            'workitems_invalid.csv',
+            'MVA,DamageType,SubDamageType,CorrectionAction\n'
+            '50227203,,PM Gas,Action\n'
+            '12345678,PM,,Action\n'
+        )
+        with self.assertRaises(ValueError) as context:
+            read_workitem_list(csv_path)
+        self.assertIn('no valid workitems', str(context.exception).lower())
 
 
 if __name__ == '__main__':

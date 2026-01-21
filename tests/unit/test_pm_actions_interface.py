@@ -1,10 +1,6 @@
 import unittest
 
-# Prefer the shared protocol if available; otherwise fallback from implementation module
-try:
-    from compass_core.pm_actions import PmActions
-except Exception:
-    from compass_core.pm_actions_selenium import PmActions  # fallback protocol
+from compass_core.pm_actions import PmActions
 
 from compass_core.pm_actions_selenium import SeleniumPmActions
 
@@ -36,6 +32,8 @@ class TestPmActionsInterface(unittest.TestCase):
             'has_pm_complaint',
             'associate_pm_complaint',
             'navigate_back_home',
+            'find_workitem',
+            'create_workitem',
         ]:
             self.assertTrue(hasattr(impl, name))
             self.assertTrue(callable(getattr(impl, name)))
