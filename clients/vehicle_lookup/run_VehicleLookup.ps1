@@ -7,9 +7,26 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $scriptDir
 
 # Activate virtual environment if it exists
-$venvPath = "..\..\..venv-1\Scripts\Activate.ps1"
-if (Test-Path $venvPath) {
-    Write-Host "Activating virtual environment..." -ForegroundColor Cyan
+$venvCandidates = @()
+if ($env:COMPASS_VENV_PATH) {
+    $venvCandidates += $env:COMPASS_VENV_PATH
+}
+$venvCandidates += @(
+    "..\..\..venv-1\Scripts\Activate.ps1",
+    "..\..\..\.venv\Scripts\Activate.ps1",
+    "..\..\..\venv\Scripts\Activate.ps1"
+)
+
+$venvPath = $null
+foreach ($candidate in $venvCandidates) {
+    if (Test-Path $candidate) {
+        $venvPath = $candidate
+        break
+    }
+}
+
+if ($venvPath) {
+    Write-Host "Activating virtual environment at '$venvPath'..." -ForegroundColor Cyan
     & $venvPath
 }
 

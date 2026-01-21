@@ -332,7 +332,8 @@ class SeleniumVehicleDataActions(VehicleDataActions):
         
         Args:
             expected_mva: The MVA value to search for
-            timeout: Maximum wait time in seconds (default: 30)
+            timeout: Maximum wait time in seconds. If None, uses PROPERTY_PAGE_TIMEOUT
+                (derived from a 30s base * DEBUG_WAIT_MULTIPLIER).
             
         Returns:
             True if MVA property field loaded, False on timeout

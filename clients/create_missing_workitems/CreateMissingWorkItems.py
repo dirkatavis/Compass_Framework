@@ -266,8 +266,8 @@ def main():
                 # Try to recover
                 try:
                     pm_actions.navigate_back_home()
-                except Exception:
-                    pass
+                except Exception as nav_err:
+                    logger.warning(f"  Failed to navigate back home during recovery: {nav_err}")
         
         # Summary
         logger.info("\n" + "="*60)

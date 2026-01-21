@@ -340,9 +340,10 @@ class SeleniumPmActions(PmActions):
         Returns:
             Optional[Dict]: Workitem details if found, or None
         """
-        del mva  # Protocol parameter
-        del sub_damage_type  # Not used in matching currently
-        del correction_action  # Not used in matching, only damage type
+        # Protocol parameters retained for interface consistency; unused here.
+        _mva = mva
+        _sub_damage_type = sub_damage_type
+        _correction_action = correction_action
         
         try:
             existing = self.get_existing_workitems()
