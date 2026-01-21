@@ -2,6 +2,16 @@
 
 Automates the creation and verification of vehicle workitems by reading specifications from CSV files.
 
+## Self-Contained Structure
+
+This client is **fully self-contained** and portable:
+- ✅ **Script**: `CreateMissingWorkItems.py` - the main executable
+- ✅ **Sample Data**: `create_missing_workitems_sample.csv` - example workitem specs
+- ✅ **Config** (optional): `webdriver.ini.local` - your credentials
+- ✅ **Logs**: `CreateMissingWorkItems.log` - execution log (recreated each session)
+
+You can copy this entire directory to another location and it will work independently.
+
 ## Overview
 
 This client processes a list of workitem specifications (MVA, DamageType, CorrectionAction) and:
@@ -24,25 +34,20 @@ This client processes a list of workitem specifications (MVA, DamageType, Correc
 
 ## Usage
 
-### Basic Usage
+### Quick Start (Uses Local Sample)
 ```powershell
-# From repository root
-.\.venv-1\Scripts\Activate.ps1
-
 # Navigate to client folder
 cd clients\create_missing_workitems
 
-# Run with default settings (uses sample data)
+# Run with included sample data
 python CreateMissingWorkItems.py
 ```
+Uses the included `create_missing_workitems_sample.csv` by default.
 
 ### Custom Input File
 ```powershell
 # Specify custom workitem list
 python CreateMissingWorkItems.py --input my_workitems.csv
-
-# Use different configuration file
-python CreateMissingWorkItems.py --config my_config.ini
 ```
 
 ### Additional Options
@@ -91,15 +96,7 @@ The system uses partial matching, so "PM" will match "PM Gas", "PM Oil", etc.
 
 ## Configuration
 
-Create `webdriver.ini.local` with your credentials:
-
-**Option 1 - Client-specific config** (recommended):
-- Create `clients/create_missing_workitems/webdriver.ini.local`
-- Keeps config, script, and logs in one location
-
-**Option 2 - Shared config**:
-- Create `webdriver.ini.local` in project root
-- Used by all clients (if no client-specific config exists)
+Create `webdriver.ini.local` in this directory:
 
 ```ini
 [credentials]
@@ -110,6 +107,12 @@ login_id = YOUR_WWID
 [app]
 app_url = https://your-app-url.com
 ```
+
+**Note**: The client looks for config in this order:
+1. `./webdriver.ini.local` (this directory)
+2. `../../webdriver.ini.local` (project root, if exists)
+
+See `../../webdriver.ini` for the complete configuration template.
 
 ## Output & Logging
 

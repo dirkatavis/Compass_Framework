@@ -1,34 +1,42 @@
-# Compass Framework - Client Scripts
+# Compass Framework - Client Applications
 
-This folder contains client scripts that use the Compass Framework to automate vehicle data workflows.
+Self-contained client applications that use the Compass Framework.
 
 ## Client Projects
 
 ### vehicle_lookup/
 Retrieves glass information (MVA, VIN, Description) for lists of MVAs and exports to CSV.
 
-**Status:** Active development  
-**Framework Version:** 0.1.0+
+**Self-Contained**: ✅ Script + Sample CSV + Config (optional) + Output  
+**Status**: Production ready  
 
 ### create_missing_workitems/
 Finds or creates workitems from CSV specifications (MVA, DamageType, CorrectionAction).
 
-**Status:** Active development  
-**Framework Version:** 0.1.0+
+**Self-Contained**: ✅ Script + Sample CSV + Config (optional) + Logs  
+**Status**: Production ready
 
-## Setup
+## Self-Contained Design
 
-All clients use the framework's virtual environment:
+Each client directory is **fully portable** and contains:
+- Python script (the executable)
+- Sample CSV file (example data)
+- Optional config file (`webdriver.ini.local` - create locally)
+- Generated outputs (results CSV, logs)
+
+**You can copy any client directory elsewhere and it will work independently.**
+
+## Quick Start
 
 ```powershell
-# From repository root
+# Activate framework environment
 .\.venv-1\Scripts\Activate.ps1
 
-# Navigate to client folder
+# Navigate to any client
 cd clients/vehicle_lookup
 
-# Run client script
-python main.py
+# Run with included sample data
+python VehicleLookup.py
 ```
 
 ## Development Workflow
@@ -41,10 +49,28 @@ python main.py
 
 ## Configuration
 
-Clients share framework configuration:
-- **Credentials:** `webdriver.ini.local` (gitignored)
-- **Test Data:** `data/vehicle_lookup_sample.csv` and `data/create_missing_workitems_sample.csv`
-- **Drivers:** `drivers.local/` (gitignored)
+### Per-Client Config (Recommended)
+
+Create `webdriver.ini.local` in each client directory:
+```ini
+[credentials]
+username = your.email@example.com
+password = your_password
+login_id = YOUR_WWID
+
+[app]
+app_url = https://your-app-url.com
+```
+
+### Shared Config (Alternative)
+
+Create `webdriver.ini.local` in project root - all clients will use it if no local config exists.
+
+### Data Files
+
+- **Sample CSVs**: Included in each client directory
+- **Custom Data**: Place your CSV files in the client directory or reference from elsewhere
+- **Shared Samples**: Also available in `../../data/` as fallback
 
 ## Adding New Clients
 

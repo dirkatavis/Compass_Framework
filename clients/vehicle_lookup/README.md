@@ -2,6 +2,17 @@
 
 Production client for batch vehicle data retrieval using the Compass Framework.
 
+## Self-Contained Structure
+
+This client is **fully self-contained** and portable:
+- ✅ **Script**: `VehicleLookup.py` - the main executable
+- ✅ **Sample Data**: `vehicle_lookup_sample.csv` - example MVA list
+- ✅ **Config** (optional): `webdriver.ini.local` - your credentials
+- ✅ **Output**: `VehicleLookup_results.csv` - generated results
+- ✅ **Logs**: `vehicle_lookup.log` - execution log
+
+You can copy this entire directory to another location and it will work independently.
+
 ## Features
 
 ✅ **Batch Processing**: Process multiple MVAs from CSV input  
@@ -26,15 +37,16 @@ Production client for batch vehicle data retrieval using the Compass Framework.
 
 ## Usage
 
-### Basic Usage
+### Quick Start (Uses Local Sample)
 ```powershell
 cd clients/vehicle_lookup
 python VehicleLookup.py
 ```
+Uses the included `vehicle_lookup_sample.csv` by default.
 
 ### With Custom Input/Output
 ```powershell
-python VehicleLookup.py --input my_mvas.csv --output VehicleLookup_results.csv
+python VehicleLookup.py --input my_mvas.csv --output my_results.csv
 ```
 
 ### Headless Mode
@@ -49,29 +61,27 @@ python VehicleLookup.py --verbose
 
 ## Configuration
 
-### Prerequisites
+### Credentials (Required)
 
-1. **Credentials**: Create `webdriver.ini.local` for this client:
-   
-   **Option 1 - Client-specific config** (recommended for convenience):
-   - Create `clients/vehicle_lookup/webdriver.ini.local`
-   - Keeps config, script, logs, and output in one location
-   
-   **Option 2 - Shared config**:
-   - Create `webdriver.ini.local` in project root
-   - Used by all clients (if no client-specific config exists)
-   
-   ```ini
-   [credentials]
-   username = your.email@example.com
-   password = your_password
-   login_id = YOUR_WWID
+Create `webdriver.ini.local` in this directory:
 
-   [app]
-   app_url = https://your-app-url.com
-   ```
+```ini
+[credentials]
+username = your.email@example.com
+password = your_password
+login_id = YOUR_WWID
 
-2. **WebDriver**: Edge driver should be in `drivers.local/` or system PATH
+[app]
+app_url = https://your-app-url.com
+```
+
+**Note**: The client looks for config in this order:
+1. `./webdriver.ini.local` (this directory)
+2. `../../webdriver.ini.local` (project root, if exists)
+
+### WebDriver
+
+Edge driver should be in `../../drivers.local/` or system PATH.
 
 See `../../webdriver.ini` for full configuration template.
 
