@@ -43,7 +43,7 @@ python main.py
 
 Clients share framework configuration:
 - **Credentials:** `webdriver.ini.local` (gitignored)
-- **Test Data:** `data/sample_mva_list.csv`
+- **Test Data:** `data/vehicle_lookup_sample.csv` and `data/create_missing_workitems_sample.csv`
 - **Drivers:** `drivers.local/` (gitignored)
 
 ## Adding New Clients

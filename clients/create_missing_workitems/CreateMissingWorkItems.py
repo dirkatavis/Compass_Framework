@@ -63,19 +63,21 @@ def setup_logging(verbose: bool = False) -> logging.Logger:
 def main():
     parser = argparse.ArgumentParser(description='Create or find workitems from CSV list')
     parser.add_argument('--input', '-i',
-                       default='../../data/sample_workitems.csv',
+                       default='../../data/create_missing_workitems_sample.csv',
                        help='Input CSV file with workitem specifications')
     parser.add_argument('--config', '-c',
                        default='../../webdriver.ini.local',
                        help='Configuration file with credentials')
     parser.add_argument('--headless', action='store_true',
                        help='Run browser in headless mode')
-    parser.add_argument('--incognito', action='store_true', default=True,
-                       help='Run browser in incognito/private mode (default: True)')
+    parser.add_argument('--incognito', action='store_true', default=False,
+                       help='Run browser in incognito/private mode (default: False)')
     parser.add_argument('--verbose', '-v', action='store_true',
                        help='Enable verbose logging')
     parser.add_argument('--step-delay', type=float, default=0.0,
                        help='Pause (in seconds) between actions for visual debugging (default: 0)')
+    parser.add_argument('--max-retries', type=int, default=2,
+                       help='Max retries with page refresh when property page times out (default: 2)')
     
     args = parser.parse_args()
     logger = setup_logging(args.verbose)
@@ -162,21 +164,46 @@ def main():
             logger.info(f"  Sub-Damage Type: {sub_damage_type}")
             logger.info(f"  Correction: {correction_action}")
             
+            retry_count = 0
+            success = False
+            
+            while retry_count <= args.max_retries and not success:
+                try:
+                    if retry_count > 0:
+                        logger.warning(f"  Retry {retry_count}/{args.max_retries}: Refreshing page and trying again...")
+                        driver.refresh()
+                        import time
+                        time.sleep(3)  # Wait for refresh
+                    
+                    # Navigate to vehicle (this loads property page on Health tab)
+                    logger.debug(f"  Entering MVA on Health tab...")
+                    entry_result = vehicle_actions.enter_mva(mva, clear_existing=True)
+                    
+                    if entry_result['status'] != 'success':
+                        raise Exception(f"MVA entry failed: {entry_result.get('error')}")
+                    
+                    # Wait for property page to load (MVA property field)
+                    logger.debug(f"  Waiting for property page...")
+                    if not vehicle_actions.wait_for_property_page_loaded(mva):
+                        raise Exception("Property page did not load")
+                    
+                    success = True  # Property page loaded successfully
+                    
+                except Exception as e:
+                    if "Property page did not load" in str(e) and retry_count < args.max_retries:
+                        retry_count += 1
+                        logger.warning(f"  Property page timeout - will retry ({retry_count}/{args.max_retries})")
+                        continue  # Retry the loop
+                    else:
+                        # Either not a property page error, or we're out of retries
+                        raise
+            
+            if not success:
+                raise Exception("Property page failed to load after all retries")
+            
             try:
-                # Navigate to vehicle
-                logger.debug(f"  Entering MVA...")
-                entry_result = vehicle_actions.enter_mva(mva, clear_existing=True)
-                
-                if entry_result['status'] != 'success':
-                    raise Exception(f"MVA entry failed: {entry_result.get('error')}")
-                
-                # Wait for property page to load (MVA property field)
-                logger.debug(f"  Waiting for property page...")
-                if not vehicle_actions.wait_for_property_page_loaded(mva):
-                    raise Exception("Property page did not load")
-                
-                # Navigate to WorkItem tab
-                logger.debug(f"  Navigating to WorkItem tab...")
+                # NOW switch to WorkItem tab (vehicle already loaded)
+                logger.debug(f"  Switching to WorkItem tab...")
                 tab_result = pm_actions.navigate_to_workitem_tab()
                 
                 if tab_result['status'] != 'success':

@@ -48,10 +48,10 @@ def setup_logging(verbose: bool = False) -> logging.Logger:
 def main():
     parser = argparse.ArgumentParser(description='Retrieve glass info for MVA list')
     parser.add_argument('--input', '-i', 
-                       default='../../data/sample_mva_list.csv',
+                       default='../../data/vehicle_lookup_sample.csv',
                        help='Input CSV file with MVA list')
     parser.add_argument('--output', '-o',
-                       default='GlassInfo.csv',
+                       default='VehicleLookup_results.csv',
                        help='Output CSV file for results')
     parser.add_argument('--config', '-c',
                        default='../../webdriver.ini.local',

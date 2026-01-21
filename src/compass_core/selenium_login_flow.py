@@ -42,6 +42,29 @@ class SeleniumLoginFlow:
         self.driver = driver
         self.navigator = navigator
         self.logger = logger or logging.getLogger(__name__)
+
+    def _is_wwid_input(self, element: Any) -> bool:
+        """Check whether a candidate element is a WWID input field.
+
+        Uses conservative checks to avoid false positives in mocked drivers.
+        """
+        if not element:
+            return False
+        try:
+            if not element.is_displayed():
+                return False
+
+            tag = getattr(element, "tag_name", None)
+            if isinstance(tag, str) and tag.lower() != "input":
+                return False
+
+            input_type = element.get_attribute("type") if hasattr(element, "get_attribute") else None
+            if isinstance(input_type, str) and input_type and input_type.lower() not in {"text", "number", "tel", "search"}:
+                return False
+
+            return True
+        except Exception:
+            return False
     
     def authenticate(
         self,
@@ -95,21 +118,44 @@ class SeleniumLoginFlow:
             else:
                 self.logger.debug(f"[LOGIN] Skipping navigation - already on login page")
             
-            # Step 2: Enter username
-            username_result = self._enter_username(username, timeout)
-            if username_result.get("status") != "success":
-                return username_result
+            # Check if we're on WWID page directly (SSO auto-login scenario)
+            # Try to detect WWID field first
+            wwid_only = False
+            try:
+                wwid_candidates = self.driver.find_elements(By.CSS_SELECTOR, "input[class*='fleet-operations-pwa__text-input__']")
+                if any(self._is_wwid_input(elem) for elem in wwid_candidates):
+                    self.logger.info("[LOGIN] WWID page detected - skipping username/password (SSO auto-login)")
+                    wwid_only = True
+            except Exception:
+                pass  # Not on WWID page, continue with normal flow
             
-            # Step 3: Enter password
-            password_result = self._enter_password(password, timeout)
-            if password_result.get("status") != "success":
-                return password_result
+            # Step 2: Enter username (skip if WWID-only)
+            if not wwid_only:
+                username_result = self._enter_username(username, timeout)
+                if username_result.get("status") != "success":
+                    # Check if we landed on WWID page instead
+                    try:
+                        wwid_candidates = self.driver.find_elements(By.CSS_SELECTOR, "input[class*='fleet-operations-pwa__text-input__']")
+                        if any(self._is_wwid_input(elem) for elem in wwid_candidates):
+                            self.logger.info("[LOGIN] Username not found but WWID page detected - continuing")
+                            wwid_only = True
+                        else:
+                            return username_result
+                    except Exception:
+                        return username_result
             
-            # Step 3.5: Handle "Stay signed in?" prompt if it appears (often after password)
-            stay_signed_in_result = self._handle_stay_signed_in(timeout, stay_signed_in)
-            if stay_signed_in_result.get("status") == "success":
-                choice = "Yes" if stay_signed_in else "No"
-                self.logger.debug(f"[LOGIN] Handled Stay signed in prompt: clicked '{choice}'")
+            # Step 3: Enter password (skip if WWID-only)
+            if not wwid_only:
+                password_result = self._enter_password(password, timeout)
+                if password_result.get("status") != "success":
+                    return password_result
+            
+            # Step 3.5: Handle "Stay signed in?" prompt if it appears (skip if WWID-only)
+            if not wwid_only:
+                stay_signed_in_result = self._handle_stay_signed_in(timeout, stay_signed_in)
+                if stay_signed_in_result.get("status") == "success":
+                    choice = "Yes" if stay_signed_in else "No"
+                    self.logger.debug(f"[LOGIN] Handled Stay signed in prompt: clicked '{choice}'")
             
             # Step 3.6: Enter login_id (WWID) if required - application-specific but commonly needed
             if login_id:

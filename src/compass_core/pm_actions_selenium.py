@@ -233,6 +233,21 @@ class SeleniumPmActions(PmActions):
             # Best-effort navigation; failures here are non-fatal and can be safely ignored.
             pass
 
+    def _wait_for_toast_clear(self, timeout: int = 5) -> None:
+        """Wait for any toast messages to disappear.
+        
+        Args:
+            timeout: Maximum time to wait for toast to clear (seconds)
+        """
+        try:
+            WebDriverWait(self.driver, timeout).until(
+                EC.invisibility_of_element_located((By.CSS_SELECTOR, "span.bp6-toast-message"))
+            )
+            self._logger.debug("[TOAST] Toast messages cleared")
+        except TimeoutException:
+            # No toast or already gone
+            pass
+
     def navigate_to_workitem_tab(self) -> Dict[str, Any]:
         """
         Navigate to the WorkItem tab after entering an MVA.
@@ -371,24 +386,18 @@ class SeleniumPmActions(PmActions):
         
         try:
             # Wait for any toast messages to disappear first
-            try:
-                WebDriverWait(self.driver, 5).until(
-                    EC.invisibility_of_element_located((By.CSS_SELECTOR, "span.bp6-toast-message"))
-                )
-                self._logger.debug("[PREP] Waited for toast messages to disappear")
-            except TimeoutException:
-                # No toast or already gone, that's fine
-                pass
+            self._wait_for_toast_clear()
             
             # Step 1: Click "Add Work Item" button
             self._logger.info("[STEP1] Clicking Add Work Item button...")
             create_btn_xpath = "//button[contains(@class, 'fleet-operations-pwa__create-item-button__') and .//span[contains(text(), 'Add Work Item')]] | //button[normalize-space()='Add Work Item']"
             
-            create_btn = WebDriverWait(self.driver, 15).until(
+            create_btn = WebDriverWait(self.driver, 30).until(
                 EC.element_to_be_clickable((By.XPATH, create_btn_xpath))
             )
             create_btn.click()
             self._logger.info("[STEP1] OK - Clicked Add Work Item")
+            self._wait_for_toast_clear()  # Clear any toast messages after click
             if self.step_delay > 0:
                 time.sleep(self.step_delay)
             
@@ -396,7 +405,7 @@ class SeleniumPmActions(PmActions):
             self._logger.info("[STEP2] Waiting for Add New Complaint button...")
             # Use class-based selector for reliability with dynamic hash suffix
             add_complaint_xpath = "//button[contains(@class, 'fleet-operations-pwa__nextButton__')]"
-            WebDriverWait(self.driver, 10).until(
+            WebDriverWait(self.driver, 30).until(
                 EC.presence_of_element_located((By.XPATH, add_complaint_xpath))
             )
             self._logger.info("[STEP2] OK - Create Work Item page loaded")
@@ -408,21 +417,23 @@ class SeleniumPmActions(PmActions):
             # For now, always click "Add New Complaint"
             
             self._logger.info("[STEP3] Clicking Add New Complaint button...")
-            add_complaint_btn = WebDriverWait(self.driver, 10).until(
+            add_complaint_btn = WebDriverWait(self.driver, 30).until(
                 EC.element_to_be_clickable((By.XPATH, add_complaint_xpath))
             )
             add_complaint_btn.click()
             self._logger.info("[STEP3] OK - Clicked Add New Complaint")
+            self._wait_for_toast_clear()  # Clear any toast messages after click
             if self.step_delay > 0:
                 time.sleep(self.step_delay)
             
             # Step 4: Answer "Is vehicle drivable?" question
             self._logger.info("[STEP4] Waiting for 'Is vehicle drivable?' question...")
-            drivable_yes_btn = WebDriverWait(self.driver, 10).until(
+            drivable_yes_btn = WebDriverWait(self.driver, 30).until(
                 EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'fleet-operations-pwa__drivable-option-button__')][.//h1[text()='Yes']]"))
             )
             drivable_yes_btn.click()
             self._logger.info("[STEP4] OK - Selected 'Yes' for drivable")
+            self._wait_for_toast_clear()  # Clear any toast messages after click
             if self.step_delay > 0:
                 time.sleep(self.step_delay)
             
@@ -431,7 +442,7 @@ class SeleniumPmActions(PmActions):
             damage_button_xpath = f"//button[contains(@class, 'fleet-operations-pwa__damage-option-button__') and .//h1[text()='{damage_type}']]"
             
             # Wait for the damage type button to be present
-            WebDriverWait(self.driver, 15).until(
+            WebDriverWait(self.driver, 45).until(
                 EC.presence_of_element_located((By.XPATH, damage_button_xpath))
             )
             self._logger.info("[STEP5] OK - Damage type buttons visible")
@@ -441,55 +452,133 @@ class SeleniumPmActions(PmActions):
             # Step 6: Select damage type/category - REQUIRED
             self._logger.info(f"[STEP6] Selecting damage type: {damage_type}...")
             
-            damage_selector = WebDriverWait(self.driver, 10).until(
+            damage_selector = WebDriverWait(self.driver, 30).until(
                 EC.element_to_be_clickable((By.XPATH, damage_button_xpath))
             )
             damage_selector.click()
             self._logger.info(f"[STEP6] OK - Selected {damage_type}")
+            self._wait_for_toast_clear()  # Clear any toast messages after click
             if self.step_delay > 0:
                 time.sleep(self.step_delay)
             
             # Step 7: Select sub-damage type - REQUIRED
             self._logger.info(f"[STEP7] Selecting sub-damage type: {sub_damage_type}...")
-            sub_damage_button_xpath = f"//button[contains(@class, 'fleet-operations-pwa__damage-option-button__') and .//h1[text()='{sub_damage_type}']]"            
-            sub_damage_selector = WebDriverWait(self.driver, 10).until(
+            sub_damage_button_xpath = f"//button[contains(@class, 'fleet-operations-pwa__damage-option-button__') and .//h1[text()='{sub_damage_type}']]"
+            sub_damage_selector = WebDriverWait(self.driver, 30).until(
                 EC.element_to_be_clickable((By.XPATH, sub_damage_button_xpath))
             )
             sub_damage_selector.click()
             self._logger.info(f"[STEP7] OK - Selected {sub_damage_type}")
+            self._wait_for_toast_clear()  # Clear any toast messages after click
             if self.step_delay > 0:
                 time.sleep(self.step_delay)
             
-            # Step 8: Enter correction action in textarea - REQUIRED
-            self._logger.info("[STEP8] Entering correction action...")
-            action_field = WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, "textarea.bp6-text-area"))
-            )
-            action_field.clear()
-            action_field.send_keys(correction_action)
-            self._logger.info("[STEP8] OK - Entered correction action")
-            if self.step_delay > 0:
-                time.sleep(self.step_delay)
+            # Step 8: Look for either textarea or Next button (workflow varies by damage type)
+            self._logger.info("[STEP8] Looking for correction action field or Next button...")
+            try:
+                # Try to find textarea first
+                action_field = WebDriverWait(self.driver, 5).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "textarea.bp6-text-area, textarea"))
+                )
+                self._logger.info("[STEP8] Found correction action field - entering text...")
+                action_field.clear()
+                action_field.send_keys(correction_action)
+                self._logger.info("[STEP8] OK - Entered correction action")
+                if self.step_delay > 0:
+                    time.sleep(self.step_delay)
+            except TimeoutException:
+                # No textarea found - might need to click Next/Continue first
+                self._logger.info("[STEP8] No correction field found - looking for Next/Continue button...")
+                try:
+                    next_btn = WebDriverWait(self.driver, 5).until(
+                        EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'fleet-operations-pwa__nextButton__') or contains(text(), 'Next') or contains(text(), 'Continue')]"))
+                    )
+                    next_btn.click()
+                    self._logger.info("[STEP8] Clicked Next button")
+                    self._wait_for_toast_clear()
+                    if self.step_delay > 0:
+                        time.sleep(self.step_delay)
+                    
+                    # Now try textarea again
+                    action_field = WebDriverWait(self.driver, 10).until(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, "textarea.bp6-text-area, textarea"))
+                    )
+                    self._logger.info("[STEP8] Found correction action field after Next - entering text...")
+                    action_field.clear()
+                    action_field.send_keys(correction_action)
+                    self._logger.info("[STEP8] OK - Entered correction action")
+                    if self.step_delay > 0:
+                        time.sleep(self.step_delay)
+                except TimeoutException:
+                    self._logger.warning("[STEP8] Could not find Next button or correction field - skipping correction action")
+                    # Continue anyway - some workflows might not need it
             
-            # Step 9: Click Complete/Submit button - REQUIRED
-            self._logger.info("[STEP9] Clicking Complete/Submit button...")
-            complete_btn = WebDriverWait(self.driver, 10).until(
+            # Step 9: Click Next/Complete button to proceed to Additional Info page
+            self._logger.info("[STEP9] Clicking Next/Complete button...")
+            complete_btn = WebDriverWait(self.driver, 30).until(
                 EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Complete') or contains(text(), 'Submit') or contains(text(), 'Next')]"))
             )
             complete_btn.click()
-            self._logger.info("[STEP9] OK - Clicked Complete/Submit")
+            self._logger.info("[STEP9] OK - Clicked Next/Complete")
+            self._wait_for_toast_clear()  # Clear any toast messages after click
             if self.step_delay > 0:
                 time.sleep(self.step_delay)
             
-            # Step 10: Wait for form to close
-            self._logger.info("[STEP10] Waiting for form to close...")
+            # Step 10: Wait for "Additional Info" page to load
+            self._logger.info("[STEP10] Waiting for Additional Info page...")
+            # Wait for the metadata container that shows the summary (Drivable, Glass Damage, etc.)
+            WebDriverWait(self.driver, 45).until(
+                EC.presence_of_element_located((By.XPATH, "//h1[contains(text(), 'Drivable')]"))
+            )
+            self._logger.info("[STEP10] OK - Additional Info page loaded")
+            if self.step_delay > 0:
+                time.sleep(self.step_delay)
+            
+            # Step 11: Click final "Submit Complaint" button
+            self._logger.info("[STEP11] Clicking Submit Complaint button...")
+            # Clear any toast messages before clicking
+            self._wait_for_toast_clear()
+            # Use text-based selector to avoid dynamic classname issues
+            submit_complaint_xpath = "//button[.//span[contains(text(), 'Submit Complaint')]] | //button[contains(., 'Submit Complaint')]"
+            submit_btn = WebDriverWait(self.driver, 30).until(
+                EC.element_to_be_clickable((By.XPATH, submit_complaint_xpath))
+            )
+            self._logger.info("[STEP11] Submit button is clickable, clicking now...")
+            submit_btn.click()
+            self._logger.info("[STEP11] OK - Clicked Submit Complaint")
+            self._wait_for_toast_clear()  # Clear any toast messages after click
+            if self.step_delay > 0:
+                time.sleep(self.step_delay)
+            
+            # Step 12: Wait for form to close and workitem to be created
+            self._logger.info("[STEP12] Waiting for form to close...")
+            form_closed = False
             try:
-                WebDriverWait(self.driver, 15).until(
+                self._logger.info("[STEP12] Checking if dialog/overlay is disappearing...")
+                WebDriverWait(self.driver, 45).until(
                     EC.invisibility_of_element_located((By.CSS_SELECTOR, "div.bp6-dialog, div.bp6-overlay"))
                 )
+                self._logger.info("[STEP12] Dialog/overlay closed successfully")
+                form_closed = True
             except TimeoutException:
-                pass  # Form might already be closed
-            self._logger.info("[STEP10] OK - Form closed, workitem created!")
+                self._logger.warning("[STEP12] Dialog/overlay still visible after 45s, checking for WorkItem tab...")
+                # Check if we're back at the workitem tab (success indicator)
+                try:
+                    WebDriverWait(self.driver, 15).until(
+                        EC.presence_of_element_located((By.XPATH, "//button[contains(., 'Add Work Item')]"))
+                    )
+                    self._logger.info("[STEP12] Form closed - back at WorkItem tab (success)")
+                    form_closed = True
+                except TimeoutException:
+                    self._logger.warning("[STEP12] Form might still be open - checking page state...")
+                    # Last resort: check current URL or page title
+                    current_url = self.driver.current_url
+                    self._logger.warning(f"[STEP12] Current URL: {current_url}")
+            
+            if form_closed:
+                self._logger.info("[STEP12] OK - Workitem created successfully!")
+            else:
+                self._logger.warning("[STEP12] UNCERTAIN - Form closure status unclear, but continuing...")
             
             return {"status": "success", "damage_type": damage_type, "action": correction_action}
             

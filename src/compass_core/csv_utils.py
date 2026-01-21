@@ -212,13 +212,14 @@ def read_workitem_list(csv_path: str) -> List[Dict[str, str]]:
                 if not row.get(mva_col, '').strip():
                     continue
                 
-                # Extract and normalize data
-                mva = normalize_mva(row[mva_col])
-                damage_type = row.get(damage_col, '').strip()
-                sub_damage_type = row.get(sub_damage_col, '').strip()
-                correction_action = row.get(action_col, '').strip()
+                # Extract and normalize data (handle None values from csv.DictReader)
+                mva = normalize_mva(row[mva_col] or '')
+                damage_type = (row.get(damage_col) or '').strip()
+                sub_damage_type = (row.get(sub_damage_col) or '').strip()
+                correction_action = (row.get(action_col) or '').strip()
                 
-                if mva and damage_type and sub_damage_type and correction_action:
+                # CorrectionAction is optional, others are required
+                if mva and damage_type and sub_damage_type:
                     workitems.append({
                         'mva': mva,
                         'damage_type': damage_type,

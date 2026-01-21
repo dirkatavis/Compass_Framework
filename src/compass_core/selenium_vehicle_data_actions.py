@@ -23,9 +23,9 @@ except ImportError:
 from .vehicle_data_actions import VehicleDataActions
 
 # WebDriver wait configuration
-DEFAULT_WAIT_TIMEOUT = 10  # seconds
+DEFAULT_WAIT_TIMEOUT = 30  # seconds - increased for slow app performance
 DEFAULT_POLL_FREQUENCY = 0.5  # seconds
-FIELD_READY_TIMEOUT = 5  # seconds - for field readiness checks
+FIELD_READY_TIMEOUT = 15  # seconds - increased for slow app performance
 FIELD_READY_POLL = 0.25  # seconds - faster polling for field checks
 
 
@@ -291,7 +291,7 @@ class SeleniumVehicleDataActions(VehicleDataActions):
             properties[label] = value if value else 'N/A'
         return properties
     
-    def verify_mva_echo(self, mva: str, timeout: int = 15) -> bool:
+    def verify_mva_echo(self, mva: str, timeout: int = 30) -> bool:
         """Verify that the UI has echoed the entered MVA.
         
         Implements VehicleDataActions.verify_mva_echo()
@@ -320,7 +320,7 @@ class SeleniumVehicleDataActions(VehicleDataActions):
             self._logger.error(f"[PROPERTY] Error waiting for property '{label}': {e}")
             return False
     
-    def wait_for_property_page_loaded(self, expected_mva: str, timeout: int = 90) -> bool:
+    def wait_for_property_page_loaded(self, expected_mva: str, timeout: int = 120) -> bool:
         """
         Wait for property page to load by detecting MVA property field.
         
@@ -352,23 +352,33 @@ class SeleniumVehicleDataActions(VehicleDataActions):
             # Using contains() for class names to handle dynamic hash suffixes
             xpath = (
                 f"//div[contains(@class, 'fleet-operations-pwa__vehicle-property-name__') and contains(text(), 'MVA')]"
-                f"/following-sibling::div[contains(@class, 'fleet-operations-pwa__vehicle-property-value__') and contains(normalize-space(text()), '{mva_to_find}')]"
+                f"/following-sibling::div[contains(@class, 'fleet-operations-pwa__vehicle-property-value__')]"
             )
-            
-            element = WebDriverWait(self.driver, timeout, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
-                EC.presence_of_element_located((By.XPATH, xpath))
-            )
-            
+
+            def matching_mva(driver):
+                try:
+                    element = driver.find_element(By.XPATH, xpath)
+                    if not element or not element.is_displayed():
+                        return False
+                    actual_value = (element.text or "").strip()
+                    if mva_to_find not in actual_value:
+                        return False
+                    return element
+                except NoSuchElementException:
+                    return False
+
+            element = WebDriverWait(self.driver, timeout, poll_frequency=DEFAULT_POLL_FREQUENCY).until(matching_mva)
+
             if element:
-                actual_value = element.text.strip()
+                actual_value = (element.text or "").strip()
                 self._logger.info(f"[PROPERTY_PAGE] MVA property field loaded - Expected: {mva_to_find}, Found: {actual_value}")
                 return True
             return False
-            
+
         except TimeoutException:
             self._logger.warning(f"[PROPERTY_PAGE] Timeout waiting for MVA property field (timeout={timeout}s)")
             return False
-            
+
         except Exception as e:
             self._logger.error(f"[PROPERTY_PAGE] Error waiting for MVA property field: {e}")
             return False

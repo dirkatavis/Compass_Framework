@@ -132,7 +132,7 @@ Create Missing WorkItems Client
 Session started: 2026-01-20 14:30:00
 ============================================================
 Loading configuration from: ../../webdriver.ini.local
-Reading workitem list from: ../../data/sample_workitems.csv
+Reading workitem list from: ../../data/create_missing_workitems_sample.csv
 Found 5 workitems to process
 Initializing browser...
 Performing authentication...
@@ -203,6 +203,6 @@ To modify or extend this client:
 
 ## Related Files
 
-- Sample data: `../../data/sample_workitems.csv`
+- Sample data: `../../data/create_missing_workitems_sample.csv`
 - Configuration template: `../../webdriver.ini`
 - Framework docs: `../../docs/README.md`
