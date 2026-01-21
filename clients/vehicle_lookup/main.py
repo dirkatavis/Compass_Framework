@@ -48,15 +48,21 @@ def setup_logging(verbose: bool = False) -> logging.Logger:
 def main():
     # Resolve paths relative to script location for "run from anywhere" support
     repo_root = Path(__file__).resolve().parents[2]
+    client_dir = Path(__file__).resolve().parent
     default_input = repo_root / 'data' / 'vehicle_lookup_sample.csv'
-    default_config = repo_root / 'webdriver.ini.local'
+    default_output = client_dir / 'VehicleLookup_results.csv'
+    
+    # Look for config in client dir first, then repo root
+    local_config = client_dir / 'webdriver.ini.local'
+    shared_config = repo_root / 'webdriver.ini.local'
+    default_config = local_config if local_config.exists() else shared_config
     
     parser = argparse.ArgumentParser(description='Retrieve glass info for MVA list')
     parser.add_argument('--input', '-i', 
                        default=str(default_input),
                        help='Input CSV file with MVA list')
     parser.add_argument('--output', '-o',
-                       default='VehicleLookup_results.csv',
+                       default=str(default_output),
                        help='Output CSV file for results')
     parser.add_argument('--config', '-c',
                        default=str(default_config),

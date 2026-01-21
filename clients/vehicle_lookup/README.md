@@ -51,7 +51,16 @@ python main.py --verbose
 
 ### Prerequisites
 
-1. **Credentials**: Create `webdriver.ini.local` in project root:
+1. **Credentials**: Create `webdriver.ini.local` for this client:
+   
+   **Option 1 - Client-specific config** (recommended for convenience):
+   - Create `clients/vehicle_lookup/webdriver.ini.local`
+   - Keeps config, script, logs, and output in one location
+   
+   **Option 2 - Shared config**:
+   - Create `webdriver.ini.local` in project root
+   - Used by all clients (if no client-specific config exists)
+   
    ```ini
    [credentials]
    username = your.email@example.com

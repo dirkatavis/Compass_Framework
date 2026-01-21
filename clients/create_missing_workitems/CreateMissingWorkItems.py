@@ -64,8 +64,13 @@ def main():
     parser = argparse.ArgumentParser(description='Create or find workitems from CSV list')
 
     repo_root = Path(__file__).resolve().parents[2]
+    client_dir = Path(__file__).resolve().parent
     default_input = repo_root / 'data' / 'create_missing_workitems_sample.csv'
-    default_config = repo_root / 'webdriver.ini.local'
+    
+    # Look for config in client dir first, then repo root
+    local_config = client_dir / 'webdriver.ini.local'
+    shared_config = repo_root / 'webdriver.ini.local'
+    default_config = local_config if local_config.exists() else shared_config
 
     parser.add_argument('--input', '-i',
                        default=str(default_input),
