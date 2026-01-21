@@ -29,22 +29,22 @@ Production client for batch vehicle data retrieval using the Compass Framework.
 ### Basic Usage
 ```powershell
 cd clients/vehicle_lookup
-python main.py
+python VehicleLookup.py
 ```
 
 ### With Custom Input/Output
 ```powershell
-python main.py --input my_mvas.csv --output VehicleLookup_results.csv
+python VehicleLookup.py --input my_mvas.csv --output VehicleLookup_results.csv
 ```
 
 ### Headless Mode
 ```powershell
-python main.py --headless
+python VehicleLookup.py --headless
 ```
 
 ### Verbose Logging
 ```powershell
-python main.py --verbose
+python VehicleLookup.py --verbose
 ```
 
 ## Configuration

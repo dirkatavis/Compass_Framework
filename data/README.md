@@ -32,17 +32,17 @@ cd clients/vehicle_lookup
 
 ### With CSV Input
 ```powershell
-python main.py --input ../../data/vehicle_lookup_sample.csv --output VehicleLookup_results.csv
+python VehicleLookup.py --input ../../data/vehicle_lookup_sample.csv --output VehicleLookup_results.csv
 ```
 
 ### With Verbose Logging
 ```powershell
-python main.py --verbose
+python VehicleLookup.py --verbose
 ```
 
 ### With Incognito Mode (Forces Fresh Login)
 ```powershell
-python main.py --incognito
+python VehicleLookup.py --incognito
 ```
 
 ## Output Format

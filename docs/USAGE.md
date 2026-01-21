@@ -85,32 +85,32 @@ $env:COMPASS_LOGIN_ID = "YOUR_WWID"
 cd clients/vehicle_lookup
 
 # Process MVAs from default input (data/vehicle_lookup_sample.csv)
-python main.py
+python VehicleLookup.py
 
 # Custom input/output
-python main.py --input ../../data/vehicle_lookup_sample.csv --output VehicleLookup_results.csv
+python VehicleLookup.py --input ../../data/vehicle_lookup_sample.csv --output VehicleLookup_results.csv
 ```
 
 ### Command Line Options
 
 ```powershell
 # Custom input CSV
-python main.py --input path/to/mva_list.csv
+python VehicleLookup.py --input path/to/mva_list.csv
 
 # Custom output path
-python main.py --output path/to/results.csv
+python VehicleLookup.py --output path/to/results.csv
 
 # With incognito mode (forces fresh login)
-python main.py --incognito
+python VehicleLookup.py --incognito
 
 # Custom configuration file
-python main.py --config path/to/webdriver.ini.local
+python VehicleLookup.py --config path/to/webdriver.ini.local
 
 # Verbose logging for debugging
-python main.py --verbose
+python VehicleLookup.py --verbose
 
 # Headless mode
-python main.py --headless
+python VehicleLookup.py --headless
 ```
 
 ### Input CSV Format
@@ -335,7 +335,7 @@ driver_manager.quit_driver()
 
 ### Example 2: Batch Processing
 
-See [clients/vehicle_lookup/main.py](../clients/vehicle_lookup/main.py) for full example.
+See [clients/vehicle_lookup/VehicleLookup.py](../clients/vehicle_lookup/VehicleLookup.py) for full example.
 
 ---
 

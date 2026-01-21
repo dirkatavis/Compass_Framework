@@ -58,16 +58,16 @@ pip install -e .[selenium]
 cd clients/vehicle_lookup
 
 # Process MVAs from CSV (uses vehicle_lookup_sample.csv by default)
-python main.py
+python VehicleLookup.py
 
 # Custom input/output
-python main.py --input ../../data/vehicle_lookup_sample.csv --output VehicleLookup_results.csv
+python VehicleLookup.py --input ../../data/vehicle_lookup_sample.csv --output VehicleLookup_results.csv
 
 # With incognito mode (forces fresh login)
-python main.py --incognito
+python VehicleLookup.py --incognito
 
 # Verbose logging for debugging
-python main.py --verbose
+python VehicleLookup.py --verbose
 ```
 
 ### Configuration
