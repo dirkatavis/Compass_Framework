@@ -78,8 +78,8 @@ except ImportError:
 
 # CSV utilities - MVA list reading and results writing
 try:
-    from .csv_utils import read_mva_list, write_results_csv
-    __all__.extend(['read_mva_list', 'write_results_csv'])
+    from .csv_utils import read_mva_list, write_results_csv, read_workitem_list
+    __all__.extend(['read_mva_list', 'write_results_csv', 'read_workitem_list'])
 except ImportError:
     # CSV utilities not available
     pass

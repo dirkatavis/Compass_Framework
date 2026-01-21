@@ -7,6 +7,7 @@ Currently includes inline POM logic; will be extracted to separate POMs in futur
 from typing import Dict, Any, Optional, List
 import time
 import logging
+import os
 
 try:
     from selenium.webdriver.remote.webdriver import WebDriver
@@ -22,11 +23,13 @@ except ImportError:
     
 from .vehicle_data_actions import VehicleDataActions
 
-# WebDriver wait configuration
-DEFAULT_WAIT_TIMEOUT = 10  # seconds
-DEFAULT_POLL_FREQUENCY = 0.5  # seconds
-FIELD_READY_TIMEOUT = 5  # seconds - for field readiness checks
-FIELD_READY_POLL = 0.25  # seconds - faster polling for field checks
+# WebDriver wait configuration (configurable via env for debugging)
+DEBUG_WAIT_MULTIPLIER = float(os.getenv("COMPASS_DEBUG_WAIT_MULTIPLIER", "1.0"))
+DEFAULT_WAIT_TIMEOUT = float(os.getenv("COMPASS_DEFAULT_WAIT_TIMEOUT", "10")) * DEBUG_WAIT_MULTIPLIER
+DEFAULT_POLL_FREQUENCY = float(os.getenv("COMPASS_DEFAULT_POLL_FREQUENCY", "0.5"))
+FIELD_READY_TIMEOUT = float(os.getenv("COMPASS_FIELD_READY_TIMEOUT", "5")) * DEBUG_WAIT_MULTIPLIER
+FIELD_READY_POLL = float(os.getenv("COMPASS_FIELD_READY_POLL", "0.25"))
+PROPERTY_PAGE_TIMEOUT = float(os.getenv("COMPASS_PROPERTY_PAGE_TIMEOUT", "30")) * DEBUG_WAIT_MULTIPLIER
 
 
 class SeleniumVehicleDataActions(VehicleDataActions):
@@ -291,7 +294,7 @@ class SeleniumVehicleDataActions(VehicleDataActions):
             properties[label] = value if value else 'N/A'
         return properties
     
-    def verify_mva_echo(self, mva: str, timeout: int = 5) -> bool:
+    def verify_mva_echo(self, mva: str, timeout: int = 30) -> bool:
         """Verify that the UI has echoed the entered MVA.
         
         Implements VehicleDataActions.verify_mva_echo()
@@ -320,75 +323,69 @@ class SeleniumVehicleDataActions(VehicleDataActions):
             self._logger.error(f"[PROPERTY] Error waiting for property '{label}': {e}")
             return False
     
-    def wait_for_property_page_loaded(self, expected_mva: str, timeout: int = 15) -> bool:
+    def wait_for_property_page_loaded(self, expected_mva: str, timeout: Optional[float] = None) -> bool:
         """
-        Wait for property page to load by detecting MVA in property section.
+        Wait for property page to load by detecting MVA property field.
         
-        This method waits for the vehicle property page to fully load by checking
-        if the expected MVA appears in the property details section. This is the
-        most reliable indicator that the page has finished loading after entering
-        an MVA (which auto-submits after 8 digits).
+        Waits for the specific MVA property element to appear:
+        <div class="fleet-operations-pwa__vehicle-property-value__*" tabindex="0">MVA_VALUE</div>
         
         Args:
-            expected_mva: The MVA value to search for in the property section
-            timeout: Maximum wait time in seconds (default: 15)
+            expected_mva: The MVA value to search for
+            timeout: Maximum wait time in seconds. If None, uses PROPERTY_PAGE_TIMEOUT
+                (derived from a 30s base * DEBUG_WAIT_MULTIPLIER).
             
         Returns:
-            True if property section loaded with expected MVA visible, False on timeout
-            
-        Example:
-            >>> vehicle_actions.enter_mva("50227203")
-            >>> if vehicle_actions.wait_for_property_page_loaded("50227203", timeout=15):
-            ...     vin = vehicle_actions.get_vehicle_property("VIN")
+            True if MVA property field loaded, False on timeout
         """
         if not expected_mva:
             self._logger.warning("[PROPERTY_PAGE] Empty MVA provided")
             return False
         
-        # Use last 8 digits for matching
-        mva_to_find = expected_mva[-8:] if len(expected_mva) >= 8 else expected_mva
+        # Normalize to last 8 digits, zero-padded
+        mva_digits = ''.join(filter(str.isdigit, expected_mva))
+        if len(mva_digits) >= 8:
+            mva_to_find = mva_digits[-8:]
+        else:
+            mva_to_find = mva_digits.zfill(8)
         
-        self._logger.info(f"[PROPERTY_PAGE] Waiting for property page with MVA: {mva_to_find}")
+        self._logger.info(f"[PROPERTY_PAGE] Waiting for MVA property field with value: {mva_to_find}")
         
-        def mva_in_properties(driver):
-            """Check if MVA appears in property section with exact match."""
-            try:
-                # Look for MVA text in the property section
-                # Try multiple selectors that might contain the MVA
-                selectors = [
-                    f"//*[contains(text(), '{mva_to_find}')]",  # Any element containing MVA
-                    f"//div[contains(@class, 'property')]//text()[contains(., '{mva_to_find}')]",
-                    f"//*[@id='mva' or @name='mva']//following-sibling::*[contains(text(), '{mva_to_find}')]"
-                ]
-                
-                for selector in selectors:
-                    try:
-                        element = driver.find_element(By.XPATH, selector)
-                        if element and element.is_displayed():
-                            # Verify the element text exactly matches our MVA (or contains it as a word)
-                            element_text = element.text.strip()
-                            # Check if MVA appears as exact match or word boundary
-                            if element_text == mva_to_find or f" {mva_to_find} " in f" {element_text} ":
-                                self._logger.debug(f"[PROPERTY_PAGE] Found MVA '{mva_to_find}' in element text: '{element_text[:50]}'")
-                                return True
-                    except NoSuchElementException:
-                        continue
-                        
-                return False
-                
-            except Exception as e:
-                self._logger.debug(f"[PROPERTY_PAGE] Error checking for MVA: {e}")
-                return False
-        
+        if timeout is None:
+            timeout = PROPERTY_PAGE_TIMEOUT
+
         try:
-            WebDriverWait(self.driver, timeout, poll_frequency=DEFAULT_POLL_FREQUENCY).until(mva_in_properties)
-            self._logger.info(f"[PROPERTY_PAGE] Property page loaded successfully with MVA: {mva_to_find}")
-            return True
-            
-        except TimeoutException:
-            self._logger.warning(f"[PROPERTY_PAGE] Timeout waiting for property page with MVA: {mva_to_find} (timeout={timeout}s)")
+            # Wait for the MVA property - look for property-value div that's a sibling of property-name div containing "MVA"
+            # Using contains() for class names to handle dynamic hash suffixes
+            xpath = (
+                f"//div[contains(@class, 'fleet-operations-pwa__vehicle-property-name__') and contains(text(), 'MVA')]"
+                f"/following-sibling::div[contains(@class, 'fleet-operations-pwa__vehicle-property-value__')]"
+            )
+
+            def matching_mva(driver):
+                try:
+                    element = driver.find_element(By.XPATH, xpath)
+                    if not element or not element.is_displayed():
+                        return False
+                    actual_value = (element.text or "").strip()
+                    if mva_to_find not in actual_value:
+                        return False
+                    return element
+                except NoSuchElementException:
+                    return False
+
+            element = WebDriverWait(self.driver, timeout, poll_frequency=DEFAULT_POLL_FREQUENCY).until(matching_mva)
+
+            if element:
+                actual_value = (element.text or "").strip()
+                self._logger.info(f"[PROPERTY_PAGE] MVA property field loaded - Expected: {mva_to_find}, Found: {actual_value}")
+                return True
             return False
-            
+
+        except TimeoutException:
+            self._logger.warning(f"[PROPERTY_PAGE] Timeout waiting for MVA property field (timeout={timeout}s)")
+            return False
+
         except Exception as e:
-            self._logger.error(f"[PROPERTY_PAGE] Error waiting for property page: {e}")
+            self._logger.error(f"[PROPERTY_PAGE] Error waiting for MVA property field: {e}")
             return False

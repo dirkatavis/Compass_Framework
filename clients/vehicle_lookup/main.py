@@ -3,7 +3,7 @@
 Vehicle Lookup Client - Glass Info Retrieval
 
 Reads MVAs from CSV, retrieves vehicle properties (MVA, VIN, Description),
-and writes results to GlassInfo.csv.
+and writes results to VehicleLookup_results.csv.
 
 Usage:
     python main.py --input mva_list.csv --config ../webdriver.ini.local
@@ -48,10 +48,10 @@ def setup_logging(verbose: bool = False) -> logging.Logger:
 def main():
     parser = argparse.ArgumentParser(description='Retrieve glass info for MVA list')
     parser.add_argument('--input', '-i', 
-                       default='../../data/sample_mva_list.csv',
+                       default='../../data/vehicle_lookup_sample.csv',
                        help='Input CSV file with MVA list')
     parser.add_argument('--output', '-o',
-                       default='GlassInfo.csv',
+                       default='VehicleLookup_results.csv',
                        help='Output CSV file for results')
     parser.add_argument('--config', '-c',
                        default='../../webdriver.ini.local',
@@ -144,14 +144,9 @@ def main():
                 if entry_result['status'] != 'success':
                     raise Exception(f"MVA entry failed: {entry_result.get('error')}")
                 
-                # Verify echo
-                logger.debug(f"  Verifying MVA echo...")
-                if not vehicle_actions.verify_mva_echo(mva_item.mva):
-                    raise Exception("MVA echo verification failed")
-                
-                # Wait for property page
+                # Wait for property page (MVA property field to appear)
                 logger.debug(f"  Waiting for property page...")
-                if not vehicle_actions.wait_for_property_page_loaded(mva_item.mva, timeout=15):
+                if not vehicle_actions.wait_for_property_page_loaded(mva_item.mva):
                     raise Exception("Property page did not load")
                 
                 # Retrieve properties

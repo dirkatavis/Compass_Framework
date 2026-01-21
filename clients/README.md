@@ -10,6 +10,12 @@ Retrieves glass information (MVA, VIN, Description) for lists of MVAs and export
 **Status:** Active development  
 **Framework Version:** 0.1.0+
 
+### create_missing_workitems/
+Finds or creates workitems from CSV specifications (MVA, DamageType, CorrectionAction).
+
+**Status:** Active development  
+**Framework Version:** 0.1.0+
+
 ## Setup
 
 All clients use the framework's virtual environment:
@@ -37,7 +43,7 @@ python main.py
 
 Clients share framework configuration:
 - **Credentials:** `webdriver.ini.local` (gitignored)
-- **Test Data:** `data/sample_mva_list.csv`
+- **Test Data:** `data/vehicle_lookup_sample.csv` and `data/create_missing_workitems_sample.csv`
 - **Drivers:** `drivers.local/` (gitignored)
 
 ## Adding New Clients

@@ -4,7 +4,7 @@ This directory contains sample and user data files for Compass Framework vehicle
 
 ## Files
 
-- **sample_mva_list.csv** - Example MVA list for testing vehicle lookup
+- **vehicle_lookup_sample.csv** - Example MVA list for testing vehicle lookup
 - **Your data files** - Add your own CSVs here (gitignored by default)
 
 ## CSV Format
@@ -27,7 +27,7 @@ MVA list format:
 
 ### With CSV Input
 ```powershell
-python scripts/vehicle_lookup_client.py --input data/sample_mva_list.csv --output results.csv
+python scripts/vehicle_lookup_client.py --input data/vehicle_lookup_sample.csv --output results.csv
 ```
 
 ### With Direct MVA List

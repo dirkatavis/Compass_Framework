@@ -34,7 +34,7 @@ python main.py
 
 ### With Custom Input/Output
 ```powershell
-python main.py --input my_mvas.csv --output GlassInfo.csv
+python main.py --input my_mvas.csv --output VehicleLookup_results.csv
 ```
 
 ### Headless Mode
@@ -83,7 +83,7 @@ CSV file with MVA numbers (one per line, comments allowed):
 
 ## Output Format
 
-`GlassInfo.csv` contains retrieved data:
+`VehicleLookup_results.csv` contains retrieved data:
 ```csv
 mva,vin,desc
 50227203,1HGBH41JXMN109186,Honda Accord

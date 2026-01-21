@@ -11,3 +11,6 @@ drivers.local/
 
 # Editor directories and files
 .vscode/
+
+# Client logs
+clients/**/**/*.log
