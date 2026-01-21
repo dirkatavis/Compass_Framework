@@ -49,7 +49,12 @@ def main():
     # Resolve paths relative to script location for "run from anywhere" support
     repo_root = Path(__file__).resolve().parents[2]
     client_dir = Path(__file__).resolve().parent
-    default_input = repo_root / 'data' / 'vehicle_lookup_sample.csv'
+    
+    # Look for sample CSV in client dir first, then shared data dir
+    local_sample = client_dir / 'vehicle_lookup_sample.csv'
+    shared_sample = repo_root / 'data' / 'vehicle_lookup_sample.csv'
+    default_input = local_sample if local_sample.exists() else shared_sample
+    
     default_output = client_dir / 'VehicleLookup_results.csv'
     
     # Look for config in client dir first, then repo root

@@ -65,7 +65,11 @@ def main():
 
     repo_root = Path(__file__).resolve().parents[2]
     client_dir = Path(__file__).resolve().parent
-    default_input = repo_root / 'data' / 'create_missing_workitems_sample.csv'
+    
+    # Look for sample CSV in client dir first, then shared data dir
+    local_sample = client_dir / 'create_missing_workitems_sample.csv'
+    shared_sample = repo_root / 'data' / 'create_missing_workitems_sample.csv'
+    default_input = local_sample if local_sample.exists() else shared_sample
     
     # Look for config in client dir first, then repo root
     local_config = client_dir / 'webdriver.ini.local'

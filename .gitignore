@@ -16,6 +16,7 @@ drivers.local/
 *.log
 *.csv
 !data/*.csv
+!clients/*/*.csv
 
 # Client logs and outputs
 clients/**/**/*.log
