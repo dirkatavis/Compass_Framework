@@ -12,5 +12,10 @@ drivers.local/
 # Editor directories and files
 .vscode/
 
-# Client logs
+# Runtime artifacts (logs, output files)
+*.log
+*.csv
+!data/*.csv
+
+# Client logs and outputs
 clients/**/**/*.log

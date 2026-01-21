@@ -91,7 +91,15 @@ The system uses partial matching, so "PM" will match "PM Gas", "PM Oil", etc.
 
 ## Configuration
 
-Create or use `webdriver.ini.local` with your credentials:
+Create `webdriver.ini.local` with your credentials:
+
+**Option 1 - Client-specific config** (recommended):
+- Create `clients/create_missing_workitems/webdriver.ini.local`
+- Keeps config, script, and logs in one location
+
+**Option 2 - Shared config**:
+- Create `webdriver.ini.local` in project root
+- Used by all clients (if no client-specific config exists)
 
 ```ini
 [credentials]

@@ -34,7 +34,7 @@ Note: This document is the authoritative source for current status and completio
 - PR #23 merged: CSV utilities
   - `read_mva_list()` - MVA list reading with normalization
   - `write_results_csv()` - Results writing with error handling
-- **Client script added**: `vehicle_lookup_client.py` - production-ready CLI for batch MVA lookup
+- **Client implementations**: Production-ready clients in clients/vehicle_lookup/ and clients/create_missing_workitems/
 - **Gap analysis**: Documented legacy script migration status in [GAP_ANALYSIS.md](GAP_ANALYSIS.md)
 - Previous updates:
   - PR #16: Roadmap added — see [ROADMAP.md](ROADMAP.md)
