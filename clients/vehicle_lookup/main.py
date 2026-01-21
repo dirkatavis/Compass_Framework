@@ -46,15 +46,20 @@ def setup_logging(verbose: bool = False) -> logging.Logger:
 
 
 def main():
+    # Resolve paths relative to script location for "run from anywhere" support
+    repo_root = Path(__file__).resolve().parents[2]
+    default_input = repo_root / 'data' / 'vehicle_lookup_sample.csv'
+    default_config = repo_root / 'webdriver.ini.local'
+    
     parser = argparse.ArgumentParser(description='Retrieve glass info for MVA list')
     parser.add_argument('--input', '-i', 
-                       default='../../data/vehicle_lookup_sample.csv',
+                       default=str(default_input),
                        help='Input CSV file with MVA list')
     parser.add_argument('--output', '-o',
                        default='VehicleLookup_results.csv',
                        help='Output CSV file for results')
     parser.add_argument('--config', '-c',
-                       default='../../webdriver.ini.local',
+                       default=str(default_config),
                        help='Configuration file with credentials')
     parser.add_argument('--headless', action='store_true',
                        help='Run browser in headless mode')
