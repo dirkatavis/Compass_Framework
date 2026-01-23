@@ -33,13 +33,16 @@ from compass_core import (
 
 def setup_logging(verbose: bool = False) -> logging.Logger:
     """Configure logging for the client script."""
+    # Place log file in same directory as script
+    script_dir = Path(__file__).parent
+    log_file = script_dir / 'vehicle_lookup.log'
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(
         level=level,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=[
             logging.StreamHandler(),
-            logging.FileHandler('vehicle_lookup.log')
+            logging.FileHandler(log_file)
         ]
     )
     return logging.getLogger('vehicle_lookup_client')
