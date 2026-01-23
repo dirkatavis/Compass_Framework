@@ -101,6 +101,8 @@ class SeleniumLoginFlow:
         skip_navigation = kwargs.get('skip_navigation', False)  # Allow caller to skip navigation if already on page
         
         self.logger.info(f"[LOGIN] Starting authentication flow for: {username}")
+        self.logger.info(f"[LOGIN] Login URL: {url}")
+        self.logger.info(f"[LOGIN] Current URL: {self.driver.current_url}")
         
         try:
             # Step 1: Navigate to login URL (unless already there)
@@ -114,27 +116,52 @@ class SeleniumLoginFlow:
                         "error": nav_result.get("error", "Unknown navigation error")
                     }
                 
+                import time
                 self.logger.debug(f"[LOGIN] Navigated to: {url}")
+                self.logger.info(f"[LOGIN] After navigation, current URL: {self.driver.current_url}")
+                self.logger.debug(f"[LOGIN] Page title: {self.driver.title}")
             else:
                 self.logger.debug(f"[LOGIN] Skipping navigation - already on login page")
+                self.logger.info(f"[LOGIN] Current URL: {self.driver.current_url}")
             
             # Check if we're on WWID page directly (SSO auto-login scenario)
             # Try to detect WWID field first
+            import time
             wwid_only = False
+            self.logger.debug("[LOGIN] Checking for WWID page (SSO auto-login scenario)...")
+            start_time = time.time()
             try:
+                # TODO: REFACTOR - Bad practice to use find_elements() + loop through candidates
+                # Pick ONE specific locator and iterate on that if it doesn't work.
+                # Current approach causes performance issues (see timing logs).
                 wwid_candidates = self.driver.find_elements(By.CSS_SELECTOR, "input[class*='fleet-operations-pwa__text-input__']")
-                if any(self._is_wwid_input(elem) for elem in wwid_candidates):
+                elapsed_find = time.time() - start_time
+                self.logger.info(f"[TIMING] WWID field search took {elapsed_find:.3f}s, found {len(wwid_candidates)} candidates")
+                
+                check_start = time.time()
+                has_wwid = any(self._is_wwid_input(elem) for elem in wwid_candidates)
+                elapsed_check = time.time() - check_start
+                self.logger.info(f"[TIMING] WWID validation took {elapsed_check:.3f}s")
+                
+                if has_wwid:
                     self.logger.info("[LOGIN] WWID page detected - skipping username/password (SSO auto-login)")
+                    self.logger.info(f"[LOGIN] WWID page URL: {self.driver.current_url}")
                     wwid_only = True
-            except Exception:
-                pass  # Not on WWID page, continue with normal flow
+                else:
+                    self.logger.debug("[LOGIN] WWID candidates found but none are valid input fields")
+            except Exception as e:
+                elapsed_total = time.time() - start_time
+                self.logger.debug(f"[LOGIN] No WWID page detected after {elapsed_total:.3f}s: {e}")
             
             # Step 2: Enter username (skip if WWID-only)
             if not wwid_only:
+                self.logger.info("[LOGIN] Step 2: Entering username...")
                 username_result = self._enter_username(username, timeout)
                 if username_result.get("status") != "success":
                     # Check if we landed on WWID page instead
                     try:
+                        # TODO: REFACTOR - Same bad pattern as above (find_elements + loop)
+                        # Use the SAME single locator approach once the first instance is fixed
                         wwid_candidates = self.driver.find_elements(By.CSS_SELECTOR, "input[class*='fleet-operations-pwa__text-input__']")
                         if any(self._is_wwid_input(elem) for elem in wwid_candidates):
                             self.logger.info("[LOGIN] Username not found but WWID page detected - continuing")
@@ -146,30 +173,40 @@ class SeleniumLoginFlow:
             
             # Step 3: Enter password (skip if WWID-only)
             if not wwid_only:
+                self.logger.info("[LOGIN] Step 3: Entering password...")
+                self.logger.info(f"[LOGIN] Current URL before password: {self.driver.current_url}")
                 password_result = self._enter_password(password, timeout)
                 if password_result.get("status") != "success":
                     return password_result
             
             # Step 3.5: Handle "Stay signed in?" prompt if it appears (skip if WWID-only)
             if not wwid_only:
+                self.logger.debug("[LOGIN] Step 3.5: Checking for 'Stay signed in?' prompt...")
+                self.logger.info(f"[LOGIN] Current URL before stay signed in check: {self.driver.current_url}")
                 stay_signed_in_result = self._handle_stay_signed_in(timeout, stay_signed_in)
                 if stay_signed_in_result.get("status") == "success":
                     choice = "Yes" if stay_signed_in else "No"
                     self.logger.debug(f"[LOGIN] Handled Stay signed in prompt: clicked '{choice}'")
+                else:
+                    self.logger.debug("[LOGIN] No 'Stay signed in?' prompt detected")
             
             # Step 3.6: Enter login_id (WWID) if required - application-specific but commonly needed
             if login_id:
+                self.logger.info("[LOGIN] Step 3.6: Processing WWID entry...")
+                self.logger.info(f"[LOGIN] Current URL before WWID: {self.driver.current_url}")
                 # Check if WWID page opened in a new tab
                 import time
                 time.sleep(2)  # Wait for any new tab to open
                 
                 original_window = self.driver.current_window_handle
                 all_windows = self.driver.window_handles
+                self.logger.debug(f"[LOGIN] Window count: {len(all_windows)}")
                 
                 if len(all_windows) > 1:
                     # Switch to the new tab (WWID page)
                     self.driver.switch_to.window(all_windows[-1])
                     self.logger.info(f"[LOGIN] Switched to new tab for WWID entry ({len(all_windows)} tabs total)")
+                    self.logger.info(f"[LOGIN] New tab URL: {self.driver.current_url}")
                 
                 login_id_result = self._enter_wwid(login_id, timeout)
                 if login_id_result.get("status") != "success":
@@ -199,14 +236,30 @@ class SeleniumLoginFlow:
     def _enter_username(self, username: str, timeout: int) -> Dict[str, Any]:
         """Enter username and click Next button."""
         try:
+            import time
             # Wait for username input field
             # Microsoft uses: input[type="email"], input[name="loginfmt"]
+            start_time = time.time()
+            self.logger.debug(f"[TIMING] Starting username field wait...")
             username_field = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'input[type="email"], input[name="loginfmt"]'))
             )
+            elapsed = time.time() - start_time
+            self.logger.info(f"[TIMING] Username field found in {elapsed:.3f}s")
             
-            if not username_field.is_displayed() or not username_field.is_enabled():
+            start_time = time.time()
+            is_displayed = username_field.is_displayed()
+            elapsed_display = time.time() - start_time
+            self.logger.info(f"[TIMING] is_displayed() took {elapsed_display:.3f}s, result: {is_displayed}")
+            
+            start_time = time.time()
+            is_enabled = username_field.is_enabled()
+            elapsed_enabled = time.time() - start_time
+            self.logger.info(f"[TIMING] is_enabled() took {elapsed_enabled:.3f}s, result: {is_enabled}")
+            
+            if not is_displayed or not is_enabled:
                 self.logger.warning("[LOGIN][USERNAME] Field not ready, waiting...")
+                start_time = time.time()
                 username_field = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                     lambda d: (
                         (field := d.find_element(By.CSS_SELECTOR, 'input[type="email"], input[name="loginfmt"]'))
@@ -215,17 +268,24 @@ class SeleniumLoginFlow:
                         and field
                     )
                 )
+                elapsed = time.time() - start_time
+                self.logger.info(f"[TIMING] Secondary wait completed in {elapsed:.3f}s")
             
-            username_field.clear()
+            # Fast clear using Ctrl+A + Delete instead of clear() which can be slow
+            from selenium.webdriver.common.keys import Keys
+            start_time = time.time()
+            username_field.send_keys(Keys.CONTROL + 'a')
+            username_field.send_keys(Keys.DELETE)
             username_field.send_keys(username)
-            self.logger.debug(f"[LOGIN][USERNAME] Entered: {username}")
+            elapsed = time.time() - start_time
+            self.logger.info(f"[LOGIN][USERNAME] Enter text: '{username}' (took {elapsed:.3f}s)")
             
             # Click Next button
             next_button = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[type="submit"], button[type="submit"]'))
             )
             next_button.click()
-            self.logger.debug("[LOGIN][USERNAME] Clicked 'Next' button")
+            self.logger.info("[LOGIN][USERNAME] Clicked button: 'Next'")
             
             return {"status": "success"}
             
@@ -265,16 +325,19 @@ class SeleniumLoginFlow:
                 # Re-find element to avoid stale reference
                 password_field = self.driver.find_element(By.CSS_SELECTOR, 'input[type="password"], input[name="passwd"]')
             
-            password_field.clear()
+            # Fast clear using Ctrl+A + Delete instead of clear() which can be slow
+            from selenium.webdriver.common.keys import Keys
+            password_field.send_keys(Keys.CONTROL + 'a')
+            password_field.send_keys(Keys.DELETE)
             password_field.send_keys(password)
-            self.logger.debug("[LOGIN][PASSWORD] Entered password")
+            self.logger.info("[LOGIN][PASSWORD] Enter text: '********' (password hidden)")
             
             # Click Sign in button
             signin_button = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[type="submit"], button[type="submit"]'))
             )
             signin_button.click()
-            self.logger.debug("[LOGIN][PASSWORD] Clicked 'Sign in' button")
+            self.logger.info("[LOGIN][PASSWORD] Clicked button: 'Sign in'")
             
             return {"status": "success"}
             
@@ -339,7 +402,7 @@ class SeleniumLoginFlow:
             
             if button:
                 button.click()
-                self.logger.info(f"[LOGIN][STAY_SIGNED_IN] Clicked '{button_name}' on Stay signed in prompt")
+                self.logger.info(f"[LOGIN][STAY_SIGNED_IN] Clicked button: '{button_name}'")
                 return {"status": "success"}
             else:
                 raise TimeoutException(f"{button_name} button not found")
@@ -363,43 +426,65 @@ class SeleniumLoginFlow:
         """
         Enter WWID (login_id) on Compass-specific page.
         
-        Based on working implementation from DevCompass login_page.py.
-        Uses Compass-specific selectors for the WWID input field.
+        Optimized for speed - uses explicit waits only when needed.
         """
         try:
+            import time
+            start_time = time.time()
             self.logger.info(f"[LOGIN][WWID] Looking for WWID input field...")
+            self.logger.info(f"[LOGIN][WWID] Current URL: {self.driver.current_url}")
             
-            # Wait for WWID input field (Compass-specific selector)
-            # Selector from working code: input[class*='fleet-operations-pwa__text-input__']
+            # Wait for WWID input field to be clickable (combines presence + visible + enabled)
+            # Uses stable bp6-input class + substring match for dynamic CSS module hash
             wwid_field = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "input[class*='fleet-operations-pwa__text-input__']"))
+                EC.element_to_be_clickable((By.XPATH, "//input[contains(@class, 'bp6-input') and contains(@class, 'fleet-operations-pwa__text-input__')]"))
             )
+            elapsed = time.time() - start_time
+            self.logger.info(f"[LOGIN][WWID] Field found in {elapsed:.2f}s")
             
-            if not wwid_field.is_displayed() or not wwid_field.is_enabled():
-                self.logger.warning("[LOGIN][WWID] Field not ready, waiting...")
-                wwid_field = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
-                    lambda d: (
-                        (field := d.find_element(By.CSS_SELECTOR, "input[class*='fleet-operations-pwa__text-input__']"))
-                        and field.is_displayed()
-                        and field.is_enabled()
-                        and field
-                    )
-                )
+            # Click to focus (triggers JS event handlers)
+            click_start = time.time()
+            wwid_field.click()
+            self.logger.info(f"[LOGIN][WWID] Clicked field to focus (took {time.time() - click_start:.3f}s)")
             
-            wwid_field.clear()
-            wwid_field.send_keys(login_id)
-            self.logger.info(f"[LOGIN][WWID] Entered WWID: {login_id}")
+            # Enter WWID with verification
+            max_attempts = 3
+            for attempt in range(1, max_attempts + 1):
+                entry_start = time.time()
+                wwid_field.clear()
+                wwid_field.send_keys(login_id)
+                self.logger.info(f"[LOGIN][WWID] Enter text: '{login_id}' (attempt {attempt})")
+
+                
+                # Verify text was actually entered
+                entered_value = wwid_field.get_attribute('value')
+                if entered_value == login_id:
+                    self.logger.info(f"[LOGIN][WWID] Verified text entered correctly: '{login_id}'")
+                    break
+                else:
+                    self.logger.warning(f"[LOGIN][WWID] Attempt {attempt}/{max_attempts}: Expected '{login_id}', got '{entered_value}' - retrying...")
+                    # Re-find element to avoid stale reference
+                    wwid_field = self.driver.find_element(By.XPATH, "//input[contains(@class, 'bp6-input') and contains(@class, 'fleet-operations-pwa__text-input__')]")
+                    wwid_field.click()
+            else:
+                # All attempts failed
+                final_value = wwid_field.get_attribute('value')
+                self.logger.error(f"[LOGIN][WWID] Failed to enter WWID after {max_attempts} attempts. Field value: '{final_value}'")
+                return {
+                    "status": "error",
+                    "message": "Failed to enter WWID - text not accepted",
+                    "error": f"Expected '{login_id}', field contains '{final_value}'"
+                }
             
-            # Click Submit button (Compass-specific selector)
-            # Selector from working code: //button[.//span[normalize-space()='Submit']]
+            # Click Submit button
             self.logger.debug("[LOGIN][WWID] Looking for Submit button...")
             submit_button = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                 EC.element_to_be_clickable((By.XPATH, "//button[.//span[normalize-space()='Submit']]"))
             )
             submit_button.click()
-            self.logger.info("[LOGIN][WWID] Clicked Submit button")
+            self.logger.info("[LOGIN][WWID] Clicked button: 'Submit'")
             
-            # Wait a moment for redirect after WWID submission
+            # Wait for redirect after WWID submission
             import time
             time.sleep(2)
             

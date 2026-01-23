@@ -11,6 +11,7 @@ Usage:
 import argparse
 import logging
 import sys
+import time
 from pathlib import Path
 from datetime import datetime
 
@@ -37,7 +38,9 @@ def setup_logging(verbose: bool = False) -> logging.Logger:
     
     Recreates log file each session.
     """
-    log_file = 'CreateMissingWorkItems.log'
+    # Place log file in same directory as script
+    script_dir = Path(__file__).parent
+    log_file = script_dir / 'CreateMissingWorkItems.log'
     level = logging.DEBUG if verbose else logging.INFO
     
     # Remove existing handlers to recreate log
@@ -45,9 +48,8 @@ def setup_logging(verbose: bool = False) -> logging.Logger:
         logging.root.removeHandler(handler)
     
     # Recreate log file (delete if exists)
-    log_path = Path(log_file)
-    if log_path.exists():
-        log_path.unlink()
+    if log_file.exists():
+        log_file.unlink()
     
     logging.basicConfig(
         level=level,
@@ -84,14 +86,16 @@ def main():
                        help='Configuration file with credentials')
     parser.add_argument('--headless', action='store_true',
                        help='Run browser in headless mode')
-    parser.add_argument('--incognito', action='store_true', default=False,
-                       help='Run browser in incognito/private mode (default: False)')
+    parser.add_argument('--incognito', action='store_true', default=True,
+                       help='Run browser in incognito/private mode (default: True - forces fresh login)')
     parser.add_argument('--verbose', '-v', action='store_true',
                        help='Enable verbose logging')
     parser.add_argument('--step-delay', type=float, default=0.0,
                        help='Pause (in seconds) between actions for visual debugging (default: 0)')
     parser.add_argument('--max-retries', type=int, default=2,
                        help='Max retries with page refresh when property page times out (default: 2)')
+    parser.add_argument('--property-timeout', type=int, default=120,
+                       help='Timeout in seconds for property page to load (default: 120, increase for slow app performance)')
     
     args = parser.parse_args()
     logger = setup_logging(args.verbose)
@@ -186,7 +190,6 @@ def main():
                     if retry_count > 0:
                         logger.warning(f"  Retry {retry_count}/{args.max_retries}: Refreshing page and trying again...")
                         driver.refresh()
-                        import time
                         time.sleep(3)  # Wait for refresh
                     
                     # Navigate to vehicle (this loads property page on Health tab)
@@ -197,8 +200,8 @@ def main():
                         raise Exception(f"MVA entry failed: {entry_result.get('error')}")
                     
                     # Wait for property page to load (MVA property field)
-                    logger.debug(f"  Waiting for property page...")
-                    if not vehicle_actions.wait_for_property_page_loaded(mva):
+                    logger.debug(f"  Waiting for property page (timeout={args.property_timeout}s)...")
+                    if not vehicle_actions.wait_for_property_page_loaded(mva, timeout=args.property_timeout):
                         raise Exception("Property page did not load")
                     
                     success = True  # Property page loaded successfully
@@ -239,7 +242,7 @@ def main():
                 existing = pm_actions.find_workitem(mva, damage_type, sub_damage_type, correction_action)
                 
                 if existing:
-                    logger.info(f"  ✓ '{damage_type}' workitem already exists (Status: {existing.get('status', 'Unknown')})")
+                    logger.info(f"  [EXISTS] '{damage_type}' workitem already exists (Status: {existing.get('status', 'Unknown')})")
                     results['found'].append({
                         'mva': mva,
                         'damage_type': damage_type,
@@ -252,7 +255,7 @@ def main():
                     create_result = pm_actions.create_workitem(mva, damage_type, sub_damage_type, correction_action)
                     
                     if create_result['status'] == 'success':
-                        logger.info(f"  ✓ Workitem created successfully")
+                        logger.info(f"  [OK] Workitem created successfully")
                         results['created'].append({
                             'mva': mva,
                             'damage_type': damage_type,
@@ -265,7 +268,7 @@ def main():
                 pm_actions.navigate_back_home()
                 
             except Exception as e:
-                logger.error(f"  ✗ Error processing {mva}: {e}")
+                logger.error(f"  [FAILED] Error processing {mva}: {e}")
                 results['failed'].append({
                     'mva': mva,
                     'damage_type': damage_type,
@@ -295,10 +298,19 @@ def main():
         logger.info("="*60)
         logger.info(f"Session completed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         
+        # If there were failures, pause before closing browser for debugging
+        if results['failed']:
+            logger.warning("\n[DEBUG] Failures detected - pausing 30 seconds before closing browser...")
+            logger.warning("[DEBUG] Check browser window to see current page state")
+            time.sleep(30)
+        
         return 0 if not results['failed'] else 1
         
     except Exception as e:
         logger.exception(f"Fatal error: {e}")
+        logger.warning("\n[DEBUG] Exception occurred - pausing 30 seconds before closing browser...")
+        logger.warning("[DEBUG] Check browser window to see current page state")
+        time.sleep(30)
         return 1
         
     finally:
