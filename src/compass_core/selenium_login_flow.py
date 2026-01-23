@@ -7,6 +7,7 @@ from typing import Dict, Any
 import logging
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
@@ -126,7 +127,6 @@ class SeleniumLoginFlow:
             
             # Check if we're on WWID page directly (SSO auto-login scenario)
             # Try to detect WWID field first
-            import time
             wwid_only = False
             self.logger.debug("[LOGIN] Checking for WWID page (SSO auto-login scenario)...")
             start_time = time.time()
@@ -195,7 +195,6 @@ class SeleniumLoginFlow:
                 self.logger.info("[LOGIN] Step 3.6: Processing WWID entry...")
                 self.logger.info(f"[LOGIN] Current URL before WWID: {self.driver.current_url}")
                 # Check if WWID page opened in a new tab
-                import time
                 time.sleep(2)  # Wait for any new tab to open
                 
                 original_window = self.driver.current_window_handle
@@ -236,7 +235,6 @@ class SeleniumLoginFlow:
     def _enter_username(self, username: str, timeout: int) -> Dict[str, Any]:
         """Enter username and click Next button."""
         try:
-            import time
             # Wait for username input field
             # Microsoft uses: input[type="email"], input[name="loginfmt"]
             start_time = time.time()
@@ -272,7 +270,6 @@ class SeleniumLoginFlow:
                 self.logger.info(f"[TIMING] Secondary wait completed in {elapsed:.3f}s")
             
             # Fast clear using Ctrl+A + Delete instead of clear() which can be slow
-            from selenium.webdriver.common.keys import Keys
             start_time = time.time()
             username_field.send_keys(Keys.CONTROL + 'a')
             username_field.send_keys(Keys.DELETE)
@@ -326,7 +323,6 @@ class SeleniumLoginFlow:
                 password_field = self.driver.find_element(By.CSS_SELECTOR, 'input[type="password"], input[name="passwd"]')
             
             # Fast clear using Ctrl+A + Delete instead of clear() which can be slow
-            from selenium.webdriver.common.keys import Keys
             password_field.send_keys(Keys.CONTROL + 'a')
             password_field.send_keys(Keys.DELETE)
             password_field.send_keys(password)
@@ -429,7 +425,6 @@ class SeleniumLoginFlow:
         Optimized for speed - uses explicit waits only when needed.
         """
         try:
-            import time
             start_time = time.time()
             self.logger.info(f"[LOGIN][WWID] Looking for WWID input field...")
             self.logger.info(f"[LOGIN][WWID] Current URL: {self.driver.current_url}")
@@ -485,7 +480,6 @@ class SeleniumLoginFlow:
             self.logger.info("[LOGIN][WWID] Clicked button: 'Submit'")
             
             # Wait for redirect after WWID submission
-            import time
             time.sleep(2)
             
             # Log current URL after WWID submission

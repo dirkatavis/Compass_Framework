@@ -96,6 +96,8 @@ def main():
                        help='Max retries with page refresh when property page times out (default: 2)')
     parser.add_argument('--property-timeout', type=int, default=120,
                        help='Timeout in seconds for property page to load (default: 120, increase for slow app performance)')
+    parser.add_argument('--debug-pause', action='store_true',
+                       help='Pause 30 seconds on failures before closing browser (for debugging, not recommended in CI)')
     
     args = parser.parse_args()
     logger = setup_logging(args.verbose)
@@ -298,19 +300,24 @@ def main():
         logger.info("="*60)
         logger.info(f"Session completed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         
-        # If there were failures, pause before closing browser for debugging
-        if results['failed']:
+        # If there were failures, optionally pause before closing browser for debugging
+        if results['failed'] and args.debug_pause:
             logger.warning("\n[DEBUG] Failures detected - pausing 30 seconds before closing browser...")
             logger.warning("[DEBUG] Check browser window to see current page state")
             time.sleep(30)
+        elif results['failed']:
+            logger.info("\n[INFO] Failures detected. Use --debug-pause to keep browser open for inspection.")
         
         return 0 if not results['failed'] else 1
         
     except Exception as e:
         logger.exception(f"Fatal error: {e}")
-        logger.warning("\n[DEBUG] Exception occurred - pausing 30 seconds before closing browser...")
-        logger.warning("[DEBUG] Check browser window to see current page state")
-        time.sleep(30)
+        if args.debug_pause:
+            logger.warning("\n[DEBUG] Exception occurred - pausing 30 seconds before closing browser...")
+            logger.warning("[DEBUG] Check browser window to see current page state")
+            time.sleep(30)
+        else:
+            logger.info("\n[INFO] Exception occurred. Use --debug-pause to keep browser open for inspection.")
         return 1
         
     finally:

@@ -38,9 +38,9 @@ class AdditionalInformationPage:
     
     # Locators
     SUMMARY_HEADING = (By.XPATH, "//h1[contains(text(), 'Drivable')]")
-    MVA_DISPLAY = (By.CSS_SELECTOR, "div.fleet-operations-pwa__mva__1bx4xor")
+    MVA_DISPLAY = (By.XPATH, "//div[contains(@class, 'fleet-operations-pwa__mva__')]")
     SUBMIT_COMPLAINT_BUTTON = (By.XPATH, "//button[.//span[contains(text(), 'Submit Complaint')]]")
-    ADDITIONAL_INFO_CHECKBOX = (By.CSS_SELECTOR, "button.fleet-operations-pwa__checkbox-wrapper__kdsh7t")
+    ADDITIONAL_INFO_CHECKBOX = (By.XPATH, "//button[contains(@class, 'fleet-operations-pwa__checkbox-wrapper__')]")
     TAKE_PICTURE_BUTTON = (By.XPATH, "//button[contains(., 'Take picture')]")
     
     def __init__(self, driver: WebDriver, timeout: int = 30):

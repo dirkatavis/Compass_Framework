@@ -66,10 +66,8 @@ class TestAdditionalInformationPageSubmit(unittest.TestCase):
         Test that Submit Complaint button is present and clickable on Additional Info page.
         
         This test navigates through the complete workflow to reach the Additional
-        Information page, then verifies the Submit Complaint button can be clicked.
-        
-        Expected to FAIL with current code because Step 9 times out looking for
-        a non-existent Next/Complete button.
+        Information page, then verifies the Submit Complaint button can be clicked
+        successfully.
         """
         # Navigate to a test vehicle
         test_mva = "60223962"
@@ -90,7 +88,7 @@ class TestAdditionalInformationPageSubmit(unittest.TestCase):
             correction_action="Test correction action for E2E test"
         )
         
-        # This should succeed (if bug is fixed)
+        # Should succeed - workitem creation includes clicking Submit button
         self.assertEqual(
             create_result.get('status'),
             'success',

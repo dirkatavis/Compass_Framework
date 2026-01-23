@@ -8,6 +8,7 @@ from typing import Dict, Any, Optional, List
 import time
 import logging
 import os
+import traceback
 
 try:
     from selenium.webdriver.remote.webdriver import WebDriver
@@ -404,6 +405,5 @@ class SeleniumVehicleDataActions(VehicleDataActions):
         except Exception as e:
             self._logger.error(f"[PROPERTY_PAGE] Error waiting for MVA property field: {e}")
             self._logger.error(f"[PROPERTY_PAGE] Current URL: {self.driver.current_url}")
-            import traceback
             self._logger.error(f"[PROPERTY_PAGE] Traceback: {traceback.format_exc()}")
             return False

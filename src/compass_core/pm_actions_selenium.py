@@ -63,11 +63,11 @@ class SeleniumPmActions(PmActions):
         occurs.
         """
         try:
-            # TODO: REFACTOR - Bad practice to find all tiles then filter in Python
-            # Use a single XPath that directly targets PM tiles with the specific text.
-            # Example: //div[contains(@class,'fleet-operations-pwa__complaintItem__') and (contains(., 'PM') or contains(., 'PM Hard Hold - PM'))]
-            tiles = self.driver.find_elements(By.XPATH, "//div[contains(@class,'fleet-operations-pwa__complaintItem__')]")
-            return [t for t in tiles if any(label in t.text for label in ["PM", "PM Hard Hold - PM"])]
+            # Use single XPath to directly target PM tiles - more efficient than find-all-then-filter
+            return self.driver.find_elements(
+                By.XPATH, 
+                "//div[contains(@class,'fleet-operations-pwa__complaintItem__') and (contains(., 'PM') or contains(., 'PM Hard Hold - PM'))]"
+            )
         except Exception:
             return []
 
@@ -227,6 +227,8 @@ class SeleniumPmActions(PmActions):
         Args:
             timeout: Maximum time to wait for toast to clear (seconds)
         """
+        # Store current implicit wait value to restore later
+        original_implicit_wait = self.timeout
         try:
             # Temporarily disable implicit wait to avoid double-waiting
             self.driver.implicitly_wait(0)
@@ -238,8 +240,8 @@ class SeleniumPmActions(PmActions):
             # No toast or already gone
             pass
         finally:
-            # Restore implicit wait
-            self.driver.implicitly_wait(10)
+            # Restore original implicit wait value
+            self.driver.implicitly_wait(original_implicit_wait)
 
     def navigate_to_workitem_tab(self) -> Dict[str, Any]:
         """
