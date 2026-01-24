@@ -55,6 +55,10 @@ class SeleniumPmActions(PmActions):
         self.timeout = timeout
         self.step_delay = step_delay
         self._logger = logging.getLogger(__name__)
+        # Track the driver's implicit wait value (assumes driver was configured before this instance)
+        # Since Selenium doesn't provide a getter, we assume the standard configuration value
+        # This will be the value we restore when temporarily disabling implicit wait
+        self._implicit_wait_value = timeout
 
     def _find_pm_complaint_tiles(self) -> list:
         """Locate PM complaint tiles on the current page.
@@ -228,7 +232,8 @@ class SeleniumPmActions(PmActions):
             timeout: Maximum time to wait for toast to clear (seconds)
         """
         # Store current implicit wait value to restore later
-        original_implicit_wait = self.timeout
+        # Use tracked value since Selenium doesn't provide a getter for current implicit wait
+        original_implicit_wait = self._implicit_wait_value
         try:
             # Temporarily disable implicit wait to avoid double-waiting
             self.driver.implicitly_wait(0)
