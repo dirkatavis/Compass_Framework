@@ -5,6 +5,7 @@ Handles Microsoft authentication flow with username/password entry.
 """
 from typing import Dict, Any
 import logging
+import time
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
