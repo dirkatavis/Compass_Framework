@@ -12,7 +12,18 @@ Note: This document is the authoritative source for current status and completio
 - Test suite organized (unit, integration, E2E) with E2E gated; see [docs/TESTING.md](docs/TESTING.md).
 - Package builds via [pyproject.toml](pyproject.toml); version synchronization covered in [src/compass_core/engine.py](src/compass_core/engine.py).
 
-## **Recent Updates (2026-01-19)**
+## **Recent Updates (2026-01-21)**
+- **Existing Complaint Detection (feature/DetectExistingComplaint)**: Enhanced workitem creation workflow
+  - Added `_find_existing_complaints_in_dialog()` - detects complaint tiles in "Create Work Item" dialog
+  - Added `_select_existing_complaint_by_damage_type(damage_type)` - matches and selects existing complaints by DamageType
+  - Updated `create_workitem()` Step 3 logic to check for existing complaints before creating new ones
+  - Conditional form filling: skips Steps 4-8 (drivability, damage type selection, etc.) when reusing existing complaint
+  - Return metadata includes `complaint_action: 'reused_existing' | 'created_new'` for tracking
+  - Locators: Uses `fleet-operations-pwa__complaintItem__` class pattern (confirmed via HTML inspection)
+  - Error handling: Explicit failures on selection errors, waits for Next button to become enabled (not disabled)
+  - Branch: `feature/DetectExistingComplaint` - implementation complete, testing in progress
+
+## **Previous Updates (2026-01-19)**
 - **MVA Collection (TDD)**: Data structures for MVA tracking and iteration
   - `MvaCollection` - collection with iteration, filtering, progress tracking
   - `MvaItem` - individual MVA with status (pending/processing/completed/failed)

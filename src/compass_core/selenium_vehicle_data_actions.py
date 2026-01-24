@@ -8,6 +8,7 @@ from typing import Dict, Any, Optional, List
 import time
 import logging
 import os
+import traceback
 
 try:
     from selenium.webdriver.remote.webdriver import WebDriver
@@ -77,6 +78,10 @@ class SeleniumVehicleDataActions(VehicleDataActions):
         """
         try:
             # Try common input field patterns for Compass
+            # TODO: REFACTOR - Bad practice to have multiple acceptable selectors
+            # Pick ONE specific locator based on actual HTML and iterate on that.
+            # Current approach: tries 4 different selectors + loops through candidates.
+            # Should be: ONE selector that directly targets the MVA input field.
             selectors = [
                 (By.CSS_SELECTOR, "input[type='search']"),
                 (By.CSS_SELECTOR, "input[placeholder*='MVA']"),
@@ -259,9 +264,13 @@ class SeleniumVehicleDataActions(VehicleDataActions):
                 if not self._clear_input_field(input_field):
                     self._logger.warning(f"[MVA] Field not fully cleared before entering MVA '{mva}'")
             
-            # Enter MVA
+            # Enter MVA (application auto-submits after 8 digits)
             input_field.send_keys(mva)
             self._logger.info(f"[MVA] Entered MVA: {mva}")
+            
+            import time
+            time.sleep(0.5)  # Brief pause for auto-submit to trigger
+            self._logger.info(f"[MVA] URL after entry: {self.driver.current_url}")
             
             return {
                 'status': 'success',
@@ -361,6 +370,9 @@ class SeleniumVehicleDataActions(VehicleDataActions):
                 f"//div[contains(@class, 'fleet-operations-pwa__vehicle-property-name__') and contains(text(), 'MVA')]"
                 f"/following-sibling::div[contains(@class, 'fleet-operations-pwa__vehicle-property-value__')]"
             )
+            
+            self._logger.debug(f"[PROPERTY_PAGE] Looking for element with XPath: {xpath}")
+            self._logger.debug(f"[PROPERTY_PAGE] Must contain text: '{mva_to_find}'")
 
             def matching_mva(driver):
                 try:
@@ -382,10 +394,16 @@ class SeleniumVehicleDataActions(VehicleDataActions):
                 return True
             return False
 
-        except TimeoutException:
+        except TimeoutException as e:
             self._logger.warning(f"[PROPERTY_PAGE] Timeout waiting for MVA property field (timeout={timeout}s)")
+            self._logger.warning(f"[PROPERTY_PAGE] XPath used: {xpath}")
+            self._logger.warning(f"[PROPERTY_PAGE] Expected text to contain: '{mva_to_find}'")
+            self._logger.warning(f"[PROPERTY_PAGE] Current URL: {self.driver.current_url}")
+            self._logger.warning(f"[PROPERTY_PAGE] Page title: {self.driver.title}")
             return False
 
         except Exception as e:
             self._logger.error(f"[PROPERTY_PAGE] Error waiting for MVA property field: {e}")
+            self._logger.error(f"[PROPERTY_PAGE] Current URL: {self.driver.current_url}")
+            self._logger.error(f"[PROPERTY_PAGE] Traceback: {traceback.format_exc()}")
             return False
