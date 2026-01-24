@@ -137,7 +137,6 @@ class SeleniumLoginFlow:
                         "error": nav_result.get("error", "Unknown navigation error")
                     }
                 
-                import time
                 self.logger.debug(f"[LOGIN] Navigated to: {url}")
                 self.logger.info(f"[LOGIN] After navigation, current URL: {self.driver.current_url}")
                 self.logger.debug(f"[LOGIN] Page title: {self.driver.title}")
