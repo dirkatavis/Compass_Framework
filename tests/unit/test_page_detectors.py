@@ -8,7 +8,12 @@ from unittest.mock import Mock, MagicMock, patch
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 
-from compass_core.page_detectors import PageDetector
+from compass_core.page_detectors import (
+    PageDetector,
+    LoginPageDetector,
+    WWIDPageDetector,
+    AuthenticatedPageDetector
+)
 
 
 class TestPageDetectorBase(unittest.TestCase):
@@ -90,6 +95,130 @@ class TestPageDetectorBase(unittest.TestCase):
         result = self.detector._wait_for_element('input[type="email"]')
         
         self.assertIsNone(result)
+
+
+class TestLoginPageDetector(unittest.TestCase):
+    """Test the LoginPageDetector class."""
+    
+    def setUp(self):
+        """Set up test fixtures."""
+        self.mock_driver = Mock()
+        self.detector = LoginPageDetector(self.mock_driver, timeout=1)
+    
+    @patch.object(LoginPageDetector, '_wait_for_element')
+    def test_is_present_when_login_field_found(self, mock_wait):
+        """Test is_present returns True when login field detected."""
+        mock_element = Mock()
+        mock_element.tag_name = 'input'
+        mock_wait.return_value = mock_element
+        
+        result = self.detector.is_present()
+        
+        self.assertTrue(result)
+        mock_wait.assert_called_once()
+    
+    @patch.object(LoginPageDetector, '_wait_for_element')
+    def test_is_present_when_no_login_field(self, mock_wait):
+        """Test is_present returns False when no login field found."""
+        mock_wait.return_value = None
+        
+        result = self.detector.is_present()
+        
+        self.assertFalse(result)
+    
+    def test_selectors_defined(self):
+        """Test that login selectors are properly defined."""
+        self.assertIsInstance(LoginPageDetector.SELECTORS, list)
+        self.assertGreater(len(LoginPageDetector.SELECTORS), 0)
+        self.assertIn('input[type="email"]', LoginPageDetector.SELECTORS)
+
+
+class TestWWIDPageDetector(unittest.TestCase):
+    """Test the WWIDPageDetector class."""
+    
+    def setUp(self):
+        """Set up test fixtures."""
+        self.mock_driver = Mock()
+        self.detector = WWIDPageDetector(self.mock_driver, timeout=1)
+    
+    @patch.object(WWIDPageDetector, '_wait_for_element')
+    def test_is_present_wwid_only(self, mock_wait):
+        """Test is_present returns True for WWID-only page (no SSO fields)."""
+        # WWID field found
+        mock_wwid = Mock()
+        mock_wait.return_value = mock_wwid
+        
+        # No SSO fields found
+        self.mock_driver.find_element.side_effect = Exception("Element not found")
+        
+        result = self.detector.is_present()
+        
+        self.assertTrue(result)
+    
+    @patch.object(WWIDPageDetector, '_wait_for_element')
+    def test_is_present_no_wwid_field(self, mock_wait):
+        """Test is_present returns False when WWID field not found."""
+        mock_wait.return_value = None
+        
+        result = self.detector.is_present()
+        
+        self.assertFalse(result)
+    
+    @patch.object(WWIDPageDetector, '_wait_for_element')
+    def test_is_present_wwid_and_sso_fields(self, mock_wait):
+        """Test is_present returns False when both WWID and SSO fields present."""
+        # WWID field found
+        mock_wwid = Mock()
+        mock_wait.return_value = mock_wwid
+        
+        # SSO field also found (not WWID-only)
+        mock_sso = Mock()
+        mock_sso.is_displayed.return_value = True
+        self.mock_driver.find_element.return_value = mock_sso
+        
+        result = self.detector.is_present()
+        
+        self.assertFalse(result)
+    
+    def test_selectors_defined(self):
+        """Test that WWID selectors are properly defined."""
+        self.assertIsInstance(WWIDPageDetector.WWID_SELECTOR, str)
+        self.assertIsInstance(WWIDPageDetector.EXCLUSION_SELECTORS, list)
+        self.assertGreater(len(WWIDPageDetector.EXCLUSION_SELECTORS), 0)
+
+
+class TestAuthenticatedPageDetector(unittest.TestCase):
+    """Test the AuthenticatedPageDetector class."""
+    
+    def setUp(self):
+        """Set up test fixtures."""
+        self.mock_driver = Mock()
+        self.detector = AuthenticatedPageDetector(self.mock_driver, timeout=1)
+    
+    @patch.object(AuthenticatedPageDetector, '_wait_for_element')
+    def test_is_present_when_app_element_found(self, mock_wait):
+        """Test is_present returns True when app element detected."""
+        mock_element = Mock()
+        mock_element.tag_name = 'button'
+        mock_wait.return_value = mock_element
+        
+        result = self.detector.is_present()
+        
+        self.assertTrue(result)
+    
+    @patch.object(AuthenticatedPageDetector, '_wait_for_element')
+    def test_is_present_when_no_app_element(self, mock_wait):
+        """Test is_present returns False when no app element found."""
+        mock_wait.return_value = None
+        
+        result = self.detector.is_present()
+        
+        self.assertFalse(result)
+    
+    def test_selectors_defined(self):
+        """Test that authenticated page selectors are properly defined."""
+        self.assertIsInstance(AuthenticatedPageDetector.SELECTORS, list)
+        self.assertGreater(len(AuthenticatedPageDetector.SELECTORS), 0)
 
 
 if __name__ == '__main__':
