@@ -16,6 +16,11 @@ from selenium.common.exceptions import TimeoutException
 
 from compass_core.login_flow import LoginFlow
 from compass_core.navigation import Navigator
+from compass_core.page_detectors import (
+    LoginPageDetector,
+    WWIDPageDetector,
+    AuthenticatedPageDetector
+)
 
 # WebDriver wait configuration
 DEFAULT_WAIT_TIMEOUT = 10  # seconds
@@ -172,7 +177,8 @@ class SmartLoginFlow(LoginFlow):
             
             # Check for WWID-only page first (auto-login scenario)
             self.logger.debug("[SMART_AUTH] Checking for WWID-only page...")
-            wwid_only = self._detect_wwid_only_page(timeout=0.5)  # EC makes this instant
+            wwid_detector = WWIDPageDetector(self.driver, timeout=0.5, logger=self.logger)
+            wwid_only = wwid_detector.is_present()
             
             if wwid_only:
                 # Auto-login succeeded, only WWID entry needed
@@ -213,9 +219,59 @@ class SmartLoginFlow(LoginFlow):
                     "authenticated": True
                 }
             
-            # Check for Microsoft SSO login page
-            self.logger.debug("[SMART_AUTH] Checking for login page (SSO fields)...")
-            login_required = self._detect_login_page(timeout=DEFAULT_WAIT_TIMEOUT)
+            # Check for Microsoft SSO login page or already authenticated
+            self.logger.debug("[SMART_AUTH] Checking authentication state (login vs authenticated)...")
+            
+            # Use detectors with either/or logic
+            login_detector = LoginPageDetector(self.driver, timeout=DEFAULT_WAIT_TIMEOUT, logger=self.logger)
+            auth_detector = AuthenticatedPageDetector(self.driver, timeout=DEFAULT_WAIT_TIMEOUT, logger=self.logger)
+            
+            # Create combined selector for efficient either/or detection
+            login_selectors = ','.join(login_detector.SELECTORS)
+            auth_selectors = ','.join(auth_detector.SELECTORS)
+            
+            start_time = time.time()
+            self.logger.info(f"[SMART_AUTH][DETECT] Starting either/or detection (timeout={DEFAULT_WAIT_TIMEOUT}s, poll={DEFAULT_POLL_FREQUENCY}s)")
+            
+            try:
+                # Wait for EITHER login fields OR app elements (whichever appears first)
+                element = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
+                    EC.any_of(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, login_selectors)),
+                        EC.presence_of_element_located((By.CSS_SELECTOR, auth_selectors))
+                    )
+                )
+                
+                elapsed = time.time() - start_time
+                
+                # Determine which condition was met
+                if element and element.is_displayed():
+                    elem_tag = element.tag_name
+                    elem_type = element.get_attribute('type') or 'N/A'
+                    elem_class = element.get_attribute('class') or ''
+                    
+                    # Check if it's a login field or app element
+                    is_login_field = elem_tag == 'input' or 'text-input' in elem_class.lower()
+                    
+                    if is_login_field:
+                        self.logger.info(f"[SMART_AUTH][DETECT] ✓ LOGIN PAGE detected in {elapsed:.2f}s")
+                        self.logger.info(f"[SMART_AUTH][DETECT]   Element: <{elem_tag} type='{elem_type}' class='{elem_class[:50]}'>")
+                        login_required = True
+                    else:
+                        self.logger.info(f"[SMART_AUTH][DETECT] ✓ APP PAGE detected in {elapsed:.2f}s - already authenticated")
+                        self.logger.info(f"[SMART_AUTH][DETECT]   Element: <{elem_tag}> class='{elem_class[:50]}'>")
+                        login_required = False
+                else:
+                    elapsed = time.time() - start_time
+                    self.logger.warning(f"[SMART_AUTH][DETECT] Element found but not displayed after {elapsed:.2f}s")
+                    login_required = True  # Default to safe assumption
+                    
+            except TimeoutException:
+                elapsed = time.time() - start_time
+                self.logger.warning(f"[SMART_AUTH][DETECT] ✗ TIMEOUT after {elapsed:.2f}s - no login or app elements found")
+                self.logger.warning(f"[SMART_AUTH][DETECT]   Current URL: {self.driver.current_url}")
+                login_required = True  # Default to safe assumption
+            
             self.logger.info(f"[SMART_AUTH] Login required: {login_required}")
             
             if not login_required:
@@ -265,140 +321,3 @@ class SmartLoginFlow(LoginFlow):
                 "authenticated": False,
                 "error": str(e)
             }
-    
-    def _detect_login_page(self, timeout: int = DEFAULT_WAIT_TIMEOUT) -> bool:
-        """
-        Detect if current page is a login page or already authenticated.
-        
-        Efficiently waits for EITHER condition (whichever appears first):
-        - Login/WWID fields present → login required
-        - App indicators present → already authenticated
-        
-        Uses polling to handle SPA rendering - no reliance on document.readyState
-        which doesn't account for dynamic/async content in modern SPAs.
-        
-        Args:
-            timeout: Maximum time to wait for detection (seconds)
-        
-        Returns:
-            bool: True if login/WWID page detected, False if already fully authenticated
-        """
-        start_time = time.time()
-        
-        try:
-            # Login page indicators (Microsoft SSO + WWID)
-            login_selector = ','.join([
-                'input[type="email"]',
-                'input[name="loginfmt"]',
-                'input[name="username"]',
-                '#i0116',  # Microsoft-specific ID
-                "input[class*='fleet-operations-pwa__text-input__']"  # WWID field
-            ])
-            
-            # App-authenticated indicators (Compass-specific elements that only appear when logged in)
-            # These are rendered by the SPA after successful authentication
-            app_selector = ','.join([
-                "button:has(span[contains(., 'Add Work Item')])",  # Main app button
-                "div[class*='bp6-entity-title']",  # Entity title (appears in app)
-                "div[class*='fleet-operations']",  # App-specific components
-                "nav[class*='navbar']",  # Navigation bar
-            ])
-            
-            self.logger.info(f"[SMART_AUTH][DETECT] Starting either/or detection (timeout={timeout}s, poll={DEFAULT_POLL_FREQUENCY}s)")
-            self.logger.debug(f"[SMART_AUTH][DETECT] Current URL: {self.driver.current_url}")
-            self.logger.debug(f"[SMART_AUTH][DETECT] Login selectors: {login_selector[:100]}...")
-            self.logger.debug(f"[SMART_AUTH][DETECT] App selectors: {app_selector[:100]}...")
-            
-            try:
-                # Wait for EITHER login fields OR app elements (whichever appears first)
-                # Polling handles SPA rendering delays naturally
-                self.logger.debug(f"[SMART_AUTH][DETECT] Polling started - checking every {DEFAULT_POLL_FREQUENCY}s")
-                
-                element = WebDriverWait(self.driver, timeout, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
-                    EC.any_of(
-                        EC.presence_of_element_located((By.CSS_SELECTOR, login_selector)),
-                        EC.presence_of_element_located((By.CSS_SELECTOR, app_selector))
-                    )
-                )
-                
-                elapsed = time.time() - start_time
-                
-                # Determine which condition was met
-                if element and element.is_displayed():
-                    elem_tag = element.tag_name
-                    elem_type = element.get_attribute('type') or 'N/A'
-                    elem_class = element.get_attribute('class') or ''
-                    elem_text = element.text[:30] if element.text else ''
-                    
-                    # Check if it's a login field or app element
-                    is_login_field = elem_tag == 'input' or 'text-input' in elem_class.lower()
-                    
-                    if is_login_field:
-                        self.logger.info(f"[SMART_AUTH][DETECT] ✓ LOGIN PAGE detected in {elapsed:.2f}s")
-                        self.logger.info(f"[SMART_AUTH][DETECT]   Element: <{elem_tag} type='{elem_type}' class='{elem_class[:50]}'>")
-                        return True
-                    else:
-                        self.logger.info(f"[SMART_AUTH][DETECT] ✓ APP PAGE detected in {elapsed:.2f}s - already authenticated")
-                        self.logger.info(f"[SMART_AUTH][DETECT]   Element: <{elem_tag}> text='{elem_text}' class='{elem_class[:50]}'>")
-                        return False
-                else:
-                    elapsed = time.time() - start_time
-                    self.logger.warning(f"[SMART_AUTH][DETECT] Element found but not displayed after {elapsed:.2f}s")
-                    return False
-                        
-            except TimeoutException:
-                # Neither login nor app elements found within timeout
-                elapsed = time.time() - start_time
-                self.logger.warning(f"[SMART_AUTH][DETECT] ✗ TIMEOUT after {elapsed:.2f}s - no login or app elements found")
-                self.logger.warning(f"[SMART_AUTH][DETECT]   Current URL: {self.driver.current_url}")
-                # Default to assuming login required (safer)
-                return True
-            
-        except Exception as e:
-            elapsed = time.time() - start_time
-            self.logger.error(f"[SMART_AUTH][DETECT] ✗ ERROR after {elapsed:.2f}s: {e}")
-            self.logger.error(f"[SMART_AUTH][DETECT]   Current URL: {self.driver.current_url}")
-            # Default to assuming login required (safer)
-            return True    
-    def _detect_wwid_only_page(self, timeout: int = 2) -> bool:
-        """
-        Detect if current page is WWID-only (auto-login already succeeded).
-        
-        Checks for WWID input field WITHOUT Microsoft SSO login fields.
-        
-        Args:
-            timeout: Maximum time to wait for detection (seconds)
-        
-        Returns:
-            bool: True if WWID-only page detected, False otherwise
-        """
-        try:
-            # Quick check for WWID field using EC for instant detection
-            try:
-                wwid_field = WebDriverWait(self.driver, timeout, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, "input[class*='fleet-operations-pwa__text-input__']"))
-                )
-                
-                if not (wwid_field and wwid_field.is_displayed()):
-                    return False
-                
-                # WWID field found - now verify NO Microsoft SSO fields present
-                try:
-                    sso_field = self.driver.find_element(By.CSS_SELECTOR, 
-                        'input[type="email"], input[name="loginfmt"], input[name="username"], #i0116')
-                    if sso_field and sso_field.is_displayed():
-                        # Both WWID and SSO fields present - not WWID-only
-                        return False
-                except Exception as exc:
-                    self.logger.debug(f"[SMART_AUTH][DETECT] No SSO fields detected ({type(exc).__name__}: {exc})")
-                    # No SSO fields - this is WWID-only
-                
-                self.logger.debug("[SMART_AUTH][DETECT] WWID-only page detected (auto-login)")
-                return True
-                
-            except TimeoutException:
-                return False
-                
-        except Exception as e:
-            self.logger.warning(f"[SMART_AUTH][DETECT] Error detecting WWID-only page: {e}")
-            return False
