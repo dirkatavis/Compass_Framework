@@ -7,6 +7,7 @@ only when necessary.
 """
 from typing import Dict, Any
 import logging
+import time
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -127,7 +128,6 @@ class SmartLoginFlow(LoginFlow):
             self.logger.info(f"[SMART_AUTH] About to wait for SSO redirects...")
             
             # Give the page a moment to settle and trigger any SSO redirects
-            import time
             time.sleep(2)
             
             self.logger.info(f"[SMART_AUTH] After initial 2s wait")

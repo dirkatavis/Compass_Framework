@@ -68,6 +68,25 @@ class SeleniumLoginFlow:
         except Exception:
             return False
     
+    def _detect_wwid_page(self) -> bool:
+        """
+        Detect if current page is a WWID-only page.
+        
+        Uses optimized single XPath query to find WWID input field directly.
+        
+        Returns:
+            bool: True if WWID field is present and usable, False otherwise
+        """
+        try:
+            # Single XPath that directly targets visible, enabled WWID input fields
+            wwid_xpath = "//input[contains(@class, 'fleet-operations-pwa__text-input__') and contains(@class, 'bp6-input')][@type='text' or @type='number' or @type='tel' or @type='search']"
+            wwid_field = self.driver.find_element(By.XPATH, wwid_xpath)
+            
+            # Validate it's actually displayed and enabled
+            return wwid_field and wwid_field.is_displayed() and wwid_field.is_enabled()
+        except Exception:
+            return False
+    
     def authenticate(
         self,
         username: str,
@@ -131,28 +150,16 @@ class SeleniumLoginFlow:
             wwid_only = False
             self.logger.debug("[LOGIN] Checking for WWID page (SSO auto-login scenario)...")
             start_time = time.time()
-            try:
-                # TODO: REFACTOR - Bad practice to use find_elements() + loop through candidates
-                # Pick ONE specific locator and iterate on that if it doesn't work.
-                # Current approach causes performance issues (see timing logs).
-                wwid_candidates = self.driver.find_elements(By.CSS_SELECTOR, "input[class*='fleet-operations-pwa__text-input__']")
-                elapsed_find = time.time() - start_time
-                self.logger.info(f"[TIMING] WWID field search took {elapsed_find:.3f}s, found {len(wwid_candidates)} candidates")
-                
-                check_start = time.time()
-                has_wwid = any(self._is_wwid_input(elem) for elem in wwid_candidates)
-                elapsed_check = time.time() - check_start
-                self.logger.info(f"[TIMING] WWID validation took {elapsed_check:.3f}s")
-                
-                if has_wwid:
-                    self.logger.info("[LOGIN] WWID page detected - skipping username/password (SSO auto-login)")
-                    self.logger.info(f"[LOGIN] WWID page URL: {self.driver.current_url}")
-                    wwid_only = True
-                else:
-                    self.logger.debug("[LOGIN] WWID candidates found but none are valid input fields")
-            except Exception as e:
-                elapsed_total = time.time() - start_time
-                self.logger.debug(f"[LOGIN] No WWID page detected after {elapsed_total:.3f}s: {e}")
+            
+            if self._detect_wwid_page():
+                elapsed = time.time() - start_time
+                self.logger.info(f"[TIMING] WWID field found in {elapsed:.3f}s")
+                self.logger.info("[LOGIN] WWID page detected - skipping username/password (SSO auto-login)")
+                self.logger.info(f"[LOGIN] WWID page URL: {self.driver.current_url}")
+                wwid_only = True
+            else:
+                elapsed = time.time() - start_time
+                self.logger.debug(f"[LOGIN] No WWID page detected after {elapsed:.3f}s")
             
             # Step 2: Enter username (skip if WWID-only)
             if not wwid_only:
@@ -160,16 +167,10 @@ class SeleniumLoginFlow:
                 username_result = self._enter_username(username, timeout)
                 if username_result.get("status") != "success":
                     # Check if we landed on WWID page instead
-                    try:
-                        # TODO: REFACTOR - Same bad pattern as above (find_elements + loop)
-                        # Use the SAME single locator approach once the first instance is fixed
-                        wwid_candidates = self.driver.find_elements(By.CSS_SELECTOR, "input[class*='fleet-operations-pwa__text-input__']")
-                        if any(self._is_wwid_input(elem) for elem in wwid_candidates):
-                            self.logger.info("[LOGIN] Username not found but WWID page detected - continuing")
-                            wwid_only = True
-                        else:
-                            return username_result
-                    except Exception:
+                    if self._detect_wwid_page():
+                        self.logger.info("[LOGIN] Username not found but WWID page detected - continuing")
+                        wwid_only = True
+                    else:
                         return username_result
             
             # Step 3: Enter password (skip if WWID-only)
@@ -446,7 +447,6 @@ class SeleniumLoginFlow:
             # Enter WWID with verification
             max_attempts = 3
             for attempt in range(1, max_attempts + 1):
-                entry_start = time.time()
                 wwid_field.clear()
                 wwid_field.send_keys(login_id)
                 self.logger.info(f"[LOGIN][WWID] Enter text: '{login_id}' (attempt {attempt})")

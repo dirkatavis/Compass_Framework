@@ -36,7 +36,7 @@ class AdditionalInformationPage:
         </div>
     """
     
-    # Locators
+    # Locators - using contains() for CSS module classes with dynamic hashes
     SUMMARY_HEADING = (By.XPATH, "//h1[contains(text(), 'Drivable')]")
     MVA_DISPLAY = (By.XPATH, "//div[contains(@class, 'fleet-operations-pwa__mva__')]")
     SUBMIT_COMPLAINT_BUTTON = (By.XPATH, "//button[.//span[contains(text(), 'Submit Complaint')]]")
