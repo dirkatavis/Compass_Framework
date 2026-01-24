@@ -7,6 +7,11 @@ and conditionally performs login only when necessary.
 import unittest
 from unittest.mock import Mock, MagicMock, patch
 from compass_core.login_flow import LoginFlow
+from compass_core.page_detectors import (
+    LoginPageDetector,
+    WWIDPageDetector,
+    AuthenticatedPageDetector
+)
 
 
 class TestSmartLoginFlow(unittest.TestCase):
@@ -31,6 +36,8 @@ class TestSmartLoginFlow(unittest.TestCase):
         
         # Setup mock driver behavior
         self.mock_driver.current_url = "https://app.example.com/dashboard"
+        self.mock_driver.title = "App Dashboard"
+        self.mock_driver.window_handles = ["main-window"]  # Single window by default
         
         # Create instance
         self.smart_login = self.SmartLoginFlow(
@@ -56,17 +63,37 @@ class TestSmartLoginFlow(unittest.TestCase):
         self.assertTrue(hasattr(self.smart_login, 'authenticate'))
         self.assertTrue(callable(self.smart_login.authenticate))
     
+    @patch('compass_core.smart_login_flow.AuthenticatedPageDetector')
+    @patch('compass_core.smart_login_flow.LoginPageDetector')
+    @patch('compass_core.smart_login_flow.WWIDPageDetector')
     @patch('compass_core.smart_login_flow.WebDriverWait')
-    def test_authenticate_sso_cache_hit(self, mock_wait_class):
+    def test_authenticate_sso_cache_hit(self, mock_wait_class, mock_wwid_detector_class, 
+                                       mock_login_detector_class, mock_auth_detector_class):
         """Test authenticate when SSO session is active (cache hit)."""
-        from selenium.common.exceptions import TimeoutException
-        
         # Mock successful navigation
         self.mock_navigator.navigate_to.return_value = {"status": "success"}
         
-        # Mock no login page detected (TimeoutException means no login fields found)
+        # Mock WWID detector - no WWID page
+        mock_wwid_detector = Mock()
+        mock_wwid_detector.is_present.return_value = False
+        mock_wwid_detector_class.return_value = mock_wwid_detector
+        
+        # Mock detectors with selectors
+        mock_login_detector = Mock()
+        mock_login_detector.SELECTORS = ['input[type="email"]']
+        mock_login_detector_class.return_value = mock_login_detector
+        
+        mock_auth_detector = Mock()
+        mock_auth_detector.SELECTORS = ['button', 'nav']
+        mock_auth_detector_class.return_value = mock_auth_detector
+        
+        # Mock WebDriverWait to return authenticated element
         mock_wait = Mock()
-        mock_wait.until.side_effect = TimeoutException("No login fields")
+        mock_app_element = Mock()
+        mock_app_element.is_displayed.return_value = True
+        mock_app_element.tag_name = 'button'
+        mock_app_element.get_attribute.return_value = 'navbar'
+        mock_wait.until.return_value = mock_app_element
         mock_wait_class.return_value = mock_wait
         
         result = self.smart_login.authenticate(
@@ -83,16 +110,36 @@ class TestSmartLoginFlow(unittest.TestCase):
         # Base login flow should NOT be called
         self.mock_base_login_flow.authenticate.assert_not_called()
     
+    @patch('compass_core.smart_login_flow.AuthenticatedPageDetector')
+    @patch('compass_core.smart_login_flow.LoginPageDetector')
+    @patch('compass_core.smart_login_flow.WWIDPageDetector')
     @patch('compass_core.smart_login_flow.WebDriverWait')
-    def test_authenticate_sso_cache_miss(self, mock_wait_class):
+    def test_authenticate_sso_cache_miss(self, mock_wait_class, mock_wwid_detector_class,
+                                        mock_login_detector_class, mock_auth_detector_class):
         """Test authenticate when SSO session is missing (cache miss)."""
         # Mock successful navigation
         self.mock_navigator.navigate_to.return_value = {"status": "success"}
         
-        # Mock login page detected (login field found)
+        # Mock WWID detector - no WWID page
+        mock_wwid_detector = Mock()
+        mock_wwid_detector.is_present.return_value = False
+        mock_wwid_detector_class.return_value = mock_wwid_detector
+        
+        # Mock detectors with selectors
+        mock_login_detector = Mock()
+        mock_login_detector.SELECTORS = ['input[type="email"]']
+        mock_login_detector_class.return_value = mock_login_detector
+        
+        mock_auth_detector = Mock()
+        mock_auth_detector.SELECTORS = ['button', 'nav']
+        mock_auth_detector_class.return_value = mock_auth_detector
+        
+        # Mock WebDriverWait to return login field
         mock_wait = Mock()
         mock_login_field = Mock()
         mock_login_field.is_displayed.return_value = True
+        mock_login_field.tag_name = 'input'
+        mock_login_field.get_attribute.side_effect = lambda attr: 'email' if attr == 'type' else 'form-control'
         mock_wait.until.return_value = mock_login_field
         mock_wait_class.return_value = mock_wait
         
@@ -138,15 +185,35 @@ class TestSmartLoginFlow(unittest.TestCase):
         self.assertFalse(result['authenticated'])
         self.assertIn('error', result)
     
+    @patch('compass_core.smart_login_flow.AuthenticatedPageDetector')
+    @patch('compass_core.smart_login_flow.LoginPageDetector')
+    @patch('compass_core.smart_login_flow.WWIDPageDetector')
     @patch('compass_core.smart_login_flow.WebDriverWait')
-    def test_authenticate_login_failure(self, mock_wait_class):
+    def test_authenticate_login_failure(self, mock_wait_class, mock_wwid_detector_class,
+                                       mock_login_detector_class, mock_auth_detector_class):
         """Test authenticate when base login fails."""
         # Mock successful navigation and login page detection
         self.mock_navigator.navigate_to.return_value = {"status": "success"}
         
+        # Mock detectors
+        mock_wwid_detector = Mock()
+        mock_wwid_detector.is_present.return_value = False
+        mock_wwid_detector_class.return_value = mock_wwid_detector
+        
+        mock_login_detector = Mock()
+        mock_login_detector.SELECTORS = ['input[type="email"]']
+        mock_login_detector_class.return_value = mock_login_detector
+        
+        mock_auth_detector = Mock()
+        mock_auth_detector.SELECTORS = ['button']
+        mock_auth_detector_class.return_value = mock_auth_detector
+        
+        # Mock login field detected
         mock_wait = Mock()
         mock_login_field = Mock()
         mock_login_field.is_displayed.return_value = True
+        mock_login_field.tag_name = 'input'
+        mock_login_field.get_attribute.side_effect = lambda attr: 'email' if attr == 'type' else ''
         mock_wait.until.return_value = mock_login_field
         mock_wait_class.return_value = mock_wait
         
@@ -167,7 +234,10 @@ class TestSmartLoginFlow(unittest.TestCase):
         self.assertFalse(result['authenticated'])
         self.assertIn('error', result)
     
-    def test_authenticate_handles_alert(self):
+    @patch('compass_core.smart_login_flow.AuthenticatedPageDetector')
+    @patch('compass_core.smart_login_flow.LoginPageDetector')
+    @patch('compass_core.smart_login_flow.WWIDPageDetector')
+    def test_authenticate_handles_alert(self, mock_wwid_detector_class, mock_login_detector_class, mock_auth_detector_class):
         """Test authenticate handles unexpected alerts."""
         from selenium.common.exceptions import UnexpectedAlertPresentException
         
@@ -177,6 +247,19 @@ class TestSmartLoginFlow(unittest.TestCase):
             {"status": "success"}  # Success on retry
         ]
         
+        # Mock detectors
+        mock_wwid_detector = Mock()
+        mock_wwid_detector.is_present.return_value = False
+        mock_wwid_detector_class.return_value = mock_wwid_detector
+        
+        mock_login_detector = Mock()
+        mock_login_detector.SELECTORS = ['input[type="email"]']
+        mock_login_detector_class.return_value = mock_login_detector
+        
+        mock_auth_detector = Mock()
+        mock_auth_detector.SELECTORS = ['button', 'nav']
+        mock_auth_detector_class.return_value = mock_auth_detector
+        
         # Mock alert handling
         with patch('selenium.webdriver.common.alert.Alert') as mock_alert_class:
             mock_alert = Mock()
@@ -184,11 +267,13 @@ class TestSmartLoginFlow(unittest.TestCase):
             mock_alert_class.return_value = mock_alert
             
             with patch('compass_core.smart_login_flow.WebDriverWait') as mock_wait_class:
-                from selenium.common.exceptions import TimeoutException
-                
-                # Mock no login page (SSO active)
+                # Mock authenticated (SSO active)
                 mock_wait = Mock()
-                mock_wait.until.side_effect = TimeoutException("No login fields")
+                mock_app_element = Mock()
+                mock_app_element.is_displayed.return_value = True
+                mock_app_element.tag_name = 'button'
+                mock_app_element.get_attribute.return_value = ''
+                mock_wait.until.return_value = mock_app_element
                 mock_wait_class.return_value = mock_wait
                 
                 result = self.smart_login.authenticate(
@@ -201,88 +286,74 @@ class TestSmartLoginFlow(unittest.TestCase):
                 mock_alert.accept.assert_called_once()
                 self.assertEqual(result['status'], 'success')
     
-    @patch('compass_core.smart_login_flow.WebDriverWait')
-    def test_detect_login_page_found(self, mock_wait_class):
-        """Test _detect_login_page when login page is present."""
-        # Mock login field found
-        mock_wait = Mock()
-        mock_field = Mock()
-        mock_field.is_displayed.return_value = True
-        mock_wait.until.return_value = mock_field
-        mock_wait_class.return_value = mock_wait
+    def test_uses_page_detectors(self):
+        """Test that SmartLoginFlow uses page detector classes."""
+        # Verify detectors are imported and available
+        from compass_core.smart_login_flow import (
+            LoginPageDetector,
+            WWIDPageDetector,
+            AuthenticatedPageDetector
+        )
         
-        result = self.smart_login._detect_login_page(timeout=5)
-        
-        self.assertTrue(result, "Should detect login page")
+        self.assertIsNotNone(LoginPageDetector)
+        self.assertIsNotNone(WWIDPageDetector)
+        self.assertIsNotNone(AuthenticatedPageDetector)
     
+    @patch('compass_core.smart_login_flow.AuthenticatedPageDetector')
+    @patch('compass_core.smart_login_flow.LoginPageDetector')
+    @patch('compass_core.smart_login_flow.WWIDPageDetector')
     @patch('compass_core.smart_login_flow.WebDriverWait')
-    def test_detect_login_page_not_found(self, mock_wait_class):
-        """Test _detect_login_page when no login page."""
-        from selenium.common.exceptions import TimeoutException
-        
-        # Mock no login fields (timeout)
-        mock_wait = Mock()
-        mock_wait.until.side_effect = TimeoutException("No fields")
-        mock_wait_class.return_value = mock_wait
-        
-        result = self.smart_login._detect_login_page(timeout=5)
-        
-        self.assertFalse(result, "Should not detect login page")
-    
-    @patch('compass_core.smart_login_flow.WebDriverWait')
-    def test_detect_login_page_uses_combined_selector(self, mock_wait_class):
-        """Test _detect_login_page uses optimized combined selector."""
-        # Mock login field found
-        mock_wait = Mock()
-        mock_field = Mock()
-        mock_field.is_displayed.return_value = True
-        
-        def mock_find_element(selector_type, selector):
-            # Verify combined selector is used
-            self.assertIn(',', selector, "Should use combined selector with comma")
-            return mock_field
-        
-        self.mock_driver.find_element = mock_find_element
-        mock_wait.until.return_value = mock_field
-        mock_wait_class.return_value = mock_wait
-        
-        result = self.smart_login._detect_login_page(timeout=5)
-        
-        self.assertTrue(result)
-    
-    def test_authenticate_passes_kwargs(self):
+    def test_authenticate_passes_kwargs(self, mock_wait_class, mock_wwid_detector_class,
+                                       mock_login_detector_class, mock_auth_detector_class):
         """Test that authenticate passes kwargs to base login flow."""
-        with patch('compass_core.smart_login_flow.WebDriverWait') as mock_wait_class:
-            # Mock login page detected
-            self.mock_navigator.navigate_to.return_value = {"status": "success"}
-            
-            mock_wait = Mock()
-            mock_field = Mock()
-            mock_field.is_displayed.return_value = True
-            mock_wait.until.return_value = mock_field
-            mock_wait_class.return_value = mock_wait
-            
-            # Mock successful login
-            self.mock_base_login_flow.authenticate.return_value = {
-                "status": "success",
-                "message": "Success"
-            }
-            
-            # Call with extra kwargs
-            result = self.smart_login.authenticate(
-                username="test@example.com",
-                password="password123",
-                url="https://app.example.com/",
-                login_id="ABC123",
-                timeout=30,
-                custom_param="value"
-            )
-            
-            # Verify kwargs were passed
-            call_kwargs = self.mock_base_login_flow.authenticate.call_args[1]
-            self.assertEqual(call_kwargs.get('login_id'), "ABC123")
-            self.assertEqual(call_kwargs.get('timeout'), 30)
-            self.assertEqual(call_kwargs.get('custom_param'), "value")
+        # Mock successful navigation
+        self.mock_navigator.navigate_to.return_value = {"status": "success"}
+        
+        # Mock detectors
+        mock_wwid_detector = Mock()
+        mock_wwid_detector.is_present.return_value = False
+        mock_wwid_detector_class.return_value = mock_wwid_detector
+        
+        mock_login_detector = Mock()
+        mock_login_detector.SELECTORS = ['input[type="email"]']
+        mock_login_detector_class.return_value = mock_login_detector
+        
+        mock_auth_detector = Mock()
+        mock_auth_detector.SELECTORS = ['button']
+        mock_auth_detector_class.return_value = mock_auth_detector
+        
+        # Mock login page detected
+        mock_wait = Mock()
+        mock_field = Mock()
+        mock_field.is_displayed.return_value = True
+        mock_field.tag_name = 'input'
+        mock_field.get_attribute.side_effect = lambda attr: 'email' if attr == 'type' else ''
+        mock_wait.until.return_value = mock_field
+        mock_wait_class.return_value = mock_wait
+        
+        # Mock successful login
+        self.mock_base_login_flow.authenticate.return_value = {
+            "status": "success",
+            "message": "Success"
+        }
+        
+        # Call with extra kwargs
+        result = self.smart_login.authenticate(
+            username="test@example.com",
+            password="password123",
+            url="https://app.example.com/",
+            login_id="ABC123",
+            timeout=30,
+            custom_param="value"
+        )
+        
+        # Verify kwargs were passed
+        self.mock_base_login_flow.authenticate.assert_called_once()
+        call_kwargs = self.mock_base_login_flow.authenticate.call_args[1]
+        self.assertEqual(call_kwargs.get('login_id'), "ABC123")
+        self.assertEqual(call_kwargs.get('timeout'), 30)
+        self.assertEqual(call_kwargs.get('custom_param'), "value")
+        self.assertTrue(call_kwargs.get('skip_navigation'))
     
     def test_constants_defined(self):
         """Test that timeout constants are defined."""

@@ -131,33 +131,6 @@ class SmartLoginFlow(LoginFlow):
             
             current_url = self.driver.current_url
             self.logger.debug(f"[SMART_AUTH] Current URL after navigation: {current_url}")
-            self.logger.info(f"[SMART_AUTH] About to wait for SSO redirects...")
-            
-            # Give the page a moment to settle and trigger any SSO redirects
-            time.sleep(2)
-            
-            self.logger.info(f"[SMART_AUTH] After initial 2s wait")
-            
-            # Check if URL changed after waiting (indicates redirect in progress)
-            new_url = self.driver.current_url
-            if new_url != current_url:
-                self.logger.debug(f"[SMART_AUTH] URL changed after wait: {new_url}")
-                current_url = new_url
-                # Wait a bit more for redirect to complete
-                time.sleep(2)
-            
-            # Wait for WWID tab to open (appears after SSO completes)
-            # Reduced timeout since tabs open quickly if they're going to appear
-            self.logger.info("[SMART_AUTH] Waiting for potential WWID tab to open...")
-            max_wait = 1  # Quick check - tabs open instantly if they will
-            all_windows = self.driver.window_handles
-            if len(all_windows) == 1:
-                time.sleep(max_wait)  # Single brief wait
-                all_windows = self.driver.window_handles
-                if len(all_windows) > 1:
-                    self.logger.info(f"[SMART_AUTH] New tab detected after {max_wait}s")
-                else:
-                    self.logger.debug(f"[SMART_AUTH] No new tab appeared after {max_wait}s")
             
             # Step 2: Detect authentication scenario
             self.logger.debug("[SMART_AUTH] Step 2: Detect authentication scenario")
