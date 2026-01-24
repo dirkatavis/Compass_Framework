@@ -148,10 +148,19 @@ class SmartLoginFlow(LoginFlow):
                 self.logger.info(f"[SMART_AUTH] New tab URL: {self.driver.current_url}")
                 self.logger.info(f"[SMART_AUTH] New tab title: {self.driver.title}")
             
+            # Wait for page to be fully loaded before checking for elements
+            try:
+                WebDriverWait(self.driver, 5).until(
+                    lambda d: d.execute_script("return document.readyState") == "complete"
+                )
+                self.logger.debug("[SMART_AUTH] Page ready state: complete")
+            except TimeoutException:
+                self.logger.debug("[SMART_AUTH] Page ready state timeout - proceeding anyway")
+            
             # Check for WWID-only page first (auto-login scenario)
-            self.logger.debug("[SMART_AUTH] Checking for WWID-only page...")
             wwid_detector = WWIDPageDetector(self.driver, timeout=0.5, logger=self.logger)
             wwid_only = wwid_detector.is_present()
+            self.logger.debug(f"[SMART_AUTH] WWID check complete: {wwid_only}")
             
             if wwid_only:
                 # Auto-login succeeded, only WWID entry needed
@@ -203,8 +212,7 @@ class SmartLoginFlow(LoginFlow):
             login_selectors = ','.join(login_detector.SELECTORS)
             auth_selectors = ','.join(auth_detector.SELECTORS)
             
-            start_time = time.time()
-            self.logger.info(f"[SMART_AUTH][DETECT] Starting either/or detection (timeout={DEFAULT_WAIT_TIMEOUT}s, poll={DEFAULT_POLL_FREQUENCY}s)")
+            self.logger.debug("[SMART_AUTH] Detecting authentication state (login vs authenticated)...")
             
             try:
                 # Wait for EITHER login fields OR app elements (whichever appears first)
@@ -215,34 +223,27 @@ class SmartLoginFlow(LoginFlow):
                     )
                 )
                 
-                elapsed = time.time() - start_time
-                
                 # Determine which condition was met
                 if element and element.is_displayed():
                     elem_tag = element.tag_name
-                    elem_type = element.get_attribute('type') or 'N/A'
                     elem_class = element.get_attribute('class') or ''
                     
                     # Check if it's a login field or app element
                     is_login_field = elem_tag == 'input' or 'text-input' in elem_class.lower()
                     
                     if is_login_field:
-                        self.logger.info(f"[SMART_AUTH][DETECT] ✓ LOGIN PAGE detected in {elapsed:.2f}s")
-                        self.logger.info(f"[SMART_AUTH][DETECT]   Element: <{elem_tag} type='{elem_type}' class='{elem_class[:50]}'>")
+                        self.logger.debug("[SMART_AUTH] Login page detected")
                         login_required = True
                     else:
-                        self.logger.info(f"[SMART_AUTH][DETECT] ✓ APP PAGE detected in {elapsed:.2f}s - already authenticated")
-                        self.logger.info(f"[SMART_AUTH][DETECT]   Element: <{elem_tag}> class='{elem_class[:50]}'>")
+                        self.logger.debug("[SMART_AUTH] App page detected - already authenticated")
                         login_required = False
                 else:
-                    elapsed = time.time() - start_time
-                    self.logger.warning(f"[SMART_AUTH][DETECT] Element found but not displayed after {elapsed:.2f}s")
+                    self.logger.warning("[SMART_AUTH] Element found but not displayed")
                     login_required = True  # Default to safe assumption
                     
             except TimeoutException:
-                elapsed = time.time() - start_time
-                self.logger.warning(f"[SMART_AUTH][DETECT] ✗ TIMEOUT after {elapsed:.2f}s - no login or app elements found")
-                self.logger.warning(f"[SMART_AUTH][DETECT]   Current URL: {self.driver.current_url}")
+                self.logger.warning("[SMART_AUTH] Detection timeout - no login or app elements found")
+                self.logger.debug(f"[SMART_AUTH] Current URL: {self.driver.current_url}")
                 login_required = True  # Default to safe assumption
             
             self.logger.info(f"[SMART_AUTH] Login required: {login_required}")

@@ -120,7 +120,8 @@ class StandardDriverManager(DriverManager):
             
             # Default DevCompass configuration
             self._driver.maximize_window()
-            self._driver.implicitly_wait(10)
+            # Note: No implicit wait set - use explicit WebDriverWait instead
+            # Implicit waits interfere with explicit waits and cause unexpected delays
             
             return self._driver
             
