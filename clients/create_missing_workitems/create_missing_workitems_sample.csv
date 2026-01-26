@@ -1,3 +1,4 @@
+MVA,DamageType,SubDamageType,CorrectionAction
 # Create Missing WorkItems - Sample Input File
 # This file contains examples of all supported damage types and sub-damage types
 # 
@@ -5,7 +6,7 @@
 #   MVA              - 8-digit vehicle identifier (will be zero-padded if shorter)
 #   DamageType       - Main damage category (must match UI button text exactly)
 #   SubDamageType    - Sub-category of damage (must match UI button text exactly)
-#   CorrectionAction - Description of work to be performed (optional)
+#   CorrectionAction - Description of work to be performed (optional - can be left blank)
 #
 # SUPPORTED DAMAGE TYPES & SUB-DAMAGE TYPES:
 # Copy and paste the examples below, replacing the MVA with your actual vehicle numbers
@@ -39,13 +40,12 @@
 # - MVAs are automatically normalized to 8 digits (e.g., "123" becomes "00000123")
 # - DamageType and SubDamageType must match the UI button text EXACTLY (case-sensitive)
 # - Empty rows are skipped
-# - CorrectionAction is optional but recommended for clarity
+# - CorrectionAction is optional (can be left blank) but column must be present
 #
 # SAMPLE DATA (replace MVAs with your actual vehicle numbers):
-MVA,DamageType,SubDamageType,CorrectionAction
-59152811,Glass Damage,Windshield chip
-59287922,Glass Damage,Windshield Crack
-56122135,Glass Damage,Windshield Crack
-60283786,Glass Damage,Windshield Crack
-58333892,Glass Damage,Windshield Crack
-60339145,Glass Damage,Windshield Crack
+59152811,Glass Damage,Windshield Chip,
+59287922,Glass Damage,Windshield Crack,
+56122135,Glass Damage,Windshield Crack,
+60283786,Glass Damage,Windshield Crack,
+58333892,Glass Damage,Windshield Crack,
+60339145,Glass Damage,Windshield Crack,
