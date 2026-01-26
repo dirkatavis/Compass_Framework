@@ -1,3 +1,43 @@
 MVA,DamageType,SubDamageType,CorrectionAction
-59152811,Glass Damage,Windshield Crack
+# Create Missing WorkItems - Sample Input File
+# 
+# REQUIRED COLUMNS:
+#   MVA              - 8-digit vehicle identifier (will be zero-padded if shorter)
+#   DamageType       - Main damage category (must match UI button text exactly)
+#   SubDamageType    - Sub-category of damage (must match UI button text exactly)
+#   CorrectionAction - Description of work to be performed (optional - can be left blank)
+#
+# VERIFIED DAMAGE TYPES & SUB-DAMAGE TYPES:
+# The following combinations have been tested and verified to work:
+#
+# Glass Damage (VERIFIED):
+#   11111111,Glass Damage,Windshield Chip,Repair windshield chip
+#   11111111,Glass Damage,Windshield Crack,Replace windshield due to crack
+#
+# OTHER DAMAGE TYPES (NOT YET VERIFIED):
+# The UI may support additional damage types and sub-types such as:
+#   - PM (Preventive Maintenance): PM Gas, PM Oil
+#   - Tires: Flat Tire, Tire Damage
+#   - Keys: Lost Key, Key Fob
+#   - Body Damage: Front Bumper, Rear Bumper, Door
+#   - Glass Damage: Side Window, Rear Window, Mirror
+#
+# WARNING: These unverified combinations may fail if the UI button text doesn't match exactly.
+# Test with a small batch first before processing large lists.
+#
+# NOTES:
+# - Lines starting with '#' are treated as comments and ignored
+# - MVAs are automatically normalized to 8 digits (e.g., "123" becomes "00000123")
+# - DamageType and SubDamageType must match the UI button text EXACTLY (case-sensitive)
+# - Empty rows are skipped
+# - CorrectionAction is optional (can be left blank) but column must be present
+# - If a damage type fails, check error logs for actual UI button text available
+#
+# SAMPLE DATA (replace MVAs with your actual vehicle numbers):
 
+59287922,Glass Damage,Windshield Chip,Repair
+56122135,Glass Damage,Windshield Crack,REPLACE
+59363415,Glass Damage,Windshield Crack,REPLACE
+60283786,Glass Damage,Windshield Crack,REPLACE
+58333892,Glass Damage,Windshield Crack,REPLACE
+60339145,Glass Damage,Windshield Crack,REPLACE
