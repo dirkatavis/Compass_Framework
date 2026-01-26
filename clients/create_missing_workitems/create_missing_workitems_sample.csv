@@ -1,6 +1,5 @@
 MVA,DamageType,SubDamageType,CorrectionAction
 # Create Missing WorkItems - Sample Input File
-# This file contains examples of all supported damage types and sub-damage types
 # 
 # REQUIRED COLUMNS:
 #   MVA              - 8-digit vehicle identifier (will be zero-padded if shorter)
@@ -8,32 +7,23 @@ MVA,DamageType,SubDamageType,CorrectionAction
 #   SubDamageType    - Sub-category of damage (must match UI button text exactly)
 #   CorrectionAction - Description of work to be performed (optional - can be left blank)
 #
-# SUPPORTED DAMAGE TYPES & SUB-DAMAGE TYPES:
-# Copy and paste the examples below, replacing the MVA with your actual vehicle numbers
+# VERIFIED DAMAGE TYPES & SUB-DAMAGE TYPES:
+# The following combinations have been tested and verified to work:
 #
-# Glass Damage Examples:
+# Glass Damage (VERIFIED):
 #   11111111,Glass Damage,Windshield Chip,Repair windshield chip
 #   11111111,Glass Damage,Windshield Crack,Replace windshield due to crack
-#   11111111,Glass Damage,Side Window,Replace driver side window
-#   11111111,Glass Damage,Rear Window,Replace rear window
-#   11111111,Glass Damage,Mirror,Replace side mirror glass
 #
-# PM (Preventive Maintenance) Examples:
-#   11111111,PM,PM Gas,Fuel system maintenance
-#   11111111,PM,PM Oil,Oil change required
+# OTHER DAMAGE TYPES (NOT YET VERIFIED):
+# The UI may support additional damage types and sub-types such as:
+#   - PM (Preventive Maintenance): PM Gas, PM Oil
+#   - Tires: Flat Tire, Tire Damage
+#   - Keys: Lost Key, Key Fob
+#   - Body Damage: Front Bumper, Rear Bumper, Door
+#   - Glass Damage: Side Window, Rear Window, Mirror
 #
-# Tires Examples:
-#   11111111,Tires,Flat Tire,Replace flat tire
-#   11111111,Tires,Tire Damage,Repair tire damage
-#
-# Keys Examples:
-#   11111111,Keys,Lost Key,Replace lost vehicle key
-#   11111111,Keys,Key Fob,Replace key fob battery
-#
-# Body Damage Examples:
-#   11111111,Body Damage,Front Bumper,Repair front bumper
-#   11111111,Body Damage,Rear Bumper,Replace rear bumper
-#   11111111,Body Damage,Door,Repair passenger door
+# WARNING: These unverified combinations may fail if the UI button text doesn't match exactly.
+# Test with a small batch first before processing large lists.
 #
 # NOTES:
 # - Lines starting with '#' are treated as comments and ignored
@@ -41,11 +31,13 @@ MVA,DamageType,SubDamageType,CorrectionAction
 # - DamageType and SubDamageType must match the UI button text EXACTLY (case-sensitive)
 # - Empty rows are skipped
 # - CorrectionAction is optional (can be left blank) but column must be present
+# - If a damage type fails, check error logs for actual UI button text available
 #
 # SAMPLE DATA (replace MVAs with your actual vehicle numbers):
-59152811,Glass Damage,Windshield Chip,
-59287922,Glass Damage,Windshield Crack,
-56122135,Glass Damage,Windshield Crack,
-60283786,Glass Damage,Windshield Crack,
-58333892,Glass Damage,Windshield Crack,
-60339145,Glass Damage,Windshield Crack,
+
+59287922,Glass Damage,Windshield Chip,Repair
+56122135,Glass Damage,Windshield Crack,REPLACE
+59363415,Glass Damage,Windshield Crack,REPLACE
+60283786,Glass Damage,Windshield Crack,REPLACE
+58333892,Glass Damage,Windshield Crack,REPLACE
+60339145,Glass Damage,Windshield Crack,REPLACE
