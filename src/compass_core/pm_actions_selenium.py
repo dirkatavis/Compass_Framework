@@ -670,6 +670,7 @@ class SeleniumPmActions(PmActions):
                         self._logger.error(f"[STEP7] Option {idx}: '{btn.text.strip()}'")
                     raise
                 
+
                 # Step 7.5: VERIFY Additional Info page actually loaded
                 summary_xpath = "//h1[contains(text(), 'Drivable')]"
                 try:
@@ -677,7 +678,6 @@ class SeleniumPmActions(PmActions):
                         EC.presence_of_element_located((By.XPATH, summary_xpath))
                     )
                     self._logger.info(f"[STEP7] ✓ VERIFIED - Additional Info page loaded after selecting {sub_damage_type}")
-                    
                 except TimeoutException:
                     self._logger.error(f"[STEP7] FAILED - Additional Info page did not load after clicking {sub_damage_type}")
                     self._logger.error(f"[STEP7] Expected summary element: {summary_xpath}")
@@ -691,7 +691,23 @@ class SeleniumPmActions(PmActions):
                     raise
                 if self.step_delay > 0:
                     time.sleep(self.step_delay)
-                
+
+                # Step 8: Click Submit on Additional Info page
+                submit_xpath = "//button[.//span[contains(text(), 'Submit')]] | //button[.//p[contains(text(), 'Submit')]] | //button[normalize-space()='Submit']"
+                try:
+                    submit_btn = WebDriverWait(self.driver, 30).until(
+                        EC.element_to_be_clickable((By.XPATH, submit_xpath))
+                    )
+                    submit_btn.click()
+                    self._logger.info("[STEP8] Clicked Submit on Additional Info page, waiting for Mileage page...")
+                except TimeoutException:
+                    self._logger.error("[STEP8] FAILED - Submit button not found/clickable on Additional Info page")
+                    self._logger.error(f"[STEP8] Locator: {submit_xpath}")
+                    self._logger.error(f"[STEP8] Current URL: {self.driver.current_url}")
+                    raise
+                if self.step_delay > 0:
+                    time.sleep(self.step_delay)
+
             else:
                 # Existing complaint was selected - form details are pre-filled
                 self._logger.info("[STEPS4-7] Skipped - existing complaint selected, details pre-filled")
