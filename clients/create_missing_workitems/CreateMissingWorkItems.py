@@ -38,28 +38,31 @@ def setup_logging(verbose: bool = False) -> logging.Logger:
     
     Recreates log file each session.
     """
-    # Place log file in same directory as script
+    from compass_core.logging import StandardLogger
     script_dir = Path(__file__).parent
     log_file = script_dir / 'CreateMissingWorkItems.log'
     level = logging.DEBUG if verbose else logging.INFO
-    
-    # Remove existing handlers to recreate log
-    for handler in logging.root.handlers[:]:
-        logging.root.removeHandler(handler)
-    
     # Recreate log file (delete if exists)
     if log_file.exists():
         log_file.unlink()
-    
-    logging.basicConfig(
-        level=level,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.StreamHandler(),
-            logging.FileHandler(log_file, mode='w')  # 'w' mode recreates file
-        ]
-    )
-    return logging.getLogger('create_missing_workitems')
+    # Create a StandardLogger instance for both console and file
+    logger = StandardLogger('create_missing_workitems', level=level)
+    import logging, time
+    class MilliFormatter(logging.Formatter):
+        def format(self, record):
+            record.msg = record.getMessage()
+            record.message = record.msg
+            record.asctime = self.formatTime(record, self.datefmt)
+            return f"{record.asctime} - {record.message}"
+        def formatTime(self, record, datefmt=None):
+            ct = self.converter(record.created)
+            t = time.strftime('%H:%M:%S', ct)
+            s = "%s.%03d" % (t, int(record.msecs))
+            return s
+    file_handler = logging.FileHandler(log_file, mode='w')
+    file_handler.setFormatter(MilliFormatter())
+    logger._logger.addHandler(file_handler)
+    return logger
 
 
 def main():

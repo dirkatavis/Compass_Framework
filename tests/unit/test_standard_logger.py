@@ -9,8 +9,51 @@ from compass_core.logging import Logger
 
 
 class TestStandardLogger(unittest.TestCase):
-    """Test StandardLogger concrete implementation."""
-    
+    def test_session_header_format(self):
+        """Test that session header is written with correct format and date."""
+        import io
+        import sys
+        from datetime import datetime
+        from compass_core.logging import StandardLogger
+        # Capture stdout
+        captured = io.StringIO()
+        sys_stdout = sys.stdout
+        sys.stdout = captured
+        try:
+            logger = StandardLogger("test_logger")
+            output = captured.getvalue()
+            date_str = datetime.now().strftime('%B %d, %Y')
+            self.assertIn('Log Session Start', output)
+            self.assertIn(date_str, output)
+            self.assertTrue(output.count('*') >= 80)  # Two borders
+        finally:
+            sys.stdout = sys_stdout
+
+    def test_log_line_format(self):
+        """Test that log lines contain only time and message, no component name or level."""
+        with self.assertLogs(level='INFO') as log_context:
+            from compass_core.logging import StandardLogger
+            logger = StandardLogger("test_logger")
+            logger.info("Hello log format!")
+            log_line = log_context.output[0]
+            # Should contain time and message only
+            import re
+            # Example: 'INFO:root:HH:MM:SS.ms - Hello log format!'
+            # Remove level and logger name
+            match = re.search(r'(\d{2}:\d{2}:\d{2}\.\d{6}) - Hello log format!', log_line)
+            self.assertIsNotNone(match)
+            self.assertNotIn('test_logger', log_line)
+            self.assertNotIn('INFO', log_line)
+
+    def test_no_component_in_log_lines(self):
+        """Test that component (logger name) is not present in log output."""
+        with self.assertLogs(level='ERROR') as log_context:
+            from compass_core.logging import StandardLogger
+            logger = StandardLogger("my_component")
+            logger.error("Component should not appear")
+            log_line = log_context.output[0]
+            self.assertNotIn('my_component', log_line)
+
     def setUp(self):
         """Set up test fixtures."""
         from compass_core.logging import StandardLogger

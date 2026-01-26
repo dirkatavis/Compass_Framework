@@ -3,6 +3,7 @@ Logger Interface for Compass Framework
 Protocol for structured logging operations with dependency injection
 """
 import logging
+import time
 import sys
 from typing import Protocol, runtime_checkable, Optional, Any
 
@@ -57,46 +58,72 @@ class StandardLogger(Logger):
     def __init__(self, name: str, level: int = logging.INFO):
         """
         Initialize StandardLogger with specified name and level.
-        
+        Outputs a professional session header with centered date and decorative border.
         Args:
-            name: Logger name (typically module or application name)
+            name: Logger name (ignored in log output)
             level: Logging level (default: INFO)
         """
         self.name = name
-        # Convert string levels to logging constants
         if isinstance(level, str):
             level = getattr(logging, level.upper())
         self.level = level
-        self._logger = logging.getLogger(name)
+        # Always use a unique logger name to avoid root logger interference
+        self._logger = logging.getLogger(f"compass_core.standard_logger.{name}")
         self._logger.setLevel(level)
-        
-        # Only add handler if none exist (avoid duplicate handlers)
-        if not self._logger.handlers:
-            handler = logging.StreamHandler(sys.stdout)
-            formatter = logging.Formatter(
-                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-            )
-            handler.setFormatter(formatter)
-            self._logger.addHandler(handler)
+        # Remove all existing handlers to ensure only our formatter is used
+        for h in list(self._logger.handlers):
+            self._logger.removeHandler(h)
+        handler = logging.StreamHandler(sys.stdout)
+        # Formatter: only time (with milliseconds) and message
+        class MilliFormatter(logging.Formatter):
+            def format(self, record):
+                record.msg = record.getMessage()
+                record.message = record.msg
+                record.asctime = self.formatTime(record, self.datefmt)
+                return f"{record.asctime} - {record.message}"
+            def formatTime(self, record, datefmt=None):
+                ct = self.converter(record.created)
+                t = time.strftime('%H:%M:%S', ct)
+                s = "%s.%03d" % (t, int(record.msecs))
+                return s
+        formatter = MilliFormatter()
+        handler.setFormatter(formatter)
+        self._logger.addHandler(handler)
+        # Write session header
+        self._write_session_header()
+
+    @staticmethod
+    def make_session_header(date_str=None):
+        """Generate the session header string for logs."""
+        from datetime import datetime
+        if date_str is None:
+            date_str = datetime.now().strftime('%B %d, %Y')
+        border = '*' * 40
+        header = f"\n{border}\n{'Log Session Start':^40}\n{date_str:^40}\n{border}\n"
+        return header
+
+    def _write_session_header(self):
+        header = self.make_session_header()
+        sys.stdout.write(header)
     
     def debug(self, message: str, *args: Any, **kwargs: Any) -> None:
-        """Log a debug message."""
+        """Log a debug message. Output format: HH:MM:SS.ms - message"""
         self._logger.debug(message, *args, **kwargs)
-    
+
     def info(self, message: str, *args: Any, **kwargs: Any) -> None:
-        """Log an info message."""
+        """Log an info message. Output format: HH:MM:SS.ms - message"""
         self._logger.info(message, *args, **kwargs)
-    
+
     def warning(self, message: str, *args: Any, **kwargs: Any) -> None:
-        """Log a warning message."""
+        """Log a warning message. Output format: HH:MM:SS.ms - message"""
         self._logger.warning(message, *args, **kwargs)
-    
+
     def error(self, message: str, *args: Any, **kwargs: Any) -> None:
-        """Log an error message."""
+        """Log an error message. Output format: HH:MM:SS.ms - message"""
         self._logger.error(message, *args, **kwargs)
-    
+
     def critical(self, message: str, *args: Any, **kwargs: Any) -> None:
-        """Log a critical message."""
+        """Log a critical message. Output format: HH:MM:SS.ms - message"""
         self._logger.critical(message, *args, **kwargs)
 
 

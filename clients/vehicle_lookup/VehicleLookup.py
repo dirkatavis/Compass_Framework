@@ -34,18 +34,36 @@ from compass_core import (
 def setup_logging(verbose: bool = False) -> logging.Logger:
     """Configure logging for the client script."""
     # Place log file in same directory as script
+    from compass_core.logging import StandardLogger
+    import time
     script_dir = Path(__file__).parent
     log_file = script_dir / 'vehicle_lookup.log'
     level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(
-        level=level,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.StreamHandler(),
-            logging.FileHandler(log_file)
-        ]
-    )
-    return logging.getLogger('vehicle_lookup_client')
+    # Create a StandardLogger instance for both console and file
+    logger = StandardLogger('vehicle_lookup_client', level=level)
+    # Add file handler with same formatter
+    class MilliFormatter(logging.Formatter):
+        def format(self, record):
+            record.msg = record.getMessage()
+            record.message = record.msg
+            record.asctime = self.formatTime(record, self.datefmt)
+            return f"{record.asctime} - {record.message}"
+        def formatTime(self, record, datefmt=None):
+            ct = self.converter(record.created)
+            t = time.strftime('%H:%M:%S', ct)
+            s = "%s.%03d" % (t, int(record.msecs))
+            return s
+    file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
+    file_handler.setFormatter(MilliFormatter())
+    logger._logger.addHandler(file_handler)
+    # Write session header to log file as well
+    from datetime import datetime
+    date_str = datetime.now().strftime('%B %d, %Y')
+    border = '*' * 40
+    header = f"\n{border}\n{'Log Session Start':^40}\n{date_str:^40}\n{border}\n"
+    with open(log_file, 'a', encoding='utf-8') as f:
+        f.write(header)
+    return logger
 
 
 def main():
