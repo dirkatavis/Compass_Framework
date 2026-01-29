@@ -311,7 +311,7 @@ def main():
         return 0 if not results['failed'] else 1
         
     except Exception as e:
-        logger.exception(f"Fatal error: {e}")
+        logger.error(f"Fatal error: {e}")
         if args.debug_pause:
             logger.warning("\n[DEBUG] Exception occurred - pausing 30 seconds before closing browser...")
             logger.warning("[DEBUG] Check browser window to see current page state")

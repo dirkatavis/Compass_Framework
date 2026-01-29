@@ -141,9 +141,11 @@ class SeleniumPmActions(PmActions):
 
             self.wait.until(EC.invisibility_of_element(dialog_root))
             return {"status": "ok"}
-        except TimeoutException:
-            return {"status": "failed", "reason": "timeout"}
+        except TimeoutException as e:
+            self._logger.warning(f"[TIMEOUT] complete_open_workitem: {e}")
+            return {"status": "failed", "reason": f"timeout: {e}"}
         except Exception as e:
+            self._logger.exception("Unexpected error in complete_open_workitem")
             return {"status": "failed", "reason": f"exception: {e}"}
 
     def has_pm_complaint(self, mva: str) -> bool:
@@ -209,9 +211,11 @@ class SeleniumPmActions(PmActions):
                 pass
 
             return {"status": "ok"}
-        except TimeoutException:
-            return {"status": "failed", "reason": "timeout"}
+        except TimeoutException as e:
+            self._logger.warning(f"[TIMEOUT] associate_pm_complaint: {e}")
+            return {"status": "failed", "reason": f"timeout: {e}"}
         except Exception as e:
+            self._logger.exception("Unexpected error in associate_pm_complaint")
             return {"status": "failed", "reason": f"exception: {e}"}
 
     def navigate_back_home(self) -> None:
@@ -878,8 +882,8 @@ class SeleniumPmActions(PmActions):
             }
             
         except TimeoutException as e:
-            self._logger.error(f"[TIMEOUT] {str(e)}")
-            return {"status": "failed", "reason": f"timeout: {str(e)}"}
+            self._logger.warning(f"[TIMEOUT] create_workitem: {e}")
+            return {"status": "failed", "reason": f"timeout: {e}"}
         except Exception as e:
-            self._logger.error(f"[EXCEPTION] {str(e)}")
-            return {"status": "failed", "reason": f"exception: {str(e)}"}
+            self._logger.exception("Unexpected error in create_workitem")
+            return {"status": "failed", "reason": f"exception: {e}"}
