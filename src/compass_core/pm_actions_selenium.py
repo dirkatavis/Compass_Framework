@@ -141,11 +141,12 @@ class SeleniumPmActions(PmActions):
 
             self.wait.until(EC.invisibility_of_element(dialog_root))
             return {"status": "ok"}
-        except TimeoutException:
-            return {"status": "failed", "reason": "timeout"}
+        except TimeoutException as e:
+            self._logger.warning(f"[TIMEOUT] complete_open_workitem: {e}")
+            return {"status": "failed", "reason": f"timeout: {e}"}
         except Exception as e:
-            msg = getattr(e, 'msg', str(e))
-            return {"status": "failed", "reason": f"exception: {msg}"}
+            self._logger.exception("Unexpected error in complete_open_workitem")
+            return {"status": "failed", "reason": f"exception: {e}"}
 
     def has_pm_complaint(self, mva: str) -> bool:
         """Check whether the current vehicle has at least one PM complaint tile.
@@ -210,11 +211,12 @@ class SeleniumPmActions(PmActions):
                 pass
 
             return {"status": "ok"}
-        except TimeoutException:
-            return {"status": "failed", "reason": "timeout"}
+        except TimeoutException as e:
+            self._logger.warning(f"[TIMEOUT] associate_pm_complaint: {e}")
+            return {"status": "failed", "reason": f"timeout: {e}"}
         except Exception as e:
-            msg = getattr(e, 'msg', str(e))
-            return {"status": "failed", "reason": f"exception: {msg}"}
+            self._logger.exception("Unexpected error in associate_pm_complaint")
+            return {"status": "failed", "reason": f"exception: {e}"}
 
     def navigate_back_home(self) -> None:
         """Navigate the browser back to the PM home screen.
@@ -880,9 +882,8 @@ class SeleniumPmActions(PmActions):
             }
             
         except TimeoutException as e:
-            self._logger.error(f"[TIMEOUT] {str(e)}")
-            return {"status": "failed", "reason": f"timeout: {str(e)}"}
+            self._logger.warning(f"[TIMEOUT] create_workitem: {e}")
+            return {"status": "failed", "reason": f"timeout: {e}"}
         except Exception as e:
-            msg = getattr(e, 'msg', str(e))
-            self._logger.error(f"[EXCEPTION] {msg}")
-            return {"status": "failed", "reason": f"exception: {msg}"}
+            self._logger.exception("Unexpected error in create_workitem")
+            return {"status": "failed", "reason": f"exception: {e}"}
