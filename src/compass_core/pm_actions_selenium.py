@@ -144,7 +144,8 @@ class SeleniumPmActions(PmActions):
         except TimeoutException:
             return {"status": "failed", "reason": "timeout"}
         except Exception as e:
-            return {"status": "failed", "reason": f"exception: {e}"}
+            msg = getattr(e, 'msg', str(e))
+            return {"status": "failed", "reason": f"exception: {msg}"}
 
     def has_pm_complaint(self, mva: str) -> bool:
         """Check whether the current vehicle has at least one PM complaint tile.
@@ -212,7 +213,8 @@ class SeleniumPmActions(PmActions):
         except TimeoutException:
             return {"status": "failed", "reason": "timeout"}
         except Exception as e:
-            return {"status": "failed", "reason": f"exception: {e}"}
+            msg = getattr(e, 'msg', str(e))
+            return {"status": "failed", "reason": f"exception: {msg}"}
 
     def navigate_back_home(self) -> None:
         """Navigate the browser back to the PM home screen.
@@ -881,5 +883,6 @@ class SeleniumPmActions(PmActions):
             self._logger.error(f"[TIMEOUT] {str(e)}")
             return {"status": "failed", "reason": f"timeout: {str(e)}"}
         except Exception as e:
-            self._logger.error(f"[EXCEPTION] {str(e)}")
-            return {"status": "failed", "reason": f"exception: {str(e)}"}
+            msg = getattr(e, 'msg', str(e))
+            self._logger.error(f"[EXCEPTION] {msg}")
+            return {"status": "failed", "reason": f"exception: {msg}"}

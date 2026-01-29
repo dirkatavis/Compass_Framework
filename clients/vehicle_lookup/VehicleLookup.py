@@ -207,7 +207,7 @@ def main():
         return 0 if collection.failed_count == 0 else 1
         
     except Exception as e:
-        logger.exception(f"Fatal error: {e}")
+        logger.error(f"Fatal error: {e}")
         return 1
         
     finally:
