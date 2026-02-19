@@ -111,20 +111,35 @@ def write_results_csv(results: List[Dict[str, Any]], output_path: str) -> None:
     try:
         with open(output_path, 'w', newline='', encoding='utf-8') as f:
             # Determine fieldnames from first result or use defaults
-            fieldnames = ['mva', 'vin', 'desc']
-            if results and 'error' in results[0]:
-                fieldnames.append('error')
+            has_closeout_schema = bool(results and 'status_update_result' in results[0])
+            has_error = any('error' in result for result in results)
+
+            if has_closeout_schema:
+                fieldnames = ['mva', 'status_update_result']
+                if has_error:
+                    fieldnames.append('error')
+            else:
+                fieldnames = ['mva', 'vin', 'desc']
+                if has_error:
+                    fieldnames.append('error')
             
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
             
             for result in results:
                 # Ensure all required fields exist
-                row = {
-                    'mva': result.get('mva', 'N/A'),
-                    'vin': result.get('vin', 'N/A'),
-                    'desc': result.get('desc', 'N/A'),
-                }
+                if has_closeout_schema:
+                    row = {
+                        'mva': result.get('mva', 'N/A'),
+                        'status_update_result': result.get('status_update_result', 'failed'),
+                    }
+                else:
+                    row = {
+                        'mva': result.get('mva', 'N/A'),
+                        'vin': result.get('vin', 'N/A'),
+                        'desc': result.get('desc', 'N/A'),
+                    }
+
                 if 'error' in fieldnames:
                     row['error'] = result.get('error', '')
                 

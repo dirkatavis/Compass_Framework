@@ -252,6 +252,28 @@ class TestWriteResultsCsv(unittest.TestCase):
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]['mva'], '22222222')
 
+    def test_write_closeout_results_schema(self):
+        """Test writing closeout results with status_update_result field."""
+        results = [
+            {'mva': '50227203', 'status_update_result': 'success', 'error': ''},
+            {'mva': '12345678', 'status_update_result': 'failed', 'error': 'Status update failed'}
+        ]
+        output_path = self._get_csv_path('closeout_results.csv')
+
+        write_results_csv(results, output_path)
+
+        with open(output_path, 'r', newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            self.assertEqual(
+                reader.fieldnames,
+                ['mva', 'status_update_result', 'error']
+            )
+            rows = list(reader)
+
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[0]['status_update_result'], 'success')
+        self.assertEqual(rows[1]['status_update_result'], 'failed')
+
 
 class TestReadWorkitemList(unittest.TestCase):
     """Test read_workitem_list() function."""

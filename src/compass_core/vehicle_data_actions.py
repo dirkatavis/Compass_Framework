@@ -80,3 +80,27 @@ class VehicleDataActions(Protocol):
             True if property loaded successfully, False on timeout
         """
         ...
+
+    def set_vehicle_status(self, status: str) -> Dict[str, Any]:
+        """Set the vehicle status on the current vehicle record.
+
+        Args:
+            status: Target status text (e.g., 'Closed')
+
+        Returns:
+            Dictionary with operation result:
+            - status: 'success' or 'error'
+            - status_value: Requested status value
+            - error: Error message if status is 'error'
+        """
+        ...
+
+    def save_vehicle(self) -> Dict[str, Any]:
+        """Save or update the currently loaded vehicle record.
+
+        Returns:
+            Dictionary with operation result:
+            - status: 'success' or 'error'
+            - error: Error message if status is 'error'
+        """
+        ...
