@@ -13,6 +13,7 @@ import sys
 import unittest
 import argparse
 from pathlib import Path
+import importlib
 
 
 def main():
@@ -102,7 +103,30 @@ Examples:
     
     if failures == 0 and errors == 0:
         print("✅ All tests passed!")
-        sys.exit(0)
+        # If pytest is available, also run pytest-discovered tests for full coverage
+        pytest_rc = 0
+        try:
+            pytest = importlib.import_module('pytest')
+        except Exception:
+            pytest = None
+
+        if pytest is not None:
+            print("\n🔁 Running pytest (to execute pytest-style tests)...")
+            # Run pytest programmatically on the same test directory
+            try:
+                # Use -q for concise output
+                pytest_rc = pytest.main([test_dir, '-q'])
+            except SystemExit as e:
+                pytest_rc = int(e.code or 0)
+
+        if pytest is None:
+            print("ℹ️  pytest not installed; skipping pytest-style tests. To run them, install pytest.")
+
+        if pytest is None or pytest_rc == 0:
+            sys.exit(0)
+        else:
+            print("❌ Some pytest-style tests failed!")
+            sys.exit(pytest_rc)
     else:
         print("❌ Some tests failed!")
         sys.exit(1)

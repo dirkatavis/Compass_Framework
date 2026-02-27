@@ -1,3 +1,112 @@
+import subprocess
+import types
+import pytest
+
+from unittest.mock import Mock
+
+from compass_core.standard_driver_manager import StandardDriverManager
+
+
+@pytest.mark.new_slice
+def test_get_driver_version_success(monkeypatch, tmp_path):
+    manager = StandardDriverManager(driver_path=str(tmp_path / 'msedgedriver.exe'))
+
+    # pretend the file exists
+    monkeypatch.setattr('os.path.exists', lambda p: True)
+
+    # mock subprocess.check_output to return a version string
+    monkeypatch.setattr(subprocess, 'check_output', lambda *a, **k: 'MSEdgeDriver 120.0.6099.109')
+
+    v = manager.get_driver_version(manager._driver_path)
+    assert v == '120.0.6099.109'
+
+
+@pytest.mark.new_slice
+def test_get_driver_version_missing_file(monkeypatch):
+    manager = StandardDriverManager(driver_path='nope.exe')
+    monkeypatch.setattr('os.path.exists', lambda p: False)
+    v = manager.get_driver_version('nope.exe')
+    assert v == 'unknown'
+
+
+@pytest.mark.new_slice
+def test_get_driver_version_timeout_and_exception(monkeypatch, tmp_path):
+    manager = StandardDriverManager(driver_path=str(tmp_path / 'msedgedriver.exe'))
+    monkeypatch.setattr('os.path.exists', lambda p: True)
+
+    # TimeoutExpired
+    def raise_timeout(*a, **k):
+        raise subprocess.TimeoutExpired(cmd=a[0], timeout=1)
+
+    monkeypatch.setattr(subprocess, 'check_output', raise_timeout)
+    assert manager.get_driver_version(manager._driver_path) == 'unknown'
+
+    # Generic exception
+    def raise_exc(*a, **k):
+        raise RuntimeError('boom')
+
+    monkeypatch.setattr(subprocess, 'check_output', raise_exc)
+    assert manager.get_driver_version(manager._driver_path) == 'unknown'
+
+
+@pytest.mark.new_slice
+def test_check_version_compatibility_various():
+    manager = StandardDriverManager(driver_path='d')
+    # unknown versions
+    assert manager.check_version_compatibility('unknown', 'unknown')['compatible'] is False
+
+    # same major
+    r = manager.check_version_compatibility('120.1.2.3', '120.0.0.1')
+    assert r['compatible'] is True
+
+    # different major
+    r2 = manager.check_version_compatibility('121.0.0.0', '120.0.0.1')
+    assert r2['compatible'] is False and r2['status'] == 'major_version_mismatch'
+
+    # parse error
+    r3 = manager.check_version_compatibility(None, 123)
+    assert r3['compatible'] is False and r3['status'] in ('parse_error', 'version_unknown')
+
+
+@pytest.mark.new_slice
+def test_get_or_create_driver_raises_on_version_mismatch(monkeypatch, tmp_path):
+    manager = StandardDriverManager(driver_path=str(tmp_path / 'msedgedriver.exe'))
+    monkeypatch.setattr('os.path.exists', lambda p: True)
+
+    # Force browser and driver versions that mismatch
+    monkeypatch.setattr(manager, '_get_browser_version', lambda: '121.0.0.0')
+    monkeypatch.setattr(manager, 'get_driver_version', lambda p: '120.0.0.1')
+
+    with pytest.raises(RuntimeError):
+        manager.get_or_create_driver()
+
+
+@pytest.mark.new_slice
+def test_get_or_create_driver_creates_and_quits(monkeypatch, tmp_path):
+    manager = StandardDriverManager(driver_path=str(tmp_path / 'msedgedriver.exe'))
+    monkeypatch.setattr('os.path.exists', lambda p: True)
+
+    # compatible versions
+    monkeypatch.setattr(manager, '_get_browser_version', lambda: '120.0.0.0')
+    monkeypatch.setattr(manager, 'get_driver_version', lambda p: '120.0.0.1')
+
+    # Mock Edge WebDriver creation
+    fake_driver = Mock()
+    fake_driver.maximize_window = Mock()
+    fake_driver.quit = Mock()
+    fake_driver.current_url = 'http://example'
+
+    # patch the webdriver.Edge symbol used in the module
+    monkeypatch.setattr('selenium.webdriver.Edge', lambda *a, **k: fake_driver)
+
+    drv = manager.get_or_create_driver(headless=True, incognito=True, window_size=(800, 600))
+    assert drv is fake_driver
+    assert manager.is_driver_active() is True
+
+    # After quit, driver should be None and is_driver_active returns False
+    manager.quit_driver()
+    assert manager._driver is None
+    assert manager.is_driver_active() is False
 """
 Tests for StandardDriverManager implementation.
 TDD approach - test the concrete implementation thoroughly.
