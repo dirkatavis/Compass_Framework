@@ -64,6 +64,39 @@ class SmartLoginFlow(LoginFlow):
         self.navigator = navigator
         self.login_flow = login_flow
         self.logger = logger or logging.getLogger(__name__)
+
+    def _detect_login_page(self) -> bool:
+        """Compatibility helper: detect whether a standard login page is present.
+
+        Returns True if a full login page is detected (login required), False
+        if the application page appears (already authenticated). Mirrors the
+        detection logic used by `authenticate()` so tests can patch this
+        attribute safely.
+        """
+        try:
+            login_detector = LoginPageDetector(self.driver, timeout=DEFAULT_WAIT_TIMEOUT, logger=self.logger)
+            auth_detector = AuthenticatedPageDetector(self.driver, timeout=DEFAULT_WAIT_TIMEOUT, logger=self.logger)
+
+            login_selectors = ','.join(login_detector.SELECTORS)
+            auth_selectors = ','.join(auth_detector.SELECTORS)
+
+            element = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
+                EC.any_of(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, login_selectors)),
+                    EC.presence_of_element_located((By.CSS_SELECTOR, auth_selectors))
+                )
+            )
+
+            if element and element.is_displayed():
+                elem_tag = getattr(element, 'tag_name', '')
+                elem_class = element.get_attribute('class') if hasattr(element, 'get_attribute') else ''
+                is_login_field = elem_tag == 'input' or ('text-input' in (elem_class or '').lower())
+                return bool(is_login_field)
+
+            return True
+        except Exception:
+            # On timeout or unexpected errors, default to safe assumption
+            return True
     
     def authenticate(
         self,
@@ -138,15 +171,26 @@ class SmartLoginFlow(LoginFlow):
             self.logger.info(f"[SMART_AUTH] Page title: {self.driver.title}")
             
             # Check if WWID page opened in a new tab
-            all_windows = self.driver.window_handles
-            self.logger.info(f"[SMART_AUTH] Window/tab count: {len(all_windows)}")
-            
-            if len(all_windows) > 1:
-                # Switch to the new tab (likely WWID page)
-                self.driver.switch_to.window(all_windows[-1])
-                self.logger.info(f"[SMART_AUTH] Switched to new tab/window")
-                self.logger.info(f"[SMART_AUTH] New tab URL: {self.driver.current_url}")
-                self.logger.info(f"[SMART_AUTH] New tab title: {self.driver.title}")
+            all_windows = getattr(self.driver, 'window_handles', [])
+            try:
+                win_count = len(all_windows)
+            except Exception:
+                try:
+                    win_count = len(list(all_windows))
+                except Exception:
+                    win_count = 1 if all_windows else 0
+
+            self.logger.info(f"[SMART_AUTH] Window/tab count: {win_count}")
+
+            if win_count > 1:
+                # Attempt to switch to the new tab (likely WWID page) when indexable
+                try:
+                    self.driver.switch_to.window(all_windows[-1])
+                    self.logger.info(f"[SMART_AUTH] Switched to new tab/window")
+                    self.logger.info(f"[SMART_AUTH] New tab URL: {self.driver.current_url}")
+                    self.logger.info(f"[SMART_AUTH] New tab title: {self.driver.title}")
+                except Exception:
+                    self.logger.debug("[SMART_AUTH] Could not switch to new tab; continuing")
             
             # Wait for page to be fully loaded before checking for elements
             try:
@@ -200,52 +244,18 @@ class SmartLoginFlow(LoginFlow):
                     "message": "Authenticated via auto-login (WWID-only)",
                     "authenticated": True
                 }
+
+            # Note: older tests and integrations may patch or call
+            # a compatibility method `_detect_login_page`. Provide
+            # a concrete implementation below so tests that patch
+            # that attribute do not error. The method mirrors the
+            # login/auth detection logic used here.
             
-            # Check for Microsoft SSO login page or already authenticated
-            self.logger.debug("[SMART_AUTH] Checking authentication state (login vs authenticated)...")
-            
-            # Use detectors with either/or logic
-            login_detector = LoginPageDetector(self.driver, timeout=DEFAULT_WAIT_TIMEOUT, logger=self.logger)
-            auth_detector = AuthenticatedPageDetector(self.driver, timeout=DEFAULT_WAIT_TIMEOUT, logger=self.logger)
-            
-            # Create combined selector for efficient either/or detection
-            login_selectors = ','.join(login_detector.SELECTORS)
-            auth_selectors = ','.join(auth_detector.SELECTORS)
-            
-            self.logger.debug("[SMART_AUTH] Detecting authentication state (login vs authenticated)...")
-            
-            try:
-                # Wait for EITHER login fields OR app elements (whichever appears first)
-                element = WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
-                    EC.any_of(
-                        EC.presence_of_element_located((By.CSS_SELECTOR, login_selectors)),
-                        EC.presence_of_element_located((By.CSS_SELECTOR, auth_selectors))
-                    )
-                )
-                
-                # Determine which condition was met
-                if element and element.is_displayed():
-                    elem_tag = element.tag_name
-                    elem_class = element.get_attribute('class') or ''
-                    
-                    # Check if it's a login field or app element
-                    is_login_field = elem_tag == 'input' or 'text-input' in elem_class.lower()
-                    
-                    if is_login_field:
-                        self.logger.debug("[SMART_AUTH] Login page detected")
-                        login_required = True
-                    else:
-                        self.logger.debug("[SMART_AUTH] App page detected - already authenticated")
-                        login_required = False
-                else:
-                    self.logger.warning("[SMART_AUTH] Element found but not displayed")
-                    login_required = True  # Default to safe assumption
-                    
-            except TimeoutException:
-                self.logger.warning("[SMART_AUTH] Detection timeout - no login or app elements found")
-                self.logger.debug(f"[SMART_AUTH] Current URL: {self.driver.current_url}")
-                login_required = True  # Default to safe assumption
-            
+            # Use compatibility helper to detect whether a standard login
+            # page is present. Tests and older integrations may patch
+            # `_detect_login_page`, so calling the method ensures patches
+            # affect behavior.
+            login_required = self._detect_login_page()
             self.logger.info(f"[SMART_AUTH] Login required: {login_required}")
             
             if not login_required:

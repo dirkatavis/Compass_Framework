@@ -88,43 +88,83 @@ def read_mva_list(csv_path: str, normalize: bool = True) -> List[str]:
 
 def write_results_csv(results: List[Dict[str, Any]], output_path: str) -> None:
     """
-    Write lookup results to CSV file.
+    Write workflow results to CSV file.
     
     Args:
-        results: List of result dictionaries with keys:
-            - mva: str
-            - vin: str
-            - desc: str
-            - error: str (optional)
+                results: List of result dictionaries.
+                        Supported schemas:
+                        - Vehicle lookup schema:
+                            mva (str), vin (str), desc (str), error (optional str)
+                        - Closeout schema:
+                            mva (str), status_update_result (str), error (optional str)
+
+                        Schema is auto-detected across results by presence of
+                        ``status_update_result``. Mixing schemas in the same call is
+                        not supported and raises ValueError.
         output_path: Path to output CSV file
     
     Raises:
+        ValueError: If mixed result schemas are provided
         IOError: If file cannot be written
     
-    Example output:
-        MVA,VIN,Desc,Error
-        50227203,1HGBH41JXMN109186,2021 Honda Accord,
-        12345678,N/A,N/A,MVA not found
+    Example outputs:
+        Vehicle lookup:
+            mva,vin,desc,error
+            50227203,1HGBH41JXMN109186,2021 Honda Accord,
+            12345678,N/A,N/A,MVA not found
+
+        Closeout:
+            mva,status_update_result,error
+            50227203,success,
+            12345678,failed,Status update failed
     """
     abs_path = os.path.abspath(output_path)
+
+    has_closeout_results = any('status_update_result' in result for result in results)
+    has_vehicle_lookup_results = any(
+        ('vin' in result) or ('desc' in result)
+        for result in results
+    )
+
+    if has_closeout_results and has_vehicle_lookup_results:
+        raise ValueError(
+            "Mixed result schemas are not supported. "
+            "Use either closeout schema (mva/status_update_result/error) "
+            "or vehicle lookup schema (mva/vin/desc/error)."
+        )
     
     try:
         with open(output_path, 'w', newline='', encoding='utf-8') as f:
-            # Determine fieldnames from first result or use defaults
-            fieldnames = ['mva', 'vin', 'desc']
-            if results and 'error' in results[0]:
-                fieldnames.append('error')
+            # Determine fieldnames from detected schema or use defaults
+            has_closeout_schema = has_closeout_results
+            has_error = any('error' in result for result in results)
+
+            if has_closeout_schema:
+                fieldnames = ['mva', 'status_update_result']
+                if has_error:
+                    fieldnames.append('error')
+            else:
+                fieldnames = ['mva', 'vin', 'desc']
+                if has_error:
+                    fieldnames.append('error')
             
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
             
             for result in results:
                 # Ensure all required fields exist
-                row = {
-                    'mva': result.get('mva', 'N/A'),
-                    'vin': result.get('vin', 'N/A'),
-                    'desc': result.get('desc', 'N/A'),
-                }
+                if has_closeout_schema:
+                    row = {
+                        'mva': result.get('mva', 'N/A'),
+                        'status_update_result': result.get('status_update_result', 'failed'),
+                    }
+                else:
+                    row = {
+                        'mva': result.get('mva', 'N/A'),
+                        'vin': result.get('vin', 'N/A'),
+                        'desc': result.get('desc', 'N/A'),
+                    }
+
                 if 'error' in fieldnames:
                     row['error'] = result.get('error', '')
                 
@@ -133,6 +173,8 @@ def write_results_csv(results: List[Dict[str, Any]], output_path: str) -> None:
         logger.info(f"[CSV] Wrote {len(results)} results to: {abs_path}")
         
     except Exception as e:
+        if isinstance(e, ValueError):
+            raise
         logger.error(f"[CSV] Error writing results file: {e}")
         raise IOError(f"Failed to write results to {output_path}: {e}")
 

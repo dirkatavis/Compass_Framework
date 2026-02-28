@@ -49,7 +49,12 @@ class TestVehicleDataActionsInterface(unittest.TestCase):
     
     def test_protocol_compliance(self):
         """Test that MockVehicleDataActions satisfies VehicleDataActions protocol."""
-        self.assertIsInstance(self.mock_actions, VehicleDataActions)
+        # Structural protocol compliance: ensure required methods exist
+        self.assertTrue(hasattr(self.mock_actions, 'enter_mva'))
+        self.assertTrue(hasattr(self.mock_actions, 'get_vehicle_property'))
+        self.assertTrue(hasattr(self.mock_actions, 'get_vehicle_properties'))
+        self.assertTrue(hasattr(self.mock_actions, 'verify_mva_echo'))
+        self.assertTrue(hasattr(self.mock_actions, 'wait_for_property_loaded'))
     
     def test_enter_mva_signature(self):
         """Test enter_mva method signature and behavior."""

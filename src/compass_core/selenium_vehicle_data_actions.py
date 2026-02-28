@@ -14,9 +14,10 @@ try:
     from selenium.webdriver.remote.webdriver import WebDriver
     from selenium.webdriver.common.by import By
     from selenium.webdriver.common.keys import Keys
+    from selenium.webdriver.support.ui import Select
     from selenium.webdriver.support.ui import WebDriverWait
     from selenium.webdriver.support import expected_conditions as EC
-    from selenium.common.exceptions import TimeoutException, NoSuchElementException
+    from selenium.common.exceptions import TimeoutException, NoSuchElementException, ElementClickInterceptedException
 except ImportError:
     # Selenium not available - module cannot be used
     from typing import Any as WebDriver  # type: ignore
@@ -268,7 +269,6 @@ class SeleniumVehicleDataActions(VehicleDataActions):
             input_field.send_keys(mva)
             self._logger.info(f"[MVA] Entered MVA: {mva}")
             
-            import time
             time.sleep(0.5)  # Brief pause for auto-submit to trigger
             self._logger.info(f"[MVA] URL after entry: {self.driver.current_url}")
             
@@ -407,3 +407,129 @@ class SeleniumVehicleDataActions(VehicleDataActions):
             self._logger.error(f"[PROPERTY_PAGE] Current URL: {self.driver.current_url}")
             self._logger.error(f"[PROPERTY_PAGE] Traceback: {traceback.format_exc()}")
             return False
+
+    def set_vehicle_status(self, status: str) -> Dict[str, Any]:
+        """Set vehicle status value on the current page."""
+        try:
+            status_value = (status or "").strip()
+            if not status_value:
+                return {
+                    'status': 'error',
+                    'status_value': status,
+                    'error': 'Status value is required'
+                }
+
+            select_locators = [
+                (By.ID, 'vehicleStatus'),
+                (By.NAME, 'vehicleStatus'),
+                (By.CSS_SELECTOR, "select[name*='status' i]"),
+                (By.CSS_SELECTOR, "select[id*='status' i]"),
+                (
+                    By.XPATH,
+                    "//label[contains(normalize-space(), 'Status')]/following::select[1]"
+                ),
+            ]
+
+            for by, locator in select_locators:
+                try:
+                    element = WebDriverWait(self.driver, 3).until(
+                        EC.presence_of_element_located((by, locator))
+                    )
+                    if element and element.is_displayed() and element.is_enabled():
+                        Select(element).select_by_visible_text(status_value)
+                        self._logger.info(f"[STATUS] Vehicle status set to: {status_value}")
+                        return {
+                            'status': 'success',
+                            'status_value': status_value
+                        }
+                except Exception:
+                    continue
+
+            combo_locators = [
+                (By.CSS_SELECTOR, "[role='combobox'][name*='status' i]"),
+                (By.CSS_SELECTOR, "[role='combobox'][id*='status' i]"),
+                (
+                    By.XPATH,
+                    "//label[contains(normalize-space(), 'Status')]/following::*[@role='combobox'][1]"
+                ),
+            ]
+
+            for by, locator in combo_locators:
+                try:
+                    combo = WebDriverWait(self.driver, 3).until(
+                        EC.element_to_be_clickable((by, locator))
+                    )
+                    combo.click()
+                    option_xpath = (
+                        f"//*[self::li or self::div or self::span][normalize-space()='{status_value}']"
+                    )
+                    option = WebDriverWait(self.driver, 3).until(
+                        EC.element_to_be_clickable((By.XPATH, option_xpath))
+                    )
+                    option.click()
+                    self._logger.info(f"[STATUS] Vehicle status set to: {status_value}")
+                    return {
+                        'status': 'success',
+                        'status_value': status_value
+                    }
+                except Exception:
+                    continue
+
+            return {
+                'status': 'error',
+                'status_value': status_value,
+                'error': 'Vehicle status field not found or status option unavailable'
+            }
+
+        except Exception as e:
+            self._logger.error(f"[STATUS] Failed setting vehicle status '{status}': {e}")
+            return {
+                'status': 'error',
+                'status_value': status,
+                'error': f'Failed to set vehicle status: {str(e)}'
+            }
+
+    def save_vehicle(self) -> Dict[str, Any]:
+        """Save or update the current vehicle record."""
+        try:
+            save_locators = [
+                (By.ID, 'save'),
+                (By.NAME, 'save'),
+                (By.CSS_SELECTOR, "button[type='submit']"),
+                (By.CSS_SELECTOR, "button[id*='save' i], button[name*='save' i]"),
+                (
+                    By.XPATH,
+                    "//button[contains(normalize-space(), 'Save') or contains(normalize-space(), 'Update')]"
+                ),
+            ]
+
+            for by, locator in save_locators:
+                try:
+                    button = WebDriverWait(self.driver, 5).until(
+                        EC.element_to_be_clickable((by, locator))
+                    )
+                    button.click()
+                    self._logger.info("[SAVE] Vehicle record save/update triggered")
+                    return {'status': 'success'}
+                except ElementClickInterceptedException:
+                    try:
+                        button = self.driver.find_element(by, locator)
+                        self.driver.execute_script("arguments[0].click();", button)
+                        self._logger.info("[SAVE] Vehicle record save/update triggered (JS click)")
+                        return {'status': 'success'}
+                    except Exception:
+                        continue
+                except Exception:
+                    continue
+
+            return {
+                'status': 'error',
+                'error': 'Save/Update control not found or not clickable'
+            }
+
+        except Exception as e:
+            self._logger.error(f"[SAVE] Failed to save vehicle record: {e}")
+            return {
+                'status': 'error',
+                'error': f'Failed to save vehicle: {str(e)}'
+            }
