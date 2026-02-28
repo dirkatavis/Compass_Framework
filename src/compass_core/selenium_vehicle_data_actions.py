@@ -269,7 +269,6 @@ class SeleniumVehicleDataActions(VehicleDataActions):
             input_field.send_keys(mva)
             self._logger.info(f"[MVA] Entered MVA: {mva}")
             
-            import time
             time.sleep(0.5)  # Brief pause for auto-submit to trigger
             self._logger.info(f"[MVA] URL after entry: {self.driver.current_url}")
             
