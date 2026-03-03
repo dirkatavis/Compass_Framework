@@ -23,9 +23,10 @@ class _FakeElement:
 
 
 class _FakeWait:
-    def __init__(self, driver, timeout):
+    def __init__(self, driver, timeout, poll_frequency=0.5):
         self.driver = driver
         self.timeout = timeout
+        self.poll_frequency = poll_frequency
     def until(self, cond):
         # Return a clickable/element for any condition
         if callable(cond):
@@ -36,11 +37,15 @@ class _FakeWait:
 class _FakeDriver:
     def __init__(self, elements=None):
         self._elements = elements or []
+        self.current_url = "https://fake.url/health"
+        self.title = "Fake PWA"
     def find_element(self, *args, **kwargs):
         return _FakeElement()
     def find_elements(self, *args, **kwargs):
         return self._elements
     def back(self):
+        pass
+    def execute_script(self, *args, **kwargs):
         pass
 
 
@@ -91,6 +96,40 @@ class TestSeleniumPmActions(unittest.TestCase):
         actions = SeleniumPmActions(_FakeDriver())
         actions.navigate_back_home()  # should not raise
 
+    def test_create_workitem_skips_when_open_card_exists(self):
+        """Test Step 0: Dashboard Audit correctly identifies existing open cards."""
+        # Create a fake card element that matches the "Glass Damage" type
+        class _OpenCard:
+            text = "[OPEN] Glass Damage - Needs attention"
+            def is_displayed(self): return True
+            def is_enabled(self): return True
+
+        # Driver should return this card when looking for status-red tiles
+        actions = SeleniumPmActions(_FakeDriver(elements=[_OpenCard()]))
+        
+        # We need to ensure find_elements returns the card for the audit XPath
+        res = actions.create_workitem("MVA123", "Glass Damage", "Windshield", "Repair")
+        
+        self.assertEqual(res.get('status'), 'success')
+        self.assertEqual(res.get('message'), 'skipped_duplicate')
+        self.assertEqual(res.get('reason'), 'existing_open_workitem')
+
+    def test_create_workitem_wizard_icon_xpath_mapping(self):
+        """Verify the wizard uses correct icon-based XPaths for categories."""
+        actions = SeleniumPmActions(_FakeDriver())
+        
+        with mock.patch.object(actions, '_select_existing_complaint_by_damage_type', return_value={"status": "not_found"}):
+            with mock.patch('compass_core.pm_actions_selenium.WebDriverWait') as mock_wait_class:
+                with mock.patch('compass_core.pm_actions_selenium.EC') as mock_ec:
+                    mock_wait_instance = mock_wait_class.return_value
+                    mock_wait_instance.until.return_value = _FakeClickable()
+                    
+                    # Directly call the method
+                    actions.create_workitem("MVA123", "PM", "Oil Change", "Service")
+                    
+                    # Check for Oil Can icon in the calls to EC.element_to_be_clickable
+                    all_ec_calls_str = str(mock_ec.element_to_be_clickable.call_args_list)
+                    self.assertIn('bp6-icon-oil-can', all_ec_calls_str, "Oil Can icon XPath should be used for PM category")
 
 if __name__ == '__main__':
     unittest.main()
