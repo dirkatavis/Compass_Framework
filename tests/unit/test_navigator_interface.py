@@ -19,6 +19,9 @@ class MockNavigator:
                    timeout: int = 15) -> Dict[str, Any]:
         return {"status": "ok", "url": url, "locator": check_locator, "timeout": timeout}
 
+    def scroll_into_view_center(self, element: Any) -> Dict[str, Any]:
+        return {"status": "success"}
+
 
 class TestNavigatorInterface(unittest.TestCase):
     """Test the Navigator protocol/interface"""
