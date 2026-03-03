@@ -16,6 +16,7 @@ from selenium.webdriver.edge.options import Options as EdgeOptions
 from selenium.webdriver.remote.webdriver import WebDriver
 
 from .driver_manager import DriverManager
+from .driver_factory import DriverFactory
 
 
 class StandardDriverManager(DriverManager):
@@ -35,6 +36,7 @@ class StandardDriverManager(DriverManager):
         self._config: Optional[Any] = None  # Cached configuration instance
         self._driver_path = driver_path or self._get_configured_driver_path()
         self._logger = logging.getLogger(__name__)
+        self._factory = DriverFactory(driver_path=self._driver_path, logger=self._logger)
         
     def _get_config(self):
         """Get cached configuration instance, creating it if needed."""
@@ -89,20 +91,8 @@ class StandardDriverManager(DriverManager):
         if self._driver:
             return self._driver
             
-        # Version compatibility check (like DevCompass pattern)
-        browser_version = self._get_browser_version()
-        driver_version = self.get_driver_version(self._driver_path)
-        
-        self._logger.info(f"[DRIVER] Detected Browser={browser_version}, Driver={driver_version}")
-        
-        compatibility = self.check_version_compatibility(browser_version, driver_version)
-        if not compatibility["compatible"]:
-            error_msg = f"Version mismatch - Browser {browser_version}, Driver {driver_version}"
-            self._logger.error(f"[DRIVER] {error_msg}")
-            raise RuntimeError(error_msg)
-            
         try:
-            self._logger.info(f"[DRIVER] Launching Edge - Browser {browser_version}, Driver {driver_version}")
+            # Delegate to DriverFactory for self-healing initialization
             options = self.configure_driver_options()
             
             # Apply any custom configuration from kwargs
@@ -115,8 +105,7 @@ class StandardDriverManager(DriverManager):
                 width, height = kwargs["window_size"]
                 options.add_argument(f"--window-size={width},{height}")
                 
-            service = self.create_driver_service(self._driver_path)
-            self._driver = webdriver.Edge(service=service, options=options)
+            self._driver = self._factory.get_driver(options=options)
             
             # Default DevCompass configuration
             self._driver.maximize_window()
@@ -126,13 +115,11 @@ class StandardDriverManager(DriverManager):
             except Exception:
                 # If driver mock doesn't implement implicitly_wait, ignore
                 pass
-            # Note: No implicit wait set - use explicit WebDriverWait instead
-            # Implicit waits interfere with explicit waits and cause unexpected delays
-            
+                
             return self._driver
             
-        except SessionNotCreatedException as e:
-            self._logger.error(f"[DRIVER] Session creation failed: {e}")
+        except Exception as e:
+            self._logger.error(f"[DRIVER] Driver initialization failed: {e}")
             raise RuntimeError(f"Failed to create WebDriver session: {e}")
     
     def quit_driver(self) -> None:
