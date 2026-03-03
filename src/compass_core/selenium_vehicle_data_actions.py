@@ -64,7 +64,32 @@ class SeleniumVehicleDataActions(VehicleDataActions):
         self.timeout = timeout
         self.wait = WebDriverWait(driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY)
         self._logger = logger or logging.getLogger(__name__)
-    
+
+    def _safe_click(self, element: Any, scroll: bool = True):
+        """Perform a safe click by scrolling into center view first.
+        
+        This overrides viewport scaling issues where elements near the edge 
+        are incorrectly calculated during hit-testing if not centered.
+        """
+        if scroll:
+            try:
+                self.driver.execute_script(
+                    "arguments[0].scrollIntoView({block: 'center', inline: 'nearest'});", 
+                    element
+                )
+                time.sleep(0.3)
+            except Exception:
+                pass
+        
+        try:
+            element.click()
+        except ElementClickInterceptedException:
+            self._logger.warning("[CLICK] Click intercepted - attempting JavaScript-forced click as fallback")
+            self.driver.execute_script("arguments[0].click();", element)
+        except Exception:
+            # Fallback for any other click failures (e.g. element not interactable)
+            self.driver.execute_script("arguments[0].click();", element)
+
     # ====================
     # MVA INPUT METHODS (TODO: Extract to MVAInputPage POM)
     # ====================
@@ -265,6 +290,18 @@ class SeleniumVehicleDataActions(VehicleDataActions):
                 if not self._clear_input_field(input_field):
                     self._logger.warning(f"[MVA] Field not fully cleared before entering MVA '{mva}'")
             
+            # Correct viewport scaling issues by scrolling MVA input into center 
+            # before interaction. This ensures hit-testing is accurate even 
+            # with CSS zoom applied.
+            try:
+                self.driver.execute_script(
+                    "arguments[0].scrollIntoView({block: 'center', inline: 'nearest'});", 
+                    input_field
+                )
+                time.sleep(0.5) # Wait for layout shift
+            except Exception:
+                pass
+                
             # Enter MVA (application auto-submits after 8 digits)
             input_field.send_keys(mva)
             self._logger.info(f"[MVA] Entered MVA: {mva}")
@@ -459,14 +496,14 @@ class SeleniumVehicleDataActions(VehicleDataActions):
                     combo = WebDriverWait(self.driver, 3).until(
                         EC.element_to_be_clickable((by, locator))
                     )
-                    combo.click()
+                    self._safe_click(combo)
                     option_xpath = (
                         f"//*[self::li or self::div or self::span][normalize-space()='{status_value}']"
                     )
                     option = WebDriverWait(self.driver, 3).until(
                         EC.element_to_be_clickable((By.XPATH, option_xpath))
                     )
-                    option.click()
+                    self._safe_click(option)
                     self._logger.info(f"[STATUS] Vehicle status set to: {status_value}")
                     return {
                         'status': 'success',
@@ -508,14 +545,14 @@ class SeleniumVehicleDataActions(VehicleDataActions):
                     button = WebDriverWait(self.driver, 5).until(
                         EC.element_to_be_clickable((by, locator))
                     )
-                    button.click()
+                    self._safe_click(button)
                     self._logger.info("[SAVE] Vehicle record save/update triggered")
                     return {'status': 'success'}
                 except ElementClickInterceptedException:
                     try:
                         button = self.driver.find_element(by, locator)
-                        self.driver.execute_script("arguments[0].click();", button)
-                        self._logger.info("[SAVE] Vehicle record save/update triggered (JS click)")
+                        self._logger.info("[SAVE] Vehicle record save/update triggered (via _safe_click JS fallback)")
+                        self._safe_click(button)
                         return {'status': 'success'}
                     except Exception:
                         continue

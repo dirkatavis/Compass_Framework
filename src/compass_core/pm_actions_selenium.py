@@ -19,7 +19,7 @@ except Exception:  # Fallback type when selenium typing is unavailable
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException, ElementClickInterceptedException
 
 from .pm_actions import PmActions
 
@@ -59,6 +59,31 @@ class SeleniumPmActions(PmActions):
         # Since Selenium doesn't provide a getter, we assume the standard configuration value
         # This will be the value we restore when temporarily disabling implicit wait
         self._implicit_wait_value = timeout
+
+    def _safe_click(self, element: Any, scroll: bool = True):
+        """Perform a safe click by scrolling into center view first.
+        
+        This overrides viewport scaling issues where elements near the edge 
+        are incorrectly calculated during hit-testing if not centered.
+        """
+        if scroll:
+            try:
+                self.driver.execute_script(
+                    "arguments[0].scrollIntoView({block: 'center', inline: 'nearest'});", 
+                    element
+                )
+                time.sleep(0.3)
+            except Exception:
+                pass
+        
+        try:
+            element.click()
+        except ElementClickInterceptedException:
+            self._logger.warning("[CLICK] Click intercepted - attempting JavaScript-forced click as fallback")
+            self.driver.execute_script("arguments[0].click();", element)
+        except Exception as exc:
+            self._logger.debug(f"[CLICK] Native click failed: {exc}, attempting JS click fallback")
+            self.driver.execute_script("arguments[0].click();", element)
 
     def _find_pm_complaint_tiles(self) -> list:
         """Locate PM complaint tiles on the current page.
@@ -128,16 +153,16 @@ class SeleniumPmActions(PmActions):
                 "//div[contains(@class, 'fleet-operations-pwa__scan-record__') and ./div[contains(@class, 'fleet-operations-pwa__scan-record-header__')] and ./div[contains(@class, 'fleet-operations-pwa__scan-record-row-2__') and contains(., 'PM')]]",
             )
             title_bar = parent_card.find_element(By.XPATH, "./div[contains(@class, 'fleet-operations-pwa__scan-record-header__')]")
-            title_bar.click()
+            self._safe_click(title_bar)
 
-            self.wait.until(EC.element_to_be_clickable((By.XPATH, "//button[normalize-space()='Mark Complete']"))).click()
+            self._safe_click(self.wait.until(EC.element_to_be_clickable((By.XPATH, "//button[normalize-space()='Mark Complete']"))))
 
             dialog_root = self.wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "div.bp6-dialog")))
             textarea = self.wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "textarea.bp6-text-area")))
             textarea.clear()
             textarea.send_keys("Done")
 
-            self.wait.until(EC.element_to_be_clickable((By.XPATH, "//div[contains(@class,'bp6-dialog')]//button[normalize-space()='Complete Work Item']"))).click()
+            self._safe_click(self.wait.until(EC.element_to_be_clickable((By.XPATH, "//div[contains(@class,'bp6-dialog')]//button[normalize-space()='Complete Work Item']"))))
 
             self.wait.until(EC.invisibility_of_element(dialog_root))
             return {"status": "ok"}
@@ -178,12 +203,12 @@ class SeleniumPmActions(PmActions):
             pm_tiles = self._find_pm_complaint_tiles()
             if not pm_tiles:
                 return {"status": "skipped_no_complaint"}
-            pm_tiles[0].click()
+            self._safe_click(pm_tiles[0])
 
-            self.wait.until(EC.element_to_be_clickable((By.XPATH, "//button[normalize-space()='Next']"))).click()
+            self._safe_click(self.wait.until(EC.element_to_be_clickable((By.XPATH, "//button[normalize-space()='Next']"))))
 
             try:
-                self.wait.until(EC.element_to_be_clickable((By.XPATH, "//button[normalize-space()='Next']"))).click()
+                self._safe_click(self.wait.until(EC.element_to_be_clickable((By.XPATH, "//button[normalize-space()='Next']"))))
             except TimeoutException:
                 # If the mileage/Next dialog never appears, we can safely continue the flow.
                 pass
@@ -198,11 +223,11 @@ class SeleniumPmActions(PmActions):
                         )
                     )
                 )
-                opcode_element.click()
+                self._safe_click(opcode_element)
 
                 for label in ("Next", "Done", "Save", "Save & Continue"):
                     try:
-                        self.wait.until(EC.element_to_be_clickable((By.XPATH, f"//button[normalize-space()='{label}']"))).click()
+                        self._safe_click(self.wait.until(EC.element_to_be_clickable((By.XPATH, f"//button[normalize-space()='{label}']"))))
                         break
                     except TimeoutException:
                         continue
@@ -265,7 +290,8 @@ class SeleniumPmActions(PmActions):
         workitem_tab = self.wait.until(
             EC.element_to_be_clickable((By.XPATH, workitem_tab_xpath))
         )
-        workitem_tab.click()
+        
+        self._safe_click(workitem_tab)
         
         # Wait for tab panel to be visible
         self.wait.until(
@@ -409,7 +435,7 @@ class SeleniumPmActions(PmActions):
             
             # Click the matching tile
             try:
-                matching_tile.click()
+                self._safe_click(matching_tile)
                 self._logger.info(f"[COMPLAINTS] Clicked existing complaint tile")
                 
                 if self.step_delay > 0:
@@ -423,7 +449,7 @@ class SeleniumPmActions(PmActions):
                     EC.element_to_be_clickable((By.XPATH, next_btn_xpath))
                 )
                 self._logger.info("[COMPLAINTS] Next button enabled, clicking now...")
-                next_btn.click()
+                self._safe_click(next_btn)
                 self._logger.info("[COMPLAINTS] OK - Next button clicked")
                 
                 if self.step_delay > 0:
@@ -495,7 +521,7 @@ class SeleniumPmActions(PmActions):
             create_btn = WebDriverWait(self.driver, 30).until(
                 EC.element_to_be_clickable((By.XPATH, create_btn_xpath))
             )
-            create_btn.click()
+            self._safe_click(create_btn)
             self._logger.info("[STEP1] Clicked Add Work Item button, verifying dialog opened...")
             if self.step_delay > 0:
                 time.sleep(self.step_delay)
@@ -539,7 +565,7 @@ class SeleniumPmActions(PmActions):
                     add_complaint_btn = WebDriverWait(self.driver, 30).until(
                         EC.element_to_be_clickable((By.XPATH, add_complaint_xpath))
                     )
-                    add_complaint_btn.click()
+                    self._safe_click(add_complaint_btn)
                     self._logger.info("[STEP3] OK - Clicked Add New Complaint")
                     
                 except TimeoutException:
@@ -574,7 +600,7 @@ class SeleniumPmActions(PmActions):
                     drivable_yes_btn = WebDriverWait(self.driver, 30).until(
                         EC.element_to_be_clickable((By.XPATH, drivable_xpath))
                     )
-                    drivable_yes_btn.click()
+                    self._safe_click(drivable_yes_btn)
                     self._logger.info("[STEP4] Clicked 'Yes' for drivable, waiting for damage type screen...")
                 except TimeoutException:
                     self._logger.error(f"[STEP4] FAILED - Drivable 'Yes' button not found/clickable after 30s")
@@ -619,7 +645,7 @@ class SeleniumPmActions(PmActions):
                     damage_selector = WebDriverWait(self.driver, 30).until(
                         EC.element_to_be_clickable((By.XPATH, damage_button_xpath))
                     )
-                    damage_selector.click()
+                    self._safe_click(damage_selector)
                     self._logger.info(f"[STEP6] Clicked {damage_type}, waiting for sub-damage screen...")
                 except TimeoutException:
                     self._logger.error(f"[STEP6] FAILED - Damage type '{damage_type}' button not clickable after 30s")
@@ -661,7 +687,7 @@ class SeleniumPmActions(PmActions):
                     sub_damage_selector = WebDriverWait(self.driver, 30).until(
                         EC.element_to_be_clickable((By.XPATH, sub_damage_button_xpath))
                     )
-                    sub_damage_selector.click()
+                    self._safe_click(sub_damage_selector)
                     self._logger.info(f"[STEP7] Clicked {sub_damage_type}, waiting for Additional Info page...")
                 except TimeoutException:
                     self._logger.error(f"[STEP7] FAILED - Sub-damage type '{sub_damage_type}' button not found/clickable after 30s")
@@ -702,7 +728,7 @@ class SeleniumPmActions(PmActions):
                     submit_btn = WebDriverWait(self.driver, 30).until(
                         EC.element_to_be_clickable((By.XPATH, submit_xpath))
                     )
-                    submit_btn.click()
+                    self._safe_click(submit_btn)
                     self._logger.info("[STEP8] Clicked Submit on Additional Info page, waiting for Mileage page...")
                 except TimeoutException:
                     self._logger.error("[STEP8] FAILED - Submit button not found/clickable on Additional Info page")
@@ -750,7 +776,7 @@ class SeleniumPmActions(PmActions):
                 next_btn = WebDriverWait(self.driver, 30).until(
                     EC.element_to_be_clickable((By.XPATH, next_button_xpath))
                 )
-                next_btn.click()
+                self._safe_click(next_btn)
                 self._logger.info("[STEP10] [OK] Clicked Next button")
             except TimeoutException:
                 self._logger.error(f"[STEP10] FAILED - Next button not found on Mileage page")
@@ -790,7 +816,7 @@ class SeleniumPmActions(PmActions):
                 glass_item = WebDriverWait(self.driver, 30).until(
                     EC.element_to_be_clickable((By.XPATH, glass_opcode_xpath))
                 )
-                glass_item.click()
+                self._safe_click(glass_item)
                 self._logger.info("[STEP11] [OK] Clicked Glass Repair/Replace")
             except TimeoutException:
                 self._logger.error(f"[STEP11] FAILED - Glass Repair/Replace opCode not found")
@@ -811,7 +837,7 @@ class SeleniumPmActions(PmActions):
                 create_btn = WebDriverWait(self.driver, 30).until(
                     EC.element_to_be_clickable((By.XPATH, create_workitem_xpath))
                 )
-                create_btn.click()
+                self._safe_click(create_btn)
                 self._logger.info("[STEP12] [OK] Clicked Create Work Item")
             except TimeoutException:
                 self._logger.error(f"[STEP12] FAILED - Create Work Item button not found")
@@ -846,7 +872,7 @@ class SeleniumPmActions(PmActions):
                 done_btn = WebDriverWait(self.driver, 30).until(
                     EC.element_to_be_clickable((By.XPATH, done_button_xpath))
                 )
-                done_btn.click()
+                self._safe_click(done_btn)
                 self._logger.info("[STEP13] ✓ Clicked Done button")
             except TimeoutException:
                 self._logger.error(f"[STEP13] FAILED - Done button not found")
