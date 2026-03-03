@@ -120,7 +120,7 @@ class StandardDriverManager(DriverManager):
             
         except Exception as e:
             self._logger.error(f"[DRIVER] Driver initialization failed: {e}")
-            raise RuntimeError(f"Failed to create WebDriver session: {e}")
+            raise RuntimeError(f"Failed to create WebDriver session: {e}") from e
     
     def quit_driver(self) -> None:
         """Quit and cleanup WebDriver instance.

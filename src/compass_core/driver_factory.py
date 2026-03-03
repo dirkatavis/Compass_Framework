@@ -70,6 +70,10 @@ class DriverFactory:
 
     def update_driver_approach_a(self) -> str:
         """Approach A: Use webdriver-manager for a clean, low-maintenance setup."""
+        if not HAS_WEBDRIVER_MANAGER:
+            self.logger.warning("[DRIVER_FACTORY] webdriver-manager not installed. Falling back to Approach B.")
+            return self.update_driver_approach_b()
+
         self.logger.info("[DRIVER_FACTORY] Updating via Approach A (webdriver-manager)...")
         self.kill_locked_drivers()
         manager = EdgeChromiumDriverManager()
@@ -175,7 +179,7 @@ class DriverFactory:
         raise RuntimeError(f"Failed to initialize Edge WebDriver after {max_retries} attempts.")
 
     def _print_summary_table(self, report: Dict[str, Any]):
-        """Prints a concise summary table as requested."""
+        """Logs a concise summary table using the configured logger."""
         table = [
             "\n" + "="*50,
             " EDGE WEBDRIVER INITIALIZATION SUMMARY ",
@@ -186,7 +190,7 @@ class DriverFactory:
             f" Final Status           : {report['status'].upper()}",
             "="*50 + "\n"
         ]
-        print("\n".join(table))
+        self.logger.info("\n".join(table))
 
 def architect_note():
     """Architect's Note on Approach selection."""
