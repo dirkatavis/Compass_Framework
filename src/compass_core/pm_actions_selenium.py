@@ -173,11 +173,11 @@ class SeleniumPmActions(PmActions):
             self.wait.until(EC.invisibility_of_element(dialog_root))
             return {"status": "ok"}
         except TimeoutException as e:
-            self._logger.warning(f"[TIMEOUT] complete_open_workitem: {e}")
-            return {"status": "failed", "reason": f"timeout: {e}"}
+            self._logger.warning(f"[TIMEOUT] complete_open_workitem: Timed out waiting for element")
+            return {"status": "failed", "reason": "timeout"}
         except Exception as e:
-            self._logger.exception("Unexpected error in complete_open_workitem")
-            return {"status": "failed", "reason": f"exception: {e}"}
+            self._logger.error(f"[ERROR] complete_open_workitem failed: {str(e).split('Stacktrace:')[0].strip()}")
+            return {"status": "failed", "reason": f"exception: {type(e).__name__}"}
 
     def has_pm_complaint(self, mva: str) -> bool:
         """Check whether the current vehicle has at least one PM complaint tile.
@@ -243,11 +243,11 @@ class SeleniumPmActions(PmActions):
 
             return {"status": "ok"}
         except TimeoutException as e:
-            self._logger.warning(f"[TIMEOUT] associate_pm_complaint: {e}")
-            return {"status": "failed", "reason": f"timeout: {e}"}
+            self._logger.warning(f"[TIMEOUT] associate_pm_complaint: Timed out during association")
+            return {"status": "failed", "reason": "timeout"}
         except Exception as e:
-            self._logger.exception("Unexpected error in associate_pm_complaint")
-            return {"status": "failed", "reason": f"exception: {e}"}
+            self._logger.error(f"[ERROR] associate_pm_complaint failed: {str(e).split('Stacktrace:')[0].strip()}")
+            return {"status": "failed", "reason": f"exception: {type(e).__name__}"}
 
     def navigate_back_home(self) -> None:
         """Navigate the browser back to the PM home screen.
@@ -914,8 +914,8 @@ class SeleniumPmActions(PmActions):
             }
             
         except TimeoutException as e:
-            self._logger.warning(f"[TIMEOUT] create_workitem: {e}")
-            return {"status": "failed", "reason": f"timeout: {e}"}
+            self._logger.warning(f"[TIMEOUT] create_workitem: Execution timed out at step progress {self.driver.current_url}")
+            return {"status": "failed", "reason": "timeout"}
         except Exception as e:
-            self._logger.exception("Unexpected error in create_workitem")
-            return {"status": "failed", "reason": f"exception: {e}"}
+            self._logger.error(f"[ERROR] create_workitem failed: {str(e).split('Stacktrace:')[0].strip()}")
+            return {"status": "failed", "reason": f"exception: {type(e).__name__}"}
