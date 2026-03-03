@@ -79,11 +79,17 @@ class SeleniumPmActions(PmActions):
         try:
             element.click()
         except ElementClickInterceptedException:
-            self._logger.warning("[CLICK] Click intercepted - attempting JavaScript-forced click as fallback")
-            self.driver.execute_script("arguments[0].click();", element)
+            self._logger.warning(f"[CLICK] Click intercepted on {element.tag_name} - attempting JavaScript-forced click as fallback")
+            try:
+                self.driver.execute_script("arguments[0].click();", element)
+            except Exception as js_exc:
+                self._logger.error(f"[CLICK] JavaScript fallback click failed: {js_exc}")
         except Exception as exc:
-            self._logger.debug(f"[CLICK] Native click failed: {exc}, attempting JS click fallback")
-            self.driver.execute_script("arguments[0].click();", element)
+            self._logger.warning(f"[CLICK] Native click failed on {element.tag_name}: {exc}. Attempting JS click fallback")
+            try:
+                self.driver.execute_script("arguments[0].click();", element)
+            except Exception as js_exc:
+                self._logger.error(f"[CLICK] JavaScript fallback click failed: {js_exc}")
 
     def _find_pm_complaint_tiles(self) -> list:
         """Locate PM complaint tiles on the current page.
