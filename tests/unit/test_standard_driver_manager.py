@@ -342,16 +342,22 @@ class TestStandardDriverManager(unittest.TestCase):
     
     @patch.object(StandardDriverManager, '_get_browser_version')
     @patch.object(StandardDriverManager, 'get_driver_version')
-    def test_get_or_create_driver_version_mismatch(self, mock_get_driver_version, mock_get_browser_version):
-        """Test driver creation fails with version mismatch."""
-        # Mock mismatched versions
+    @patch('compass_core.driver_factory.DriverFactory.get_driver')
+    def test_get_or_create_driver_version_mismatch(self, mock_factory_get_driver, mock_get_driver_version, mock_get_browser_version):
+        """Test driver creation success after healing via factory."""
+        # Mock versions that would trigger healing if encountered directly,
+        # but factory handles these now.
         mock_get_browser_version.return_value = "120.0.6099.109"
         mock_get_driver_version.return_value = "119.0.6000.50"
         
-        with self.assertRaises(RuntimeError) as context:
-            self.manager.get_or_create_driver()
+        # Mock successful factory recovery
+        mock_driver = Mock()
+        mock_factory_get_driver.return_value = mock_driver
         
-        self.assertIn("Version mismatch", str(context.exception))
+        driver = self.manager.get_or_create_driver()
+        
+        self.assertEqual(driver, mock_driver)
+        mock_factory_get_driver.assert_called_once()
     
     @patch.object(StandardDriverManager, '_get_browser_version')
     @patch.object(StandardDriverManager, 'get_driver_version')

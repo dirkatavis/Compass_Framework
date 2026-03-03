@@ -3,6 +3,7 @@ from .json_configuration import JsonConfiguration
 from .ini_configuration import IniConfiguration
 from .logging import StandardLogger, StandardLoggerFactory
 from .workflow import StandardWorkflowManager
+from .driver_factory import DriverFactory
 
 # Optional PM flow - available when workflow protocols are present
 try:
@@ -17,7 +18,8 @@ __all__ = [
     'IniConfiguration',
     'StandardLogger',
     'StandardLoggerFactory',
-    'StandardWorkflowManager'
+    'StandardWorkflowManager',
+    'DriverFactory'
 ]
 if PmWorkItemFlow is not None:
     __all__.append('PmWorkItemFlow')
