@@ -201,6 +201,14 @@ class SeleniumLoginFlow:
                     self.logger.debug(f"[LOGIN] Handled Stay signed in prompt: clicked '{choice}'")
                 else:
                     self.logger.debug("[LOGIN] No 'Stay signed in?' prompt detected")
+
+                # Early zoom reinforcement: apply immediately after the Microsoft logout/stay-in flow
+                # but before the final redirect/WWID entry.
+                try:
+                    self.driver.execute_script("document.body.style.zoom = '0.5'; document.documentElement.style.zoom = '0.5';")
+                    self.logger.info("[LOGIN] Applied 50% zoom immediately after 'Stay signed in' check")
+                except Exception:
+                    pass
             
             # Step 3.6: Enter login_id (WWID) if required - application-specific but commonly needed
             if login_id:
@@ -218,6 +226,13 @@ class SeleniumLoginFlow:
                     self.driver.switch_to.window(all_windows[-1])
                     self.logger.info(f"[LOGIN] Switched to new tab for WWID entry ({len(all_windows)} tabs total)")
                     self.logger.info(f"[LOGIN] New tab URL: {self.driver.current_url}")
+                    
+                    # Force zoom in the new tab/window context
+                    try:
+                        self.driver.execute_script("document.body.style.zoom = '0.5'; document.documentElement.style.zoom = '0.5';")
+                        self.logger.info("[LOGIN] Applied 50% zoom to the new tab for WWID entry")
+                    except Exception:
+                        pass
                 
                 login_id_result = self._enter_wwid(login_id, timeout)
                 if login_id_result.get("status") != "success":
@@ -229,6 +244,13 @@ class SeleniumLoginFlow:
                 verify_result = self._verify_login_success(verify_domain, timeout)
                 if verify_result.get("status") != "success":
                     return verify_result
+            
+            # Final zoom enforcement after Microsoft login/redirect
+            try:
+                self.driver.execute_script("document.body.style.zoom = '0.5'; document.documentElement.style.zoom = '0.5';")
+                self.logger.info("[LOGIN] Applied 50% zoom after final verification and redirect")
+            except Exception:
+                pass
             
             self.logger.info(f"[LOGIN] Authentication successful for: {username}")
             return {

@@ -337,9 +337,9 @@ class TestStandardDriverManager(unittest.TestCase):
         # Verify driver was created and configured
         self.assertEqual(driver, mock_driver)
         self.assertEqual(self.manager._driver, mock_driver)
-        mock_driver.maximize_window.assert_called_once()
+        # mock_driver.maximize_window.assert_called_once() # maximize_window disabled for viewport scaling remediation
         mock_driver.implicitly_wait.assert_called_once_with(10)
-    
+
     @patch.object(StandardDriverManager, '_get_browser_version')
     @patch.object(StandardDriverManager, 'get_driver_version')
     @patch('compass_core.driver_factory.DriverFactory.get_driver')
