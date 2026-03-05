@@ -34,12 +34,4 @@ MVA,DamageType,SubDamageType,CorrectionAction
 # - If a damage type fails, check error logs for actual UI button text available
 #
 # SAMPLE DATA (replace MVAs with your actual vehicle numbers):
-
-56416032,Glass Damage,Windshield Crack,REPLACE
-60658301,Glass Damage,Windshield Crack,REPLACE
-60424475,Glass Damage,Windshield Crack,REPLACE
-55833396,Glass Damage,Windshield Crack,REPLACE
-59920836,Glass Damage,Windshield Crack,REPLACE
-58253145,Glass Damage,Windshield Crack,REPLACE
-59410035,Glass Damage,Windshield Crack,REPLACE
-59801685,Glass Damage,Windshield Crack,REPLACE
+59340120,Glass Damage,Windshield Crack,REPLACE

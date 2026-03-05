@@ -6,10 +6,15 @@ from compass_core.pm_actions_selenium import SeleniumPmActions
 
 
 class _FakeClickable:
+    text = "Fake Button"
     def click(self):
         pass
     def clear(self):
         pass
+    def is_displayed(self):
+        return True
+    def is_enabled(self):
+        return True
     def send_keys(self, *args, **kwargs):
         pass
 

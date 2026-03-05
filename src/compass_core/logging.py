@@ -74,7 +74,7 @@ class StandardLogger(Logger):
         if not self._logger.handlers:
             handler = logging.StreamHandler(sys.stdout)
             formatter = logging.Formatter(
-                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+                '%(asctime)s - %(levelname)s - %(message)s'
             )
             handler.setFormatter(formatter)
             self._logger.addHandler(handler)

@@ -134,7 +134,6 @@ class SeleniumLoginFlow:
         
         self.logger.info(f"[LOGIN] Starting authentication flow for: {username}")
         self.logger.info(f"[LOGIN] Login URL: {url}")
-        self.logger.info(f"[LOGIN] Current URL: {self.driver.current_url}")
         
         try:
             # Step 1: Navigate to login URL (unless already there)
@@ -149,11 +148,9 @@ class SeleniumLoginFlow:
                     }
                 
                 self.logger.debug(f"[LOGIN] Navigated to: {url}")
-                self.logger.info(f"[LOGIN] After navigation, current URL: {self.driver.current_url}")
                 self.logger.debug(f"[LOGIN] Page title: {self.driver.title}")
             else:
                 self.logger.debug(f"[LOGIN] Skipping navigation - already on login page")
-                self.logger.info(f"[LOGIN] Current URL: {self.driver.current_url}")
             
             # Check if we're on WWID page directly (SSO auto-login scenario)
             # Try to detect WWID field first
@@ -165,7 +162,6 @@ class SeleniumLoginFlow:
                 elapsed = time.time() - start_time
                 self.logger.info(f"[TIMING] WWID field found in {elapsed:.3f}s")
                 self.logger.info("[LOGIN] WWID page detected - skipping username/password (SSO auto-login)")
-                self.logger.info(f"[LOGIN] WWID page URL: {self.driver.current_url}")
                 wwid_only = True
             else:
                 elapsed = time.time() - start_time
@@ -186,7 +182,6 @@ class SeleniumLoginFlow:
             # Step 3: Enter password (skip if WWID-only)
             if not wwid_only:
                 self.logger.info("[LOGIN] Step 3: Entering password...")
-                self.logger.info(f"[LOGIN] Current URL before password: {self.driver.current_url}")
                 password_result = self._enter_password(password, timeout)
                 if password_result.get("status") != "success":
                     return password_result
@@ -194,7 +189,6 @@ class SeleniumLoginFlow:
             # Step 3.5: Handle "Stay signed in?" prompt if it appears (skip if WWID-only)
             if not wwid_only:
                 self.logger.debug("[LOGIN] Step 3.5: Checking for 'Stay signed in?' prompt...")
-                self.logger.info(f"[LOGIN] Current URL before stay signed in check: {self.driver.current_url}")
                 stay_signed_in_result = self._handle_stay_signed_in(timeout, stay_signed_in)
                 if stay_signed_in_result.get("status") == "success":
                     choice = "Yes" if stay_signed_in else "No"
@@ -202,18 +196,9 @@ class SeleniumLoginFlow:
                 else:
                     self.logger.debug("[LOGIN] No 'Stay signed in?' prompt detected")
 
-                # Early zoom reinforcement: apply immediately after the Microsoft logout/stay-in flow
-                # but before the final redirect/WWID entry.
-                try:
-                    self.driver.execute_script("document.body.style.zoom = '0.5'; document.documentElement.style.zoom = '0.5';")
-                    self.logger.info("[LOGIN] Applied 50% zoom immediately after 'Stay signed in' check")
-                except Exception:
-                    pass
-            
             # Step 3.6: Enter login_id (WWID) if required - application-specific but commonly needed
             if login_id:
                 self.logger.info("[LOGIN] Step 3.6: Processing WWID entry...")
-                self.logger.info(f"[LOGIN] Current URL before WWID: {self.driver.current_url}")
                 # Check if WWID page opened in a new tab
                 time.sleep(2)  # Wait for any new tab to open
                 
@@ -225,15 +210,7 @@ class SeleniumLoginFlow:
                     # Switch to the new tab (WWID page)
                     self.driver.switch_to.window(all_windows[-1])
                     self.logger.info(f"[LOGIN] Switched to new tab for WWID entry ({len(all_windows)} tabs total)")
-                    self.logger.info(f"[LOGIN] New tab URL: {self.driver.current_url}")
                     
-                    # Force zoom in the new tab/window context
-                    try:
-                        self.driver.execute_script("document.body.style.zoom = '0.5'; document.documentElement.style.zoom = '0.5';")
-                        self.logger.info("[LOGIN] Applied 50% zoom to the new tab for WWID entry")
-                    except Exception:
-                        pass
-                
                 login_id_result = self._enter_wwid(login_id, timeout)
                 if login_id_result.get("status") != "success":
                     self.logger.warning(f"[LOGIN] WWID entry failed: {login_id_result.get('message')}")
@@ -244,13 +221,6 @@ class SeleniumLoginFlow:
                 verify_result = self._verify_login_success(verify_domain, timeout)
                 if verify_result.get("status") != "success":
                     return verify_result
-            
-            # Final zoom enforcement after Microsoft login/redirect
-            try:
-                self.driver.execute_script("document.body.style.zoom = '0.5'; document.documentElement.style.zoom = '0.5';")
-                self.logger.info("[LOGIN] Applied 50% zoom after final verification and redirect")
-            except Exception:
-                pass
             
             self.logger.info(f"[LOGIN] Authentication successful for: {username}")
             return {
@@ -461,7 +431,6 @@ class SeleniumLoginFlow:
         try:
             start_time = time.time()
             self.logger.info(f"[LOGIN][WWID] Looking for WWID input field...")
-            self.logger.info(f"[LOGIN][WWID] Current URL: {self.driver.current_url}")
             
             # Wait for WWID input field to be clickable (combines presence + visible + enabled)
             # Uses stable bp6-input class + substring match for dynamic CSS module hash
@@ -519,9 +488,8 @@ class SeleniumLoginFlow:
             # Wait for redirect after WWID submission
             time.sleep(2)
             
-            # Log current URL after WWID submission
-            current_url_after_wwid = self.driver.current_url
-            self.logger.info(f"[LOGIN][WWID] After submit, current URL: {current_url_after_wwid}")
+            # Log successful submission
+            self.logger.info("[LOGIN][WWID] [OK] Successfully submitted WWID form")
             
             return {"status": "success"}
             
@@ -547,7 +515,7 @@ class SeleniumLoginFlow:
             WebDriverWait(self.driver, DEFAULT_WAIT_TIMEOUT, poll_frequency=DEFAULT_POLL_FREQUENCY).until(
                 lambda d: expected_domain in d.current_url
             )
-            self.logger.debug(f"[LOGIN][VERIFY] Successfully redirected to: {self.driver.current_url}")
+            self.logger.debug(f"[LOGIN][VERIFY] [OK] Successfully redirected to application domain (Tile: {self.driver.title})")
             return {"status": "success"}
             
         except TimeoutException:

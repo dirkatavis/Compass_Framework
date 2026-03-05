@@ -51,15 +51,32 @@ def setup_logging(verbose: bool = False) -> logging.Logger:
     if log_file.exists():
         log_file.unlink()
     
+    # FORMAT: Moving date to session header, logging only Time - Level - Message
     logging.basicConfig(
         level=level,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        datefmt='%H:%M:%S',  # Only show time (HH:MM:SS) in each line
         handlers=[
             logging.StreamHandler(),
             logging.FileHandler(log_file, mode='w')  # 'w' mode recreates file
         ]
     )
-    return logging.getLogger('create_missing_workitems')
+    
+    logger = logging.getLogger('create_missing_workitems')
+    
+    # Session Header with full Date
+    now = datetime.now()
+    header_date = now.strftime("%Y-%m-%d")
+    header_time = now.strftime("%H:%M:%S")
+    
+    logger.info("=" * 60)
+    logger.info(f"SESSION DATE: {header_date}")
+    logger.info(f"SESSION START: {header_time}")
+    logger.info("-" * 60)
+    logger.info("Create Missing WorkItems Client")
+    logger.info("=" * 60)
+    
+    return logger
 
 
 def main():
@@ -98,14 +115,13 @@ def main():
                        help='Timeout in seconds for property page to load (default: 120, increase for slow app performance)')
     parser.add_argument('--debug-pause', action='store_true',
                        help='Pause 30 seconds on failures before closing browser (for debugging, not recommended in CI)')
+    parser.add_argument('--pause', action='store_true',
+                       help='Wait for Enter key after each successful creation to allow manual inspection')
+    parser.add_argument('--keep-open', action='store_true',
+                       help='Keep the browser open after the session completes (bypasses quit)')
     
     args = parser.parse_args()
     logger = setup_logging(args.verbose)
-    
-    logger.info("="*60)
-    logger.info("Create Missing WorkItems Client")
-    logger.info(f"Session started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    logger.info("="*60)
     
     # Load configuration
     logger.info(f"Loading configuration from: {args.config}")
@@ -127,6 +143,11 @@ def main():
     
     # Initialize driver and components
     driver_manager = StandardDriverManager()
+    
+    # Enable manual pause if pause is set
+    if args.pause:
+        args.step_delay = -1
+    
     driver = None
     
     # Track results
@@ -253,11 +274,21 @@ def main():
                     })
                 else:
                     # Create new workitem
-                    logger.info(f"  → Creating new '{damage_type}' workitem...")
+                    logger.info(f"  [ACTION] Creating new '{damage_type}' workitem...")
                     create_result = pm_actions.create_workitem(mva, damage_type, sub_damage_type, correction_action)
                     
                     if create_result['status'] == 'success':
                         logger.info(f"  [OK] Workitem created successfully")
+                        
+                        if args.pause:
+                            print("\n" + "#" * 100)
+                            print("# CLIENT-SIDE PAUSE TRIGGERED")
+                            print("# MVA: " + mva)
+                            print("# Action: " + correction_action)
+                            print("# Press Enter to allow browser to close/continue...")
+                            print("#" * 100 + "\n")
+                            input()
+                            
                         results['created'].append({
                             'mva': mva,
                             'damage_type': damage_type,
@@ -322,11 +353,17 @@ def main():
         
     finally:
         if driver:
-            logger.info("\nClosing browser...")
-            try:
-                driver_manager.quit_driver()
-            except Exception as e:
-                logger.warning(f"Error closing driver: {e}")
+            if args.keep_open:
+                logger.info("\n" + "!" * 100)
+                print("! [KEEP-OPEN] Skipping browser quit as requested.")
+                print("! The browser session will remain active. Close it manually when done.")
+                print("!" * 100 + "\n")
+            else:
+                logger.info("\nClosing browser...")
+                try:
+                    driver_manager.quit_driver()
+                except Exception as e:
+                    logger.warning(f"Error closing driver: {e}")
 
 
 if __name__ == '__main__':

@@ -163,11 +163,9 @@ class SmartLoginFlow(LoginFlow):
                 }
             
             current_url = self.driver.current_url
-            self.logger.debug(f"[SMART_AUTH] Current URL after navigation: {current_url}")
             
             # Step 2: Detect authentication scenario
             self.logger.debug("[SMART_AUTH] Step 2: Detect authentication scenario")
-            self.logger.info(f"[SMART_AUTH] Current URL for detection: {self.driver.current_url}")
             self.logger.info(f"[SMART_AUTH] Page title: {self.driver.title}")
             
             # Check if WWID page opened in a new tab
@@ -187,15 +185,8 @@ class SmartLoginFlow(LoginFlow):
                 try:
                     self.driver.switch_to.window(all_windows[-1])
                     self.logger.info(f"[SMART_AUTH] Switched to new tab/window")
-                    self.logger.info(f"[SMART_AUTH] New tab URL: {self.driver.current_url}")
                     self.logger.info(f"[SMART_AUTH] New tab title: {self.driver.title}")
                     
-                    # Force zoom in the new tab/window context
-                    try:
-                        self.driver.execute_script("document.body.style.zoom = '0.5'; document.documentElement.style.zoom = '0.5';")
-                        self.logger.info("[SMART_AUTH] Applied 50% zoom to the new tab/window content")
-                    except Exception:
-                        pass
                 except Exception:
                     self.logger.debug("[SMART_AUTH] Could not switch to new tab; continuing")
             
@@ -245,13 +236,6 @@ class SmartLoginFlow(LoginFlow):
                         "error": auth_result.get("error", "WWID entry failed")
                     }
                 
-                # Force zoom after successful WWID entry
-                try:
-                    self.driver.execute_script("document.body.style.zoom = '0.5'; document.documentElement.style.zoom = '0.5';")
-                    self.logger.info("[SMART_AUTH] Applied 50% zoom after successful WWID entry")
-                except Exception:
-                    pass
-                
                 self.logger.info("[SMART_AUTH] Auto-login with WWID entry successful")
                 return {
                     "status": "success",
@@ -275,7 +259,6 @@ class SmartLoginFlow(LoginFlow):
             if not login_required:
                 # Fully authenticated - no login or WWID needed
                 self.logger.info("[SMART_AUTH] Fully authenticated, no action needed")
-                self.logger.info(f"[SMART_AUTH] Final URL: {self.driver.current_url}")
                 return {
                     "status": "success",
                     "message": f"Already authenticated via SSO (session active)",
@@ -303,13 +286,6 @@ class SmartLoginFlow(LoginFlow):
                     "authenticated": False,
                     "error": auth_result.get("error", "Authentication failed")
                 }
-            
-            # Force zoom after successful login to ensure UI elements are properly scaled
-            try:
-                self.driver.execute_script("document.body.style.zoom = '0.5'; document.documentElement.style.zoom = '0.5';")
-                self.logger.info("[SMART_AUTH] Applied 50% zoom after successful authentication")
-            except Exception:
-                pass
             
             self.logger.info(f"[SMART_AUTH] Authentication successful: {auth_result.get('message')}")
             return {

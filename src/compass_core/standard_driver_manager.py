@@ -111,20 +111,8 @@ class StandardDriverManager(DriverManager):
                 
             self._driver = self._factory.get_driver(options=options)
             
-            # Application of Viewport Scaling Remediation: 50% Zoom
-            # Must be applied immediately after browser launch in the fresh context
-            try:
-                self._logger.info("[DRIVER] Applying Initial 50% zoom for click-interference remediation")
-                shrink_script = """
-                document.body.style.zoom = '0.5';
-                document.documentElement.style.zoom = '0.5';
-                """
-                self._driver.execute_script(shrink_script)
-            except Exception as e:
-                self._logger.warning(f"[DRIVER] Failed to apply initial zoom: {e}")
-
             # Default DevCompass configuration
-            # self._driver.maximize_window() # Disabled to preserve portrait 768x1024 resolution
+            # self._driver.maximize_window()
             # For compatibility with tests that expect an implicit wait
             try:
                 self._driver.implicitly_wait(10)

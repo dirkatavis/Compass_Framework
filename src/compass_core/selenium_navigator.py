@@ -61,12 +61,6 @@ class SeleniumNavigator(Navigator):
             # Perform navigation
             self.driver.get(url)
             
-            # Re-apply zoom after navigation as some pages reset it
-            try:
-                self.driver.execute_script("document.body.style.zoom = '0.5'; document.documentElement.style.zoom = '0.5';")
-            except Exception:
-                pass
-            
             # Optionally verify the page loaded correctly
             if verify:
                 verify_result = self.verify_page(url=url, timeout=timeout)

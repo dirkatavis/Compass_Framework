@@ -60,6 +60,12 @@ python CreateMissingWorkItems.py --incognito
 
 # Enable verbose logging
 python CreateMissingWorkItems.py --verbose
+
+# Pause for manual inspection after each successful creation
+python CreateMissingWorkItems.py --pause
+
+# Keep browser open after the script completes (bypasses quit)
+python CreateMissingWorkItems.py --keep-open
 ```
 
 ## Input CSV Format

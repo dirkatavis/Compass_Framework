@@ -297,8 +297,7 @@ class SeleniumVehicleDataActions(VehicleDataActions):
                     self._logger.warning(f"[MVA] Field not fully cleared before entering MVA '{mva}'")
             
             # Correct viewport scaling issues by scrolling MVA input into center 
-            # before interaction. This ensures hit-testing is accurate even 
-            # with CSS zoom applied.
+            # before interaction.
             try:
                 self.driver.execute_script(
                     "arguments[0].scrollIntoView({block: 'center', inline: 'nearest'});", 
@@ -313,7 +312,6 @@ class SeleniumVehicleDataActions(VehicleDataActions):
             self._logger.info(f"[MVA] Entered MVA: {mva}")
             
             time.sleep(0.5)  # Brief pause for auto-submit to trigger
-            self._logger.info(f"[MVA] URL after entry: {self.driver.current_url}")
             
             return {
                 'status': 'success',
@@ -441,13 +439,11 @@ class SeleniumVehicleDataActions(VehicleDataActions):
             self._logger.warning(f"[PROPERTY_PAGE] Timeout waiting for MVA property field (timeout={timeout}s)")
             self._logger.warning(f"[PROPERTY_PAGE] XPath used: {xpath}")
             self._logger.warning(f"[PROPERTY_PAGE] Expected text to contain: '{mva_to_find}'")
-            self._logger.warning(f"[PROPERTY_PAGE] Current URL: {self.driver.current_url}")
             self._logger.warning(f"[PROPERTY_PAGE] Page title: {self.driver.title}")
             return False
 
         except Exception as e:
             self._logger.error(f"[PROPERTY_PAGE] Error waiting for MVA property field: {e}")
-            self._logger.error(f"[PROPERTY_PAGE] Current URL: {self.driver.current_url}")
             self._logger.error(f"[PROPERTY_PAGE] Traceback: {traceback.format_exc()}")
             return False
 
