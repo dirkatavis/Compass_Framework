@@ -24,6 +24,7 @@ except ImportError:
     Keys = None  # type: ignore
     
 from .vehicle_data_actions import VehicleDataActions
+from .decorators import compass_public
 
 # WebDriver wait configuration (configurable via env for debugging)
 DEBUG_WAIT_MULTIPLIER = float(os.getenv("COMPASS_DEBUG_WAIT_MULTIPLIER", "1.0"))
@@ -34,6 +35,7 @@ FIELD_READY_POLL = float(os.getenv("COMPASS_FIELD_READY_POLL", "0.25"))
 PROPERTY_PAGE_TIMEOUT = float(os.getenv("COMPASS_PROPERTY_PAGE_TIMEOUT", "30")) * DEBUG_WAIT_MULTIPLIER
 
 
+@compass_public
 class SeleniumVehicleDataActions(VehicleDataActions):
     """Selenium-backed implementation of VehicleDataActions.
     
@@ -259,6 +261,7 @@ class SeleniumVehicleDataActions(VehicleDataActions):
     # PROTOCOL IMPLEMENTATION
     # ====================
     
+    @compass_public
     def enter_mva(self, mva: str, clear_existing: bool = True) -> Dict[str, Any]:
         """Enter an MVA into the Compass search/input field.
         
@@ -326,6 +329,7 @@ class SeleniumVehicleDataActions(VehicleDataActions):
                 'mva': mva
             }
 
+    @compass_public
     def enter_vin(self, vin: str, clear_existing: bool = True) -> Dict[str, Any]:
         """Enter a VIN into the Compass search/input field.
         
@@ -394,6 +398,7 @@ class SeleniumVehicleDataActions(VehicleDataActions):
                 'vin': vin
             }
     
+    @compass_public
     def get_vehicle_property(self, label: str, timeout: int = 10) -> Optional[str]:
         """Get a vehicle property value by its display label.
         
@@ -401,6 +406,7 @@ class SeleniumVehicleDataActions(VehicleDataActions):
         """
         return self._get_property_by_label(label, timeout)
     
+    @compass_public
     def get_vehicle_properties(self, labels: List[str], timeout: int = 10) -> Dict[str, str]:
         """Get multiple vehicle properties in a single call.
         
@@ -412,6 +418,7 @@ class SeleniumVehicleDataActions(VehicleDataActions):
             properties[label] = value if value else 'N/A'
         return properties
     
+    @compass_public
     def verify_mva_echo(self, mva: str, timeout: int = 30) -> bool:
         """Verify that the UI has echoed the entered MVA.
         

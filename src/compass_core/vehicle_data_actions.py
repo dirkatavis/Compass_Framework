@@ -5,8 +5,10 @@ Defines interface for vehicle property lookup and MVA data extraction operations
 This protocol abstracts interactions needed for bulk vehicle data retrieval workflows.
 """
 from typing import Protocol, runtime_checkable, Dict, Any, Optional, List
+from .decorators import compass_public
 
 
+@compass_public
 @runtime_checkable
 class VehicleDataActions(Protocol):
     """Protocol for vehicle data lookup operations in Compass.
@@ -15,6 +17,7 @@ class VehicleDataActions(Protocol):
     vehicle properties (VIN, Description, etc.) from the Compass UI.
     """
     
+    @compass_public
     def enter_mva(self, mva: str, clear_existing: bool = True) -> Dict[str, Any]:
         """Enter an MVA into the Compass search/input field.
         
@@ -30,6 +33,7 @@ class VehicleDataActions(Protocol):
         """
         ...
 
+    @compass_public
     def enter_vin(self, vin: str, clear_existing: bool = True) -> Dict[str, Any]:
         """Enter a VIN into the Compass search/input field.
         
@@ -45,6 +49,7 @@ class VehicleDataActions(Protocol):
         """
         ...
     
+    @compass_public
     def get_vehicle_property(self, label: str, timeout: int = 10) -> Optional[str]:
         """Get a vehicle property value by its display label.
         
@@ -57,6 +62,7 @@ class VehicleDataActions(Protocol):
         """
         ...
     
+    @compass_public
     def get_vehicle_properties(self, labels: List[str], timeout: int = 10) -> Dict[str, str]:
         """Get multiple vehicle properties in a single call.
         
@@ -69,6 +75,7 @@ class VehicleDataActions(Protocol):
         """
         ...
     
+    @compass_public
     def verify_mva_echo(self, mva: str, timeout: int = 5) -> bool:
         """Verify that the UI has echoed the entered MVA.
         
@@ -84,6 +91,7 @@ class VehicleDataActions(Protocol):
         """
         ...
     
+    @compass_public
     def wait_for_property_loaded(self, label: str, timeout: int = 10) -> bool:
         """Wait for a specific property to be loaded and visible.
         
@@ -96,6 +104,7 @@ class VehicleDataActions(Protocol):
         """
         ...
 
+    @compass_public
     def set_vehicle_status(self, status: str) -> Dict[str, Any]:
         """Set the vehicle status on the current vehicle record.
 
@@ -110,6 +119,7 @@ class VehicleDataActions(Protocol):
         """
         ...
 
+    @compass_public
     def save_vehicle(self) -> Dict[str, Any]:
         """Save or update the currently loaded vehicle record.
 

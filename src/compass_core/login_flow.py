@@ -5,8 +5,10 @@ Defines the interface for authentication workflows.
 Implementations handle specific SSO providers (Microsoft, Okta, etc.).
 """
 from typing import Protocol, Dict, Any, runtime_checkable
+from .decorators import compass_public
 
 
+@compass_public
 @runtime_checkable
 class LoginFlow(Protocol):
     """
@@ -16,6 +18,7 @@ class LoginFlow(Protocol):
     managing credentials, redirects, and session establishment.
     """
     
+    @compass_public
     def authenticate(
         self,
         username: str,

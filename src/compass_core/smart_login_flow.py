@@ -16,6 +16,7 @@ from selenium.common.exceptions import TimeoutException
 
 from compass_core.login_flow import LoginFlow
 from compass_core.navigation import Navigator
+from .decorators import compass_public
 from compass_core.page_detectors import (
     LoginPageDetector,
     WWIDPageDetector,
@@ -27,6 +28,7 @@ DEFAULT_WAIT_TIMEOUT = 10  # seconds
 DEFAULT_POLL_FREQUENCY = 0.5  # seconds
 
 
+@compass_public
 class SmartLoginFlow(LoginFlow):
     """
     Intelligent login flow that only authenticates when necessary.
@@ -98,6 +100,7 @@ class SmartLoginFlow(LoginFlow):
             # On timeout or unexpected errors, default to safe assumption
             return True
     
+    @compass_public
     def authenticate(
         self,
         username: str,

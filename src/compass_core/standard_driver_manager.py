@@ -17,8 +17,10 @@ from selenium.webdriver.remote.webdriver import WebDriver
 
 from .driver_manager import DriverManager
 from .driver_factory import DriverFactory
+from .decorators import compass_public
 
 
+@compass_public
 class StandardDriverManager(DriverManager):
     """Standard implementation of DriverManager protocol for Edge WebDriver.
     
@@ -90,6 +92,7 @@ class StandardDriverManager(DriverManager):
         default_path = os.path.join(project_root, "msedgedriver.exe")
         return default_path
         
+    @compass_public
     def get_or_create_driver(self, **kwargs) -> WebDriver:
         """Get existing driver or create new Edge WebDriver instance.
         
@@ -143,6 +146,7 @@ class StandardDriverManager(DriverManager):
             self._logger.error(f"[DRIVER] Driver initialization failed: {e}")
             raise RuntimeError(f"Failed to create WebDriver session: {e}") from e
     
+    @compass_public
     def quit_driver(self) -> None:
         """Quit and cleanup WebDriver instance.
         
@@ -158,6 +162,7 @@ class StandardDriverManager(DriverManager):
             finally:
                 self._driver = None
     
+    @compass_public
     def get_driver_version(self, driver_path: str) -> str:
         """Get version of Edge WebDriver executable.
         
@@ -188,6 +193,7 @@ class StandardDriverManager(DriverManager):
             self._logger.error(f"[DRIVER] Failed to get driver version from {driver_path} - {e}")
             return "unknown"
     
+    @compass_public
     def configure_driver_options(self) -> EdgeOptions:
         """Configure Edge browser options.
         
@@ -211,6 +217,7 @@ class StandardDriverManager(DriverManager):
         
         return options
     
+    @compass_public
     def create_driver_service(self, driver_path: str) -> Service:
         """Create Edge WebDriver service.
         
@@ -222,6 +229,7 @@ class StandardDriverManager(DriverManager):
         """
         return Service(driver_path)
     
+    @compass_public
     def is_driver_active(self) -> bool:
         """Check if WebDriver instance is currently active.
         
@@ -240,6 +248,7 @@ class StandardDriverManager(DriverManager):
             self._driver = None
             return False
     
+    @compass_public
     def check_version_compatibility(self, browser_version: str, driver_version: str) -> Dict[str, Any]:
         """Check compatibility between browser and driver versions.
         

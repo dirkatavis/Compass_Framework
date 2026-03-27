@@ -11,6 +11,8 @@ from dataclasses import dataclass
 
 from .workflow import Workflow, WorkflowStep, FlowContext
 
+from .decorators import compass_public
+
 # Prefer shared PmActions protocol; provide fallback when unavailable
 try:
     from .pm_actions import PmActions
@@ -39,6 +41,7 @@ class _Step(WorkflowStep):
         return self._fn(context)
 
 
+@compass_public
 class PmWorkItemFlow(Workflow):
     """Baseline PM work item flow.
 
@@ -48,9 +51,11 @@ class PmWorkItemFlow(Workflow):
       - has_pm_complaint: bool
     """
 
+    @compass_public
     def id(self) -> str:
         return "pm_workitem"
 
+    @compass_public
     def plan(self, context: FlowContext) -> List[WorkflowStep]:
         return [
             _Step("evaluate_lighthouse", _evaluate_lighthouse),
@@ -58,6 +63,7 @@ class PmWorkItemFlow(Workflow):
             _Step("associate_or_skip", _associate_or_skip),
         ]
 
+    @compass_public
     def run(self, context: FlowContext) -> Dict[str, Any]:
         # Simple inline orchestration to allow direct use without manager
         results: List[Dict[str, Any]] = []

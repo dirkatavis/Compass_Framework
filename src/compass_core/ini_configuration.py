@@ -8,8 +8,10 @@ import configparser
 from pathlib import Path
 from typing import Dict, Any, Union, Optional
 from .configuration import Configuration
+from .decorators import compass_public
 
 
+@compass_public
 class IniConfiguration(Configuration):
     """Configuration implementation using INI files with configparser."""
     
@@ -39,6 +41,7 @@ class IniConfiguration(Configuration):
                 self.load(filename)
                 break
     
+    @compass_public
     def load(self, file_path: Union[str, Path]) -> Dict[str, Any]:
         """
         Load configuration from INI file.
@@ -99,6 +102,7 @@ class IniConfiguration(Configuration):
         # Return as string
         return value
     
+    @compass_public
     def save(self, config: Dict[str, Any], destination: Union[str, Path]) -> bool:
         """
         Save configuration to INI file.
@@ -137,6 +141,7 @@ class IniConfiguration(Configuration):
         except Exception:
             return False
     
+    @compass_public
     def get(self, key: str, default: Any = None) -> Any:
         """
         Get configuration value by key.
@@ -160,6 +165,7 @@ class IniConfiguration(Configuration):
                     return section_data[key]
             return default
     
+    @compass_public
     def set(self, key: str, value: Any) -> bool:
         """
         Set configuration value by key.
@@ -197,6 +203,7 @@ class IniConfiguration(Configuration):
         """
         return self._data.copy()
     
+    @compass_public
     def validate(self, config_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Validate configuration data.
