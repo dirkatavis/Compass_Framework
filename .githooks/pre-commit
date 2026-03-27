@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+set -eu
+
+echo "[pre-commit] Running Compass API drift gate..."
+
+if command -v python >/dev/null 2>&1; then
+  python tools/export_inventory.py --out compass_public_inventory.csv --fail-on-drift
+elif command -v py >/dev/null 2>&1; then
+  py -3 tools/export_inventory.py --out compass_public_inventory.csv --fail-on-drift
+else
+  echo "[pre-commit] ERROR: Python runtime not found in PATH." >&2
+  exit 1
+fi
+
+# Keep tracked inventory report in sync with source edits.
+if git ls-files --error-unmatch compass_public_inventory.csv >/dev/null 2>&1; then
+  git add compass_public_inventory.csv
+fi

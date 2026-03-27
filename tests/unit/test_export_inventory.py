@@ -243,5 +243,76 @@ class TestWalkSourceClassOnlyRows(unittest.TestCase):
         self.assertEqual(row[10], "")          # Method – blank for class-only row
 
 
+# ---------------------------------------------------------------------------
+# Drift gate behavior
+# ---------------------------------------------------------------------------
+
+class TestDriftGate(unittest.TestCase):
+
+    def test_method_drift_rows_detects_public_uncertified_method(self):
+        row = (
+            "foo.py", "compass_core.foo", "Utility", "Foo", "", "",
+            "Public", "YES", "", "", "bar", "Public", "", "", "", "", "", "",
+        )
+        drift = inv._method_drift_rows([row])
+        self.assertEqual(len(drift), 1)
+        self.assertEqual(drift[0][10], "bar")
+
+    def test_export_inventory_fail_on_drift_returns_nonzero(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            src = root / "src" / "compass_core"
+            src.mkdir(parents=True)
+
+            (src / "__init__.py").write_text("__all__ = ['Foo']\n", encoding="utf-8")
+            (src / "foo.py").write_text(
+                textwrap.dedent(
+                    """
+                    from .decorators import compass_public
+
+                    @compass_public
+                    class Foo:
+                        def bar(self):
+                            return 1
+                    """
+                ),
+                encoding="utf-8",
+            )
+
+            rc = inv.export_inventory(str(root / "src"), str(root / "out.csv"), fail_on_drift=True)
+
+        self.assertEqual(rc, 2)
+
+    def test_export_inventory_fail_on_drift_passes_when_method_certified(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            src = root / "src" / "compass_core"
+            src.mkdir(parents=True)
+
+            (src / "__init__.py").write_text("__all__ = ['Foo']\n", encoding="utf-8")
+            (src / "foo.py").write_text(
+                textwrap.dedent(
+                    """
+                    from .decorators import compass_public
+
+                    @compass_public
+                    class Foo:
+                        @compass_public
+                        def bar(self):
+                            return 1
+                    """
+                ),
+                encoding="utf-8",
+            )
+
+            rc = inv.export_inventory(str(root / "src"), str(root / "out.csv"), fail_on_drift=True)
+
+        self.assertEqual(rc, 0)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -170,13 +170,13 @@ def _class_review_status(class_access: str, class_public: str) -> Tuple[str, str
 
 def _signature(func: ast.FunctionDef) -> str:
     """Return a readable parameter string, excluding 'self' / 'cls'."""
-    args = func.args
+    func_args = func.args
     params: List[str] = []
 
-    all_args = args.posonlyargs + args.args
+    all_args = func_args.posonlyargs + func_args.args
 
     # Build defaults map (defaults align to the tail of all_args)
-    defaults_offset = len(all_args) - len(args.defaults)
+    defaults_offset = len(all_args) - len(func_args.defaults)
 
     for idx, arg in enumerate(all_args):
         if arg.arg in ("self", "cls"):
@@ -188,20 +188,20 @@ def _signature(func: ast.FunctionDef) -> str:
             except Exception:
                 pass
         default_idx = idx - defaults_offset
-        if 0 <= default_idx < len(args.defaults):
+        if 0 <= default_idx < len(func_args.defaults):
             try:
-                param += f" = {ast.unparse(args.defaults[default_idx])}"
+                param += f" = {ast.unparse(func_args.defaults[default_idx])}"
             except Exception:
                 pass
         params.append(param)
 
     # *args
-    if args.vararg:
-        params.append(f"*{args.vararg.arg}")
+    if func_args.vararg:
+        params.append(f"*{func_args.vararg.arg}")
 
     # **kwargs
-    if args.kwarg:
-        params.append(f"**{args.kwarg.arg}")
+    if func_args.kwarg:
+        params.append(f"**{func_args.kwarg.arg}")
 
     return ", ".join(params)
 
@@ -364,15 +364,33 @@ def _walk_source(src_root: Path, all_exports: Set[str]) -> List[Tuple]:
     return rows
 
 
+def _method_drift_rows(rows: List[Tuple]) -> List[Tuple]:
+    """Return rows where a method is public-by-name but not @compass_public."""
+    drift_rows: List[Tuple] = []
+    for row in rows:
+        method_name = row[10]
+        method_access = row[11]
+        method_public = row[12]
+
+        if method_name and method_access == "Public" and method_public != "YES":
+            drift_rows.append(row)
+
+    return drift_rows
+
+
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
-def export_inventory(src_dir: str, output_file: str = "framework_inventory.csv") -> None:
+def export_inventory(
+    src_dir: str,
+    output_file: str = "framework_inventory.csv",
+    fail_on_drift: bool = False,
+) -> int:
     src_root = Path(src_dir).resolve()
     if not src_root.exists():
         print(f"[ERROR] Source directory not found: {src_root}", file=sys.stderr)
-        sys.exit(1)
+        return 1
 
     init_path = src_root / "compass_core" / "__init__.py"
     all_exports = _extract_all_exports(init_path)
@@ -417,6 +435,26 @@ def export_inventory(src_dir: str, output_file: str = "framework_inventory.csv")
     print(f"  {len([r for r in rows if r[8] == 'YES'])} class rows flagged for review")
     print(f"  {len([r for r in rows if r[14] == 'YES'])} method rows flagged for review")
 
+    if fail_on_drift:
+        drift_rows = _method_drift_rows(rows)
+        if drift_rows:
+            print("[DRIFT] Public-by-name methods missing @compass_public:", file=sys.stderr)
+            for row in drift_rows:
+                print(
+                    f"  - {row[0]}::{row[3]}.{row[10]}",
+                    file=sys.stderr,
+                )
+            print(
+                f"[DRIFT] Found {len(drift_rows)} drift method(s). "
+                "Use @compass_public or rename with leading underscore.",
+                file=sys.stderr,
+            )
+            return 2
+
+        print("[DRIFT] OK: no public-by-name methods are missing @compass_public")
+
+    return 0
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Export Compass Framework API inventory to CSV.")
@@ -430,5 +468,10 @@ if __name__ == "__main__":
         default="framework_inventory.csv",
         help="Output CSV file path (default: framework_inventory.csv)",
     )
-    args = parser.parse_args()
-    export_inventory(args.src, args.out)
+    parser.add_argument(
+        "--fail-on-drift",
+        action="store_true",
+        help="Exit non-zero if any public-by-name method lacks @compass_public",
+    )
+    cli_args = parser.parse_args()
+    sys.exit(export_inventory(cli_args.src, cli_args.out, cli_args.fail_on_drift))
