@@ -10,6 +10,7 @@ import subprocess
 import time
 import zipfile
 import io
+import traceback
 from typing import Optional, Dict, Any, Tuple
 from selenium import webdriver
 from selenium.webdriver.edge.service import Service
@@ -36,9 +37,15 @@ class DriverFactory:
     Handles version mismatches, process locking, and automatic recovery.
     """
     
-    def __init__(self, driver_path: Optional[str] = None, logger: Optional[logging.Logger] = None):
+    def __init__(
+        self,
+        driver_path: Optional[str] = None,
+        logger: Optional[logging.Logger] = None,
+        allow_auto_update: bool = True
+    ):
         self.logger = logger or logging.getLogger(__name__)
         self.driver_path = driver_path or self._get_default_driver_path()
+        self.allow_auto_update = allow_auto_update
         self.checker = BrowserVersionChecker() if BrowserVersionChecker else None
         
     def _get_default_driver_path(self) -> str:
@@ -136,6 +143,27 @@ class DriverFactory:
             report["browser_version"] = self.checker.get_edge_version()
             report["driver_version"] = self.checker.get_driver_version(self.driver_path)
 
+        last_exception: Optional[Exception] = None
+        last_traceback = ""
+
+        def _is_driver_path_issue(error_message: str) -> bool:
+            lowered = error_message.lower()
+            return any(token in lowered for token in [
+                "unable to obtain driver for microsoftedge",
+                "unable to obtain driver for msedge",
+                "cannot find msedgedriver",
+                "no such driver",
+                "driver executable needs to be in path",
+                "this executable is not a valid win32 application",
+                "invalid argument: entry 0 of 'firstmatch' is invalid"
+            ])
+
+        def _try_selenium_manager_fallback() -> Optional[webdriver.Edge]:
+            self.logger.warning(
+                "[DRIVER_FACTORY] Trying Selenium Manager fallback (no explicit service path)."
+            )
+            return webdriver.Edge(options=options)
+
         for attempt in range(1, max_retries + 1):
             report["attempts"] = attempt
             try:
@@ -149,11 +177,28 @@ class DriverFactory:
                 return driver
                 
             except (SessionNotCreatedException, WebDriverException) as e:
+                last_exception = e
+                last_traceback = traceback.format_exc()
                 err_msg = str(e)
                 is_version_mismatch = "This version of Microsoft Edge WebDriver only supports" in err_msg or \
                                     "session not created: This version of" in err_msg
+                is_driver_path_issue = _is_driver_path_issue(err_msg)
+
+                if is_driver_path_issue:
+                    try:
+                        fallback_driver = _try_selenium_manager_fallback()
+                        if fallback_driver:
+                            report["status"] = "Success (Selenium Manager fallback)"
+                            self._print_summary_table(report)
+                            return fallback_driver
+                    except Exception as fallback_error:
+                        last_exception = fallback_error
+                        last_traceback = traceback.format_exc()
+                        self.logger.warning(
+                            f"[DRIVER_FACTORY] Selenium Manager fallback failed: {fallback_error}"
+                        )
                 
-                if is_version_mismatch and attempt < max_retries:
+                if is_version_mismatch and attempt < max_retries and self.allow_auto_update:
                     self.logger.warning("[DRIVER_FACTORY] Version mismatch detected! Self-healing initiated...")
                     
                     try:
@@ -168,15 +213,28 @@ class DriverFactory:
                             
                         continue # Re-attempt loop
                     except Exception as fatal:
+                        last_exception = fatal
+                        last_traceback = traceback.format_exc()
                         self.logger.error(f"[DRIVER_FACTORY] Auto-update failed: {fatal}")
                         break
+                elif is_version_mismatch and not self.allow_auto_update:
+                    self.logger.error(
+                        "[DRIVER_FACTORY] Version mismatch detected and auto-update is disabled. "
+                        "Please manually update msedgedriver.exe to match the installed Edge version."
+                    )
+                    report["status"] = "Failed: Version mismatch (auto-update disabled)"
+                    break
                 else:
                     self.logger.error(f"[DRIVER_FACTORY] Unrecoverable WebDriver error: {e}")
                     report["status"] = f"Failed: {type(e).__name__}"
                     raise RuntimeError(f"Unrecoverable WebDriver error: {e}")
         
         self._print_summary_table(report)
-        raise RuntimeError(f"Failed to initialize Edge WebDriver after {max_retries} attempts.")
+        detail = str(last_exception) if last_exception else "Unknown error"
+        raise RuntimeError(
+            f"Failed to initialize Edge WebDriver after {max_retries} attempts. "
+            f"Driver path='{self.driver_path}'. Last error: {detail}\n{last_traceback}"
+        )
 
     def _print_summary_table(self, report: Dict[str, Any]):
         """Logs a concise summary table using the configured logger."""

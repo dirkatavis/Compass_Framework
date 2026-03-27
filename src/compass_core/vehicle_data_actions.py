@@ -29,6 +29,21 @@ class VehicleDataActions(Protocol):
             - error: Error message if status is 'error'
         """
         ...
+
+    def enter_vin(self, vin: str, clear_existing: bool = True) -> Dict[str, Any]:
+        """Enter a VIN into the Compass search/input field.
+        
+        Args:
+            vin: The VIN identifier to enter (typically 17 characters)
+            clear_existing: Whether to clear any existing value first
+            
+        Returns:
+            Dictionary with operation result:
+            - status: 'ok' or 'error'
+            - vin: The VIN that was entered
+            - error: Error message if status is 'error'
+        """
+        ...
     
     def get_vehicle_property(self, label: str, timeout: int = 10) -> Optional[str]:
         """Get a vehicle property value by its display label.

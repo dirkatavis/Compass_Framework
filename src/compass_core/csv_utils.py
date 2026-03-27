@@ -86,6 +86,61 @@ def read_mva_list(csv_path: str, normalize: bool = True) -> List[str]:
         raise
 
 
+def read_vin_list(csv_path: str, normalize: bool = True) -> List[str]:
+    """
+    Read VIN list from CSV file.
+    
+    Features:
+    - Normalizes VINs (uppercase/trim, if normalize=True)
+    - Skips header rows (starting with '#' or 'VIN')
+    - Ignores comment lines (starting with '#')
+    - Handles empty rows
+    
+    Args:
+        csv_path: Path to CSV file
+        normalize: Whether to normalize VINs (default: True)
+    
+    Returns:
+        List of VIN strings
+    """
+    if not os.path.exists(csv_path):
+        logger.error(f"[CSV] File not found: {csv_path}")
+        raise FileNotFoundError(f"CSV file not found: {csv_path}")
+    
+    vins = []
+    
+    try:
+        with open(csv_path, newline='', encoding='utf-8') as f:
+            reader = csv.reader(f)
+            # Filter empty rows and get first column
+            rows = [row[0] for row in reader if row and len(row) > 0 and row[0].strip()]
+            
+            # Skip header if present
+            if rows and (rows[0].startswith('#') or rows[0].lower().startswith('vin')):
+                rows = rows[1:]
+            
+            for raw in rows:
+                if not raw or raw.startswith('#'):
+                    continue
+                
+                if normalize:
+                    # Uppercase and trim
+                    vins.append(raw.strip().upper())
+                else:
+                    vins.append(raw.strip())
+        
+        if not vins:
+            logger.warning(f"[CSV] No VINs found in: {csv_path}")
+            raise ValueError(f"No valid VINs found in CSV file: {csv_path}")
+        
+        logger.info(f"[CSV] Read {len(vins)} VINs from: {csv_path}")
+        return vins
+        
+    except Exception as e:
+        logger.error(f"[CSV] Error reading file: {e}")
+        raise
+
+
 def write_results_csv(results: List[Dict[str, Any]], output_path: str) -> None:
     """
     Write workflow results to CSV file.
@@ -95,12 +150,13 @@ def write_results_csv(results: List[Dict[str, Any]], output_path: str) -> None:
                         Supported schemas:
                         - Vehicle lookup schema:
                             mva (str), vin (str), desc (str), error (optional str)
+                        - VIN-to-MVA schema:
+                            vin (str), mva (str)
                         - Closeout schema:
                             mva (str), status_update_result (str), error (optional str)
 
-                        Schema is auto-detected across results by presence of
-                        ``status_update_result``. Mixing schemas in the same call is
-                        not supported and raises ValueError.
+                        Schema is auto-detected from result keys. Mixing schemas in
+                        the same call is not supported and raises ValueError.
         output_path: Path to output CSV file
     
     Raises:
@@ -113,6 +169,11 @@ def write_results_csv(results: List[Dict[str, Any]], output_path: str) -> None:
             50227203,1HGBH41JXMN109186,2021 Honda Accord,
             12345678,N/A,N/A,MVA not found
 
+        VIN-to-MVA:
+            vin,mva
+            1GNSCNKD3MR250256,095659480
+            1V2WR2CA4SC525787,056740224
+
         Closeout:
             mva,status_update_result,error
             50227203,success,
@@ -121,28 +182,33 @@ def write_results_csv(results: List[Dict[str, Any]], output_path: str) -> None:
     abs_path = os.path.abspath(output_path)
 
     has_closeout_results = any('status_update_result' in result for result in results)
-    has_vehicle_lookup_results = any(
-        ('vin' in result) or ('desc' in result)
+    has_vehicle_lookup_results = any('desc' in result for result in results)
+    has_vin_to_mva_results = any(
+        ('vin' in result and 'mva' in result and 'desc' not in result and 'status_update_result' not in result)
         for result in results
     )
 
-    if has_closeout_results and has_vehicle_lookup_results:
+    schema_count = sum([has_closeout_results, has_vehicle_lookup_results, has_vin_to_mva_results])
+    if schema_count > 1:
         raise ValueError(
             "Mixed result schemas are not supported. "
-            "Use either closeout schema (mva/status_update_result/error) "
-            "or vehicle lookup schema (mva/vin/desc/error)."
+            "Use either closeout schema (mva/status_update_result/error), "
+            "VIN-to-MVA schema (vin/mva), or vehicle lookup schema (mva/vin/desc/error)."
         )
     
     try:
         with open(output_path, 'w', newline='', encoding='utf-8') as f:
             # Determine fieldnames from detected schema or use defaults
             has_closeout_schema = has_closeout_results
+            has_vin_to_mva_schema = has_vin_to_mva_results
             has_error = any('error' in result for result in results)
 
             if has_closeout_schema:
                 fieldnames = ['mva', 'status_update_result']
                 if has_error:
                     fieldnames.append('error')
+            elif has_vin_to_mva_schema:
+                fieldnames = ['vin', 'mva']
             else:
                 fieldnames = ['mva', 'vin', 'desc']
                 if has_error:
@@ -157,6 +223,11 @@ def write_results_csv(results: List[Dict[str, Any]], output_path: str) -> None:
                     row = {
                         'mva': result.get('mva', 'N/A'),
                         'status_update_result': result.get('status_update_result', 'failed'),
+                    }
+                elif has_vin_to_mva_schema:
+                    row = {
+                        'vin': result.get('vin', 'N/A'),
+                        'mva': result.get('mva', 'N/A'),
                     }
                 else:
                     row = {

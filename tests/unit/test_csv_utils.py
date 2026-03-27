@@ -274,6 +274,27 @@ class TestWriteResultsCsv(unittest.TestCase):
         self.assertEqual(rows[0]['status_update_result'], 'success')
         self.assertEqual(rows[1]['status_update_result'], 'failed')
 
+    def test_write_vin_to_mva_results_schema(self):
+        """Test writing VIN-to-MVA results with exactly two columns."""
+        results = [
+            {'vin': '1GNSCNKD3MR250256', 'mva': '095659480'},
+            {'vin': '1V2WR2CA4SC525787', 'mva': '056740224'}
+        ]
+        output_path = self._get_csv_path('vin_to_mva_results.csv')
+
+        write_results_csv(results, output_path)
+
+        with open(output_path, 'r', newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            self.assertEqual(reader.fieldnames, ['vin', 'mva'])
+            rows = list(reader)
+
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[0]['vin'], '1GNSCNKD3MR250256')
+        self.assertEqual(rows[0]['mva'], '095659480')
+        self.assertEqual(rows[1]['vin'], '1V2WR2CA4SC525787')
+        self.assertEqual(rows[1]['mva'], '056740224')
+
     def test_write_rejects_mixed_result_schemas(self):
         """Test that mixed closeout and lookup schemas are rejected."""
         results = [
