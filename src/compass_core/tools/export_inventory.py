@@ -39,7 +39,7 @@ import os
 import sys
 import argparse
 from pathlib import Path
-from typing import List, Tuple, Optional, Set
+from typing import List, Tuple, Set, Union
 
 
 # ---------------------------------------------------------------------------
@@ -99,7 +99,7 @@ def _class_is_protocol(node: ast.ClassDef) -> bool:
     return False
 
 
-def _first_docstring(node: ast.AST) -> Optional[str]:
+def _first_docstring(node: ast.AST) -> str:
     """Extract the first line of a docstring from a function/class node."""
     if (
         isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
@@ -167,7 +167,7 @@ def _class_review_status(class_access: str, class_public: str) -> Tuple[str, str
     return "", ""
 
 
-def _signature(func: ast.FunctionDef) -> str:
+def _signature(func: Union[ast.FunctionDef, ast.AsyncFunctionDef]) -> str:
     """Return a readable parameter string, excluding 'self' / 'cls'."""
     func_args = func.args
     params: List[str] = []
