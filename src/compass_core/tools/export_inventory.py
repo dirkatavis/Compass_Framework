@@ -1,8 +1,8 @@
 """
-Compass Framework – API Inventory Exporter
-==========================================
-Walks src/compass_core, parses every Python file with the AST, and emits a CSV
-that classifies every class-level method by:
+Compass Framework – API Inventory Exporter  (installable version)
+==================================================================
+Walks the compass_core source tree, parses every Python file with the AST, and
+emits a CSV that classifies every class-level method by:
 
   File          – source filename
   Module        – dotted module name (compass_core.*)
@@ -21,14 +21,20 @@ that classifies every class-level method by:
   Signature     – parameter list (self excluded)
   Summary       – first line of the method docstring (if present)
 
-Usage
------
-  python tools/export_inventory.py                   # writes framework_inventory.csv
-  python tools/export_inventory.py --out my_out.csv  # custom output path
-  python tools/export_inventory.py --src path/to/src # custom source root
+CLI Usage (after pip install compass-core)
+------------------------------------------
+  compass-inventory                       # auto-detects installed package
+  compass-inventory --out my_report.csv   # custom output path
+  compass-inventory --src path/to/src     # explicit source root
+  compass-inventory --fail-on-drift       # exit non-zero on decorator drift
+
+Developer Usage (from framework repo root)
+------------------------------------------
+  python tools/export_inventory.py        # same interface, same output
 """
 import ast
 import csv
+import importlib.util
 import os
 import sys
 import argparse
@@ -65,7 +71,7 @@ _UTILITY_FILES: Set[str] = {
 
 def _layer_for_file(filename: str) -> str:
     """Return the architectural layer label for a given source filename."""
-    if filename == "engine.py":  # check before _UTILITY_FILES to avoid shadowing
+    if filename == "engine.py":
         return "Entry Point"
     if filename in _PROTOCOL_FILES:
         return "Protocol"
@@ -73,7 +79,6 @@ def _layer_for_file(filename: str) -> str:
         return "Flow"
     if filename in _UTILITY_FILES:
         return "Utility"
-    # Remaining files are concrete implementations
     return "Implementation"
 
 
@@ -112,13 +117,10 @@ def _has_compass_public_decorator(node: ast.AST) -> bool:
     """Return True when a class/function has @compass_public decorator."""
     decorators = getattr(node, "decorator_list", [])
     for decorator in decorators:
-        # @compass_public
         if isinstance(decorator, ast.Name) and decorator.id == "compass_public":
             return True
-        # @module.compass_public
         if isinstance(decorator, ast.Attribute) and decorator.attr == "compass_public":
             return True
-        # @compass_public(...)
         if isinstance(decorator, ast.Call):
             func = decorator.func
             if isinstance(func, ast.Name) and func.id == "compass_public":
@@ -140,15 +142,15 @@ def _review_recommendation(
     class_marked = class_public == "YES"
     method_marked = method_public == "YES"
 
-    certified_public = "YES" if class_is_public and class_marked and method_is_public and method_marked else ""
+    certified_public = (
+        "YES" if class_is_public and class_marked and method_is_public and method_marked else ""
+    )
 
-    # Only review method visibility when the containing class is also public;
-    # methods inside private classes are assumed intentionally internal.
     if class_is_public:
         if method_is_public and not method_marked:
-            return certified_public, "YES", "Add @compass_public to method or rename method with leading underscore"
+            return certified_public, "YES", "Add @compass_public to method or rename with leading underscore"
         if not method_is_public and method_marked:
-            return certified_public, "YES", "Remove @compass_public or rename method without leading underscore"
+            return certified_public, "YES", "Remove @compass_public or rename without leading underscore"
 
     return certified_public, "", ""
 
@@ -159,13 +161,10 @@ def _class_review_status(class_access: str, class_public: str) -> Tuple[str, str
     class_marked = class_public == "YES"
 
     if class_is_public and not class_marked:
-        return "YES", "Add @compass_public to class or rename class with leading underscore"
+        return "YES", "Add @compass_public to class or rename with leading underscore"
     if not class_is_public and class_marked:
-        return "YES", "Remove @compass_public or rename class without leading underscore"
+        return "YES", "Remove @compass_public or rename without leading underscore"
     return "", ""
-
-
-
 
 
 def _signature(func: ast.FunctionDef) -> str:
@@ -174,8 +173,6 @@ def _signature(func: ast.FunctionDef) -> str:
     params: List[str] = []
 
     all_args = func_args.posonlyargs + func_args.args
-
-    # Build defaults map (defaults align to the tail of all_args)
     defaults_offset = len(all_args) - len(func_args.defaults)
 
     for idx, arg in enumerate(all_args):
@@ -195,11 +192,8 @@ def _signature(func: ast.FunctionDef) -> str:
                 pass
         params.append(param)
 
-    # *args
     if func_args.vararg:
         params.append(f"*{func_args.vararg.arg}")
-
-    # **kwargs
     if func_args.kwarg:
         params.append(f"**{func_args.kwarg.arg}")
 
@@ -248,7 +242,7 @@ def _extract_all_exports(init_path: Path) -> Set[str]:
                 if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
                     exports.add(arg.value)
 
-        # __all__.extend([...]) or __all__ += [...]
+        # __all__.extend([...])
         if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call):
             call = node.value
             if (
@@ -316,7 +310,6 @@ def _walk_source(src_root: Path, all_exports: Set[str]) -> List[Tuple]:
                 if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef))
             ]
 
-            # Emit a class-only row for classes with no methods (e.g. Enums, bare dataclasses)
             if not method_nodes:
                 rows.append((
                     filename, module, layer, class_name, is_protocol, in_all,
@@ -330,10 +323,7 @@ def _walk_source(src_root: Path, all_exports: Set[str]) -> List[Tuple]:
                 method_access = "Private (Internal)" if method_name.startswith("_") else "Public"
                 method_public = "YES" if _has_compass_public_decorator(item) else ""
                 certified_public, review_needed, recommendation = _review_recommendation(
-                    class_access,
-                    class_public,
-                    method_access,
-                    method_public,
+                    class_access, class_public, method_access, method_public,
                 )
                 row_class_review_needed = class_review_needed if method_access == "Public" else ""
                 row_class_suggested_action = class_suggested_action if method_access == "Public" else ""
@@ -341,24 +331,10 @@ def _walk_source(src_root: Path, all_exports: Set[str]) -> List[Tuple]:
                 summary = _first_docstring(item)
 
                 rows.append((
-                    filename,
-                    module,
-                    layer,
-                    class_name,
-                    is_protocol,
-                    in_all,
-                    class_access,
-                    class_public,
-                    row_class_review_needed,
-                    row_class_suggested_action,
-                    method_name,
-                    method_access,
-                    method_public,
-                    certified_public,
-                    review_needed,
-                    recommendation,
-                    sig,
-                    summary,
+                    filename, module, layer, class_name, is_protocol, in_all,
+                    class_access, class_public, row_class_review_needed, row_class_suggested_action,
+                    method_name, method_access, method_public, certified_public,
+                    review_needed, recommendation, sig, summary,
                 ))
 
     return rows
@@ -385,7 +361,7 @@ def _method_drift_rows(rows: List[Tuple]) -> List[Tuple]:
 
 
 # ---------------------------------------------------------------------------
-# Entry point
+# Core export function
 # ---------------------------------------------------------------------------
 
 def export_inventory(
@@ -393,6 +369,26 @@ def export_inventory(
     output_file: str = "framework_inventory.csv",
     fail_on_drift: bool = False,
 ) -> int:
+    """Walk the compass_core source tree and emit a classified CSV inventory.
+
+    Args:
+        src_dir: Path to the directory that contains the ``compass_core`` package
+            folder.  Pass ``"auto"`` to locate the installed package automatically.
+        output_file: Destination CSV path.
+        fail_on_drift: When *True* exit with code 2 if any public-by-name method
+            lacks the ``@compass_public`` decorator.
+
+    Returns:
+        0 on success, 1 on missing source, 2 on drift when *fail_on_drift* is set.
+    """
+    if src_dir == "auto":
+        spec = importlib.util.find_spec("compass_core")
+        if spec is None or spec.origin is None:
+            print("[ERROR] compass_core is not installed; cannot auto-detect source.", file=sys.stderr)
+            return 1
+        # origin = .../site-packages/compass_core/__init__.py  →  parent.parent = site-packages/
+        src_dir = str(Path(spec.origin).parent.parent)
+
     src_root = Path(src_dir).resolve()
     if not src_root.exists():
         print(f"[ERROR] Source directory not found: {src_root}", file=sys.stderr)
@@ -446,10 +442,7 @@ def export_inventory(
         if drift_rows:
             print("[DRIFT] Public-by-name methods missing @compass_public:", file=sys.stderr)
             for row in drift_rows:
-                print(
-                    f"  - {row[0]}::{row[3]}.{row[10]}",
-                    file=sys.stderr,
-                )
+                print(f"  - {row[0]}::{row[3]}.{row[10]}", file=sys.stderr)
             print(
                 f"[DRIFT] Found {len(drift_rows)} drift method(s). "
                 "Use @compass_public or rename with leading underscore.",
@@ -463,21 +456,35 @@ def export_inventory(
 
 
 # ---------------------------------------------------------------------------
-# CLI shim
+# CLI entry point  (registered via pyproject.toml [project.scripts])
 # ---------------------------------------------------------------------------
 
 def main() -> None:
-    """CLI entry point (mirrors compass_core.tools.export_inventory:main)."""
+    """CLI entry point for the ``compass-inventory`` command."""
     parser = argparse.ArgumentParser(
-        description="Export Compass Framework API inventory to CSV.")
-    parser.add_argument("--src", default="./src",
-                        help="Path to the src directory (default: ./src)")
-    parser.add_argument("--out", default="framework_inventory.csv",
-                        help="Output CSV file path (default: framework_inventory.csv)")
-    parser.add_argument("--fail-on-drift", action="store_true",
-                        help="Exit non-zero if any public-by-name method lacks @compass_public")
-    cli_args = parser.parse_args()
-    sys.exit(export_inventory(cli_args.src, cli_args.out, cli_args.fail_on_drift))
+        prog="compass-inventory",
+        description="Export Compass Framework API inventory to CSV.",
+    )
+    parser.add_argument(
+        "--src",
+        default="auto",
+        help=(
+            "Path to the directory containing the compass_core package folder "
+            "(default: auto-detect from installed package location)."
+        ),
+    )
+    parser.add_argument(
+        "--out",
+        default="framework_inventory.csv",
+        help="Output CSV file path (default: framework_inventory.csv).",
+    )
+    parser.add_argument(
+        "--fail-on-drift",
+        action="store_true",
+        help="Exit non-zero if any public-by-name method lacks @compass_public.",
+    )
+    args = parser.parse_args()
+    sys.exit(export_inventory(args.src, args.out, args.fail_on_drift))
 
 
 if __name__ == "__main__":
