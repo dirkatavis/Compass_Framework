@@ -36,7 +36,24 @@ class StandardDriverManager(DriverManager):
         self._config: Optional[Any] = None  # Cached configuration instance
         self._driver_path = driver_path or self._get_configured_driver_path()
         self._logger = logging.getLogger(__name__)
-        self._factory = DriverFactory(driver_path=self._driver_path, logger=self._logger)
+        self._allow_auto_update = self._get_auto_update_setting()
+        self._factory = DriverFactory(
+            driver_path=self._driver_path,
+            logger=self._logger,
+            allow_auto_update=self._allow_auto_update
+        )
+
+    def _get_auto_update_setting(self) -> bool:
+        """Get driver auto-update setting from config.
+
+        Defaults to False so manually maintained static drivers remain primary.
+        """
+        config = self._get_config()
+        if config is not None:
+            configured = config.get('webdriver.auto_update_driver')
+            if configured is not None:
+                return bool(configured)
+        return False
         
     def _get_config(self):
         """Get cached configuration instance, creating it if needed."""

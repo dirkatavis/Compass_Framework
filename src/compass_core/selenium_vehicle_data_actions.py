@@ -325,6 +325,74 @@ class SeleniumVehicleDataActions(VehicleDataActions):
                 'error': f'Failed to enter MVA: {str(e)}',
                 'mva': mva
             }
+
+    def enter_vin(self, vin: str, clear_existing: bool = True) -> Dict[str, Any]:
+        """Enter a VIN into the Compass search/input field.
+        
+        Implements VehicleDataActions.enter_vin()
+        """
+        try:
+            input_field = self._find_mva_input() # Reuses the unified search box
+            
+            if not input_field:
+                # Wait and retry
+                time.sleep(0.5)
+                input_field = self._find_mva_input()
+            
+            if not input_field:
+                return {
+                    'status': 'error',
+                    'error': 'Could not find VIN input field',
+                    'vin': vin
+                }
+            
+            # Wait for field to be ready
+            try:
+                WebDriverWait(self.driver, FIELD_READY_TIMEOUT, poll_frequency=FIELD_READY_POLL).until(
+                    lambda d: input_field.is_enabled() and input_field.is_displayed()
+                )
+            except TimeoutException:
+                return {
+                    'status': 'error',
+                    'error': 'Input field not ready',
+                    'vin': vin
+                }
+            
+            # Clear if requested
+            if clear_existing:
+                if not self._clear_input_field(input_field):
+                    self._logger.warning(f"[VIN] Field not fully cleared before entering VIN '{vin}'")
+            
+            # Correct viewport scaling issues by scrolling VIN input into center 
+            # before interaction.
+            try:
+                self.driver.execute_script(
+                    "arguments[0].scrollIntoView({block: 'center', inline: 'nearest'});", 
+                    input_field
+                )
+                time.sleep(0.5) # Wait for layout shift
+            except Exception:
+                pass
+                
+            # Enter VIN and press ENTER (unlike MVA, VINs may not auto-submit)
+            input_field.send_keys(vin)
+            input_field.send_keys(Keys.ENTER)
+            self._logger.info(f"[VIN] Entered VIN: {vin}")
+            
+            time.sleep(0.5)  # Brief pause for navigation to trigger
+            
+            return {
+                'status': 'success',
+                'vin': vin
+            }
+            
+        except Exception as e:
+            self._logger.error(f"[VIN] Failed to enter VIN '{vin}': {e}")
+            return {
+                'status': 'error',
+                'error': f'Failed to enter VIN: {str(e)}',
+                'vin': vin
+            }
     
     def get_vehicle_property(self, label: str, timeout: int = 10) -> Optional[str]:
         """Get a vehicle property value by its display label.

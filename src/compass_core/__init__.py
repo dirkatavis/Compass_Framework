@@ -11,6 +11,12 @@ try:
 except ImportError:
     PmWorkItemFlow = None  # type: ignore
 
+# Optional Vin2Mva flow
+try:
+    from .vin_to_mva_flow import Vin2MvaFlow
+except ImportError:
+    Vin2MvaFlow = None  # type: ignore
+
 # Define base public API
 __all__ = [
     'CompassRunner',
@@ -23,6 +29,9 @@ __all__ = [
 ]
 if PmWorkItemFlow is not None:
     __all__.append('PmWorkItemFlow')
+
+if Vin2MvaFlow is not None:
+    __all__.append('Vin2MvaFlow')
 
 # Optional imports - only available if dependencies are installed
 try:

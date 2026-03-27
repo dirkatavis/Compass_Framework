@@ -67,6 +67,22 @@ class TestDriverFactory(unittest.TestCase):
         self.assertIn("Unrecoverable WebDriver error", str(context.exception))
         self.assertEqual(mock_edge.call_count, 1)
 
+    @patch('selenium.webdriver.Edge')
+    def test_get_driver_uses_selenium_manager_fallback_for_path_issue(self, mock_edge):
+        """Test fallback to Selenium Manager when local driver path is invalid/unavailable."""
+        mock_driver = Mock()
+        mock_edge.side_effect = [
+            WebDriverException("Unable to obtain driver for MicrosoftEdge"),
+            mock_driver
+        ]
+
+        driver = self.factory.get_driver()
+
+        self.assertIs(driver, mock_driver)
+        self.assertEqual(mock_edge.call_count, 2)
+        self.assertIn('service', mock_edge.call_args_list[0].kwargs)
+        self.assertNotIn('service', mock_edge.call_args_list[1].kwargs)
+
     @patch('urllib.request.urlopen')
     @patch('zipfile.ZipFile')
     @patch('builtins.open', new_callable=MagicMock)
