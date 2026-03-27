@@ -313,6 +313,14 @@ class TestDriftGate(unittest.TestCase):
 
         self.assertEqual(rc, 0)
 
+    def test_method_drift_rows_ignores_methods_in_private_classes(self):
+        row = (
+            "foo.py", "compass_core.foo", "Utility", "_InternalFoo", "", "",
+            "Private (Internal)", "", "", "", "name", "Public", "", "", "", "", "", "",
+        )
+        drift = inv._method_drift_rows([row])
+        self.assertEqual(drift, [])
+
 
 if __name__ == "__main__":
     unittest.main()

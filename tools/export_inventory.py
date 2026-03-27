@@ -368,11 +368,17 @@ def _method_drift_rows(rows: List[Tuple]) -> List[Tuple]:
     """Return rows where a method is public-by-name but not @compass_public."""
     drift_rows: List[Tuple] = []
     for row in rows:
+        class_access = row[6]
         method_name = row[10]
         method_access = row[11]
         method_public = row[12]
 
-        if method_name and method_access == "Public" and method_public != "YES":
+        if (
+            class_access == "Public"
+            and method_name
+            and method_access == "Public"
+            and method_public != "YES"
+        ):
             drift_rows.append(row)
 
     return drift_rows

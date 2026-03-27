@@ -22,12 +22,12 @@ except Exception:
     @runtime_checkable
     class _PmActionsFallback(Protocol):
         """Internal fallback protocol for pm_actions when import fails."""
-        def _get_lighthouse_status(self, mva: str) -> Optional[str]: ...
-        def _has_open_workitem(self, mva: str) -> bool: ...
-        def _complete_open_workitem(self, mva: str) -> Dict[str, Any]: ...
-        def _has_pm_complaint(self, mva: str) -> bool: ...
-        def _associate_pm_complaint(self, mva: str) -> Dict[str, Any]: ...
-        def _navigate_back_home(self) -> None: ...
+        def get_lighthouse_status(self, mva: str) -> Optional[str]: ...
+        def has_open_workitem(self, mva: str) -> bool: ...
+        def complete_open_workitem(self, mva: str) -> Dict[str, Any]: ...
+        def has_pm_complaint(self, mva: str) -> bool: ...
+        def associate_pm_complaint(self, mva: str) -> Dict[str, Any]: ...
+        def navigate_back_home(self) -> None: ...
 
     # Alias for compatibility with rest of module
     PmActions = _PmActionsFallback
@@ -38,10 +38,10 @@ class _Step(WorkflowStep):
     _name: str
     _fn: Any
 
-    def _name_step(self) -> str:
+    def name(self) -> str:
         return self._name
 
-    def _execute_step(self, context: FlowContext) -> Dict[str, Any]:
+    def execute(self, context: FlowContext) -> Dict[str, Any]:
         return self._fn(context)
 
 
@@ -72,12 +72,12 @@ class PmWorkItemFlow(Workflow):
         # Simple inline orchestration to allow direct use without manager
         results: List[Dict[str, Any]] = []
         for step in self.plan(context):
-            res = step._execute_step(context)
-            results.append({"step": step._name_step(), **res})
+            res = step.execute(context)
+            results.append({"step": step.name(), **res})
             if res.get("status") == "skipped":
                 return {"status": "skipped", "reason": res.get("reason"), "trace": results}
             if res.get("status") != "ok":
-                return {"status": "failed", "reason": res.get("reason", step._name_step()), "trace": results}
+                return {"status": "failed", "reason": res.get("reason", step.name()), "trace": results}
         return {"status": "ok", "trace": results}
 
 
