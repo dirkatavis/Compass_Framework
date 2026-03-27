@@ -4,43 +4,53 @@ Protocol for structured logging operations with dependency injection
 """
 import logging
 import sys
+from .decorators import compass_public
 from typing import Protocol, runtime_checkable, Optional, Any
 
 
+@compass_public
 @runtime_checkable
 class Logger(Protocol):
     """Protocol for logging operations"""
     
+    @compass_public
     def debug(self, message: str, *args: Any, **kwargs: Any) -> None:
         """Log a debug message"""
         ...
     
+    @compass_public
     def info(self, message: str, *args: Any, **kwargs: Any) -> None:
         """Log an info message"""
         ...
     
+    @compass_public
     def warning(self, message: str, *args: Any, **kwargs: Any) -> None:
         """Log a warning message"""
         ...
     
+    @compass_public
     def error(self, message: str, *args: Any, **kwargs: Any) -> None:
         """Log an error message"""
         ...
     
+    @compass_public
     def critical(self, message: str, *args: Any, **kwargs: Any) -> None:
         """Log a critical message"""
         ...
 
 
+@compass_public
 @runtime_checkable  
 class LoggerFactory(Protocol):
     """Protocol for creating logger instances with configuration"""
     
+    @compass_public
     def create_logger(self, name: str, config: Optional[dict] = None) -> Logger:
         """Create a configured logger instance"""
         ...
 
 
+@compass_public
 class StandardLogger(Logger):
     """
     Standard implementation of Logger protocol using Python's built-in logging.
@@ -79,27 +89,33 @@ class StandardLogger(Logger):
             handler.setFormatter(formatter)
             self._logger.addHandler(handler)
     
+    @compass_public
     def debug(self, message: str, *args: Any, **kwargs: Any) -> None:
         """Log a debug message."""
         self._logger.debug(message, *args, **kwargs)
     
+    @compass_public
     def info(self, message: str, *args: Any, **kwargs: Any) -> None:
         """Log an info message."""
         self._logger.info(message, *args, **kwargs)
     
+    @compass_public
     def warning(self, message: str, *args: Any, **kwargs: Any) -> None:
         """Log a warning message."""
         self._logger.warning(message, *args, **kwargs)
     
+    @compass_public
     def error(self, message: str, *args: Any, **kwargs: Any) -> None:
         """Log an error message."""
         self._logger.error(message, *args, **kwargs)
     
+    @compass_public
     def critical(self, message: str, *args: Any, **kwargs: Any) -> None:
         """Log a critical message."""
         self._logger.critical(message, *args, **kwargs)
 
 
+@compass_public
 class StandardLoggerFactory(LoggerFactory):
     """
     Standard implementation of LoggerFactory protocol.
@@ -114,6 +130,7 @@ class StandardLoggerFactory(LoggerFactory):
         debug_logger = factory.create_logger("debug_app", {"level": "DEBUG"})
     """
     
+    @compass_public
     def create_logger(self, name: str, config: Optional[dict] = None) -> Logger:
         """
         Create a configured StandardLogger instance.

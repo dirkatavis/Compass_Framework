@@ -7,7 +7,10 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any
 from enum import Enum
 
+from .decorators import compass_public
 
+
+@compass_public
 class MvaStatus(str, Enum):
     """MVA processing status."""
     PENDING = "pending"
@@ -17,6 +20,7 @@ class MvaStatus(str, Enum):
 
 
 @dataclass
+@compass_public
 class MvaItem:
     """
     Individual MVA item with status tracking.
@@ -34,10 +38,12 @@ class MvaItem:
     error: Optional[str] = None
     source_line: Optional[int] = None
     
+    @compass_public
     def mark_processing(self) -> None:
         """Mark item as currently being processed."""
         self.status = MvaStatus.PROCESSING
     
+    @compass_public
     def mark_completed(self, result: Dict[str, Any]) -> None:
         """
         Mark item as completed with result.
@@ -49,6 +55,7 @@ class MvaItem:
         self.result = result
         self.error = None
     
+    @compass_public
     def mark_failed(self, error: str) -> None:
         """
         Mark item as failed with error message.
@@ -60,6 +67,7 @@ class MvaItem:
         self.error = error
         self.result = None
     
+    @compass_public
     def reset(self) -> None:
         """Reset item to pending status."""
         self.status = MvaStatus.PENDING
@@ -67,26 +75,31 @@ class MvaItem:
         self.error = None
     
     @property
+    @compass_public
     def is_pending(self) -> bool:
         """Check if item is pending."""
         return self.status == MvaStatus.PENDING
     
     @property
+    @compass_public
     def is_processing(self) -> bool:
         """Check if item is being processed."""
         return self.status == MvaStatus.PROCESSING
     
     @property
+    @compass_public
     def is_completed(self) -> bool:
         """Check if item is completed."""
         return self.status == MvaStatus.COMPLETED
     
     @property
+    @compass_public
     def is_failed(self) -> bool:
         """Check if item failed."""
         return self.status == MvaStatus.FAILED
 
 
+@compass_public
 class MvaCollection:
     """
     Collection of MVA items with iteration and tracking support.
@@ -112,6 +125,7 @@ class MvaCollection:
         self._items: List[MvaItem] = []
     
     @classmethod
+    @compass_public
     def from_list(cls, mvas: List[str], source_file: Optional[str] = None) -> 'MvaCollection':
         """
         Create collection from list of MVA strings.
@@ -127,6 +141,7 @@ class MvaCollection:
         collection.add_many(mvas)
         return collection
     
+    @compass_public
     def add(self, mva: str, source_line: Optional[int] = None) -> MvaItem:
         """
         Add single MVA to collection.
@@ -142,6 +157,7 @@ class MvaCollection:
         self._items.append(item)
         return item
     
+    @compass_public
     def add_many(self, mvas: List[str]) -> None:
         """
         Add multiple MVAs to collection.
@@ -152,6 +168,7 @@ class MvaCollection:
         for mva in mvas:
             self.add(mva)
     
+    @compass_public
     def find_by_mva(self, mva: str) -> Optional[MvaItem]:
         """
         Find item by MVA value.
@@ -167,18 +184,22 @@ class MvaCollection:
                 return item
         return None
     
+    @compass_public
     def get_pending(self) -> List[MvaItem]:
         """Get all pending items."""
         return [item for item in self._items if item.is_pending]
     
+    @compass_public
     def get_completed(self) -> List[MvaItem]:
         """Get all completed items."""
         return [item for item in self._items if item.is_completed]
     
+    @compass_public
     def get_failed(self) -> List[MvaItem]:
         """Get all failed items."""
         return [item for item in self._items if item.is_failed]
     
+    @compass_public
     def to_results_list(self) -> List[Dict[str, Any]]:
         """
         Convert collection to results list format for CSV export.
@@ -207,26 +228,31 @@ class MvaCollection:
         return results
     
     @property
+    @compass_public
     def total_count(self) -> int:
         """Total number of items in collection."""
         return len(self._items)
     
     @property
+    @compass_public
     def pending_count(self) -> int:
         """Number of pending items."""
         return len(self.get_pending())
     
     @property
+    @compass_public
     def completed_count(self) -> int:
         """Number of completed items."""
         return len(self.get_completed())
     
     @property
+    @compass_public
     def failed_count(self) -> int:
         """Number of failed items."""
         return len(self.get_failed())
     
     @property
+    @compass_public
     def progress_percentage(self) -> float:
         """
         Progress percentage (completed + failed / total).

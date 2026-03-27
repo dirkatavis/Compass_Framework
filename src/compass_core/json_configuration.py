@@ -9,8 +9,10 @@ from typing import Dict, Any, Optional, Union
 from pathlib import Path
 
 from .configuration import Configuration
+from .decorators import compass_public
 
 
+@compass_public
 class JsonConfiguration(Configuration):
     """
     JSON-based implementation of Configuration protocol.
@@ -33,6 +35,7 @@ class JsonConfiguration(Configuration):
         """Initialize JsonConfiguration with empty config."""
         self._config: Dict[str, Any] = {}
     
+    @compass_public
     def load(self, source: Union[str, Path]) -> Dict[str, Any]:
         """
         Load configuration from a JSON file.
@@ -70,6 +73,7 @@ class JsonConfiguration(Configuration):
                 raise  # Re-raise FileNotFoundError as-is
             raise IOError(f"Cannot read configuration file {source}: {e}")
     
+    @compass_public
     def save(self, config: Dict[str, Any], destination: Union[str, Path]) -> bool:
         """
         Save configuration to a JSON file.
@@ -96,6 +100,7 @@ class JsonConfiguration(Configuration):
             # Log error in real implementation
             return False
     
+    @compass_public
     def get(self, key: str, default: Optional[Any] = None) -> Any:
         """
         Get a configuration value by key.
@@ -124,6 +129,7 @@ class JsonConfiguration(Configuration):
         except (KeyError, TypeError):
             return default
     
+    @compass_public
     def set(self, key: str, value: Any) -> bool:
         """
         Set a configuration value.
@@ -161,6 +167,7 @@ class JsonConfiguration(Configuration):
         except (TypeError, AttributeError):
             return False
     
+    @compass_public
     def validate(self, config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Validate configuration structure and values.
@@ -209,6 +216,7 @@ class JsonConfiguration(Configuration):
             'warnings': warnings
         }
     
+    @compass_public
     def get_all(self) -> Dict[str, Any]:
         """
         Get a copy of the current configuration.

@@ -22,8 +22,10 @@ from compass_core.vehicle_data_actions import VehicleDataActions
 from compass_core.driver_manager import DriverManager
 from compass_core.navigation import Navigator
 from compass_core.csv_utils import read_vin_list, write_results_csv
+from .decorators import compass_public
 
 
+@compass_public
 class Vin2MvaFlow:
     """
     Workflow for batch vehicle MVA lookups via VIN.
@@ -60,10 +62,12 @@ class Vin2MvaFlow:
         self.vehicle_actions = vehicle_actions
         self.logger = logger or logging.getLogger(__name__)
     
+    @compass_public
     def id(self) -> str:
         """Return workflow identifier."""
         return "vin_to_mva_flow"
     
+    @compass_public
     def plan(self) -> List[Dict[str, str]]:
         """
         Return workflow execution plan.
@@ -78,6 +82,7 @@ class Vin2MvaFlow:
             {"name": "write_results", "description": "Write results (VIN, MVA) to output CSV"}
         ]
     
+    @compass_public
     def run(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """
         Execute Vin2Mva workflow.

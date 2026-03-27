@@ -9,9 +9,11 @@ import re
 import subprocess
 import winreg
 
+from .decorators import compass_public
 from .version_checker import VersionChecker
 
 
+@compass_public
 class BrowserVersionChecker(VersionChecker):
     """
     Windows browser version detection implementation.
@@ -27,6 +29,7 @@ class BrowserVersionChecker(VersionChecker):
         driver_version = checker.get_driver_version("chromedriver.exe")
     """
     
+    @compass_public
     def get_browser_version(self) -> str:
         """
         Get Chrome browser version (default browser for automation).
@@ -39,6 +42,7 @@ class BrowserVersionChecker(VersionChecker):
         """
         return self._get_chrome_version()
     
+    @compass_public
     def get_edge_version(self) -> str:
         """
         Get Microsoft Edge browser version.
@@ -51,6 +55,7 @@ class BrowserVersionChecker(VersionChecker):
         """
         return self._get_edge_version()
     
+    @compass_public
     def get_driver_version(self, driver_path: str) -> str:
         """
         Get WebDriver version from executable.
@@ -209,6 +214,7 @@ class BrowserVersionChecker(VersionChecker):
         
         return 'unknown'
     
+    @compass_public
     def check_compatibility(self, browser_type: str = "chrome", driver_path: str = None) -> dict:
         """
         Check compatibility between browser and driver versions.

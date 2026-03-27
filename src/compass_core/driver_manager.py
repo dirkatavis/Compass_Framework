@@ -7,8 +7,10 @@ inspired by DevCompass driver_manager.py patterns.
 from typing import Protocol, runtime_checkable, Any, Dict
 from selenium.webdriver.common.service import Service
 from selenium.webdriver.remote.webdriver import WebDriver
+from .decorators import compass_public
 
 
+@compass_public
 @runtime_checkable
 class DriverManager(Protocol):
     """Protocol for WebDriver lifecycle management and configuration.
@@ -23,6 +25,7 @@ class DriverManager(Protocol):
         manager.quit_driver()
     """
     
+    @compass_public
     def get_or_create_driver(self, **kwargs) -> WebDriver:
         """Get existing driver or create new WebDriver instance.
         
@@ -37,6 +40,7 @@ class DriverManager(Protocol):
         """
         ...
     
+    @compass_public
     def quit_driver(self) -> None:
         """Quit and cleanup WebDriver instance.
         
@@ -45,6 +49,7 @@ class DriverManager(Protocol):
         """
         ...
     
+    @compass_public
     def get_driver_version(self, driver_path: str) -> str:
         """Get version of WebDriver executable.
         
@@ -56,6 +61,7 @@ class DriverManager(Protocol):
         """
         ...
     
+    @compass_public
     def configure_driver_options(self) -> Any:
         """Configure browser-specific options for WebDriver.
         
@@ -64,6 +70,7 @@ class DriverManager(Protocol):
         """
         ...
     
+    @compass_public
     def create_driver_service(self, driver_path: str) -> Service:
         """Create WebDriver service with specified driver path.
         
@@ -75,6 +82,7 @@ class DriverManager(Protocol):
         """
         ...
     
+    @compass_public
     def is_driver_active(self) -> bool:
         """Check if WebDriver instance is currently active.
         
@@ -83,6 +91,7 @@ class DriverManager(Protocol):
         """
         ...
     
+    @compass_public
     def check_version_compatibility(self, browser_version: str, driver_version: str) -> Dict[str, Any]:
         """Check compatibility between browser and driver versions.
         

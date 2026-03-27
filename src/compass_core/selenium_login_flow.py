@@ -15,10 +15,12 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
 from compass_core.login_flow import LoginFlow
 from compass_core.navigation import Navigator
+from .decorators import compass_public
 # WebDriver wait configuration
 DEFAULT_WAIT_TIMEOUT = 10  # seconds
 DEFAULT_POLL_FREQUENCY = 0.5  # seconds
 
+@compass_public
 class SeleniumLoginFlow:
     """
     Microsoft SSO authentication using Selenium WebDriver.
@@ -98,6 +100,7 @@ class SeleniumLoginFlow:
         except Exception:
             return False
     
+    @compass_public
     def authenticate(
         self,
         username: str,

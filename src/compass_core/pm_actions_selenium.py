@@ -22,8 +22,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, ElementClickInterceptedException
 
 from .pm_actions import PmActions
+from .decorators import compass_public
 
 
+@compass_public
 class SeleniumPmActions(PmActions):
     """
     Selenium-backed implementation of `PmActions`.
@@ -90,6 +92,7 @@ class SeleniumPmActions(PmActions):
         except Exception:
             return []
 
+    @compass_public
     def get_lighthouse_status(self, mva: str) -> Optional[str]:
         """Get the current Lighthouse status text for the specified vehicle.
 
@@ -112,6 +115,7 @@ class SeleniumPmActions(PmActions):
         except Exception:
             return None
 
+    @compass_public
     def has_open_workitem(self, mva: str) -> bool:
         """Check whether there is an open PM Gas work item in view.
 
@@ -131,6 +135,7 @@ class SeleniumPmActions(PmActions):
         except Exception:
             return False
 
+    @compass_public
     def complete_open_workitem(self, mva: str) -> Dict[str, Any]:
         """Complete the currently open PM work item for a vehicle.
 
@@ -163,6 +168,7 @@ class SeleniumPmActions(PmActions):
             self._logger.error(f"[ERROR] complete_open_workitem failed: {str(e).split('Stacktrace:')[0].strip()}")
             return {"status": "failed", "reason": f"exception: {type(e).__name__}"}
 
+    @compass_public
     def has_pm_complaint(self, mva: str) -> bool:
         """Check whether the current vehicle has at least one PM complaint tile.
 
@@ -179,6 +185,7 @@ class SeleniumPmActions(PmActions):
         except Exception:
             return False
 
+    @compass_public
     def associate_pm_complaint(self, mva: str) -> Dict[str, Any]:
         """Associate the first PM-related complaint with a PM work item.
 
@@ -233,6 +240,7 @@ class SeleniumPmActions(PmActions):
             self._logger.error(f"[ERROR] associate_pm_complaint failed: {str(e).split('Stacktrace:')[0].strip()}")
             return {"status": "failed", "reason": f"exception: {type(e).__name__}"}
 
+    @compass_public
     def navigate_back_home(self) -> None:
         """Navigate the browser back to the PM home screen (Health tab).
 
@@ -290,6 +298,7 @@ class SeleniumPmActions(PmActions):
             # Restore original implicit wait value
             self.driver.implicitly_wait(original_implicit_wait)
 
+    @compass_public
     def navigate_to_workitem_tab(self) -> Dict[str, Any]:
         """
         Navigate to the WorkItem tab after entering an MVA.
@@ -321,6 +330,7 @@ class SeleniumPmActions(PmActions):
         
         return {"status": "success"}
 
+    @compass_public
     def get_existing_workitems(self) -> list:
         """
         Capture all existing workitem structures from the WorkItem tab.
@@ -497,6 +507,7 @@ class SeleniumPmActions(PmActions):
             self._logger.error(f"[COMPLAINTS] Exception in complaint selection: {type(exc).__name__}: {exc}")
             return {"status": "error", "error": f"selection_exception: {type(exc).__name__}"}
 
+    @compass_public
     def find_workitem(self, mva: str, damage_type: str, sub_damage_type: str, correction_action: str) -> Optional[Dict[str, Any]]:
         """
         Find an existing workitem matching the damage type.
@@ -530,6 +541,7 @@ class SeleniumPmActions(PmActions):
         except Exception:
             return None
 
+    @compass_public
     def create_workitem(self, mva: str, damage_type: str, sub_damage_type: str, correction_action: str) -> Dict[str, Any]:
         """
         Create a new workitem on the WorkItem tab.

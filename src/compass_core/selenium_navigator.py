@@ -11,12 +11,14 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.common.exceptions import TimeoutException
 
 from .navigation import Navigator
+from .decorators import compass_public
 
 # WebDriver wait configuration
 DEFAULT_WAIT_TIMEOUT = 10  # seconds
 DEFAULT_POLL_FREQUENCY = 0.5  # seconds
 
 
+@compass_public
 class SeleniumNavigator(Navigator):
     """
     Selenium WebDriver implementation of Navigator protocol.
@@ -40,6 +42,7 @@ class SeleniumNavigator(Navigator):
         """
         self.driver = driver
     
+    @compass_public
     def navigate_to(self, url: str, label: str = "page", verify: bool = True, timeout: int = DEFAULT_WAIT_TIMEOUT) -> Dict[str, Any]:
         """
         Navigate to a URL using Selenium WebDriver.
@@ -87,6 +90,7 @@ class SeleniumNavigator(Navigator):
                 'label': label
             }
     
+    @compass_public
     def verify_page(self, 
                    url: Optional[str] = None, 
                    check_locator: Optional[Tuple[str, str]] = None, 
@@ -142,6 +146,7 @@ class SeleniumNavigator(Navigator):
                 'current_url': getattr(self.driver, 'current_url', 'unknown')
             }
 
+    @compass_public
     def scroll_into_view_center(self, element: Any) -> Dict[str, Any]:
         """
         Scroll element into the center of the viewport.

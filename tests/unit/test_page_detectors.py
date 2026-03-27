@@ -31,9 +31,9 @@ class TestPageDetectorBase(unittest.TestCase):
         self.assertIsNotNone(self.detector.logger)
     
     def test_is_present_not_implemented(self):
-        """Test that is_present raises NotImplementedError."""
+        """Test that _is_present raises NotImplementedError."""
         with self.assertRaises(NotImplementedError):
-            self.detector.is_present()
+            self.detector._is_present()
     
     @patch('compass_core.page_detectors.WebDriverWait')
     def test_wait_for_element_found_and_displayed(self, mock_wait_class):
@@ -107,22 +107,22 @@ class TestLoginPageDetector(unittest.TestCase):
     
     @patch.object(LoginPageDetector, '_wait_for_element')
     def test_is_present_when_login_field_found(self, mock_wait):
-        """Test is_present returns True when login field detected."""
+        """Test _is_present returns True when login field detected."""
         mock_element = Mock()
         mock_element.tag_name = 'input'
         mock_wait.return_value = mock_element
         
-        result = self.detector.is_present()
+        result = self.detector._is_present()
         
         self.assertTrue(result)
         mock_wait.assert_called_once()
     
     @patch.object(LoginPageDetector, '_wait_for_element')
     def test_is_present_when_no_login_field(self, mock_wait):
-        """Test is_present returns False when no login field found."""
+        """Test _is_present returns False when no login field found."""
         mock_wait.return_value = None
         
-        result = self.detector.is_present()
+        result = self.detector._is_present()
         
         self.assertFalse(result)
     
@@ -143,7 +143,7 @@ class TestWWIDPageDetector(unittest.TestCase):
     
     @patch.object(WWIDPageDetector, '_wait_for_element')
     def test_is_present_wwid_only(self, mock_wait):
-        """Test is_present returns True for WWID-only page (no SSO fields)."""
+        """Test _is_present returns True for WWID-only page (no SSO fields)."""
         # WWID field found
         mock_wwid = Mock()
         mock_wait.return_value = mock_wwid
@@ -151,22 +151,22 @@ class TestWWIDPageDetector(unittest.TestCase):
         # No SSO fields found
         self.mock_driver.find_element.side_effect = Exception("Element not found")
         
-        result = self.detector.is_present()
+        result = self.detector._is_present()
         
         self.assertTrue(result)
     
     @patch.object(WWIDPageDetector, '_wait_for_element')
     def test_is_present_no_wwid_field(self, mock_wait):
-        """Test is_present returns False when WWID field not found."""
+        """Test _is_present returns False when WWID field not found."""
         mock_wait.return_value = None
         
-        result = self.detector.is_present()
+        result = self.detector._is_present()
         
         self.assertFalse(result)
     
     @patch.object(WWIDPageDetector, '_wait_for_element')
     def test_is_present_wwid_and_sso_fields(self, mock_wait):
-        """Test is_present returns False when both WWID and SSO fields present."""
+        """Test _is_present returns False when both WWID and SSO fields present."""
         # WWID field found
         mock_wwid = Mock()
         mock_wait.return_value = mock_wwid
@@ -176,7 +176,7 @@ class TestWWIDPageDetector(unittest.TestCase):
         mock_sso.is_displayed.return_value = True
         self.mock_driver.find_element.return_value = mock_sso
         
-        result = self.detector.is_present()
+        result = self.detector._is_present()
         
         self.assertFalse(result)
     
@@ -197,21 +197,21 @@ class TestAuthenticatedPageDetector(unittest.TestCase):
     
     @patch.object(AuthenticatedPageDetector, '_wait_for_element')
     def test_is_present_when_app_element_found(self, mock_wait):
-        """Test is_present returns True when app element detected."""
+        """Test _is_present returns True when app element detected."""
         mock_element = Mock()
         mock_element.tag_name = 'button'
         mock_wait.return_value = mock_element
         
-        result = self.detector.is_present()
+        result = self.detector._is_present()
         
         self.assertTrue(result)
     
     @patch.object(AuthenticatedPageDetector, '_wait_for_element')
     def test_is_present_when_no_app_element(self, mock_wait):
-        """Test is_present returns False when no app element found."""
+        """Test _is_present returns False when no app element found."""
         mock_wait.return_value = None
         
-        result = self.detector.is_present()
+        result = self.detector._is_present()
         
         self.assertFalse(result)
     

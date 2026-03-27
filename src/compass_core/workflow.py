@@ -6,11 +6,13 @@ implementations like `PmWorkItemFlow`. Designed to be runtime-checkable
 and mock-friendly.
 """
 from __future__ import annotations
+from .decorators import compass_public
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable, Dict, Any, List, Optional
 
 
 @dataclass
+@compass_public
 class FlowContext:
     """Shared context passed across workflow steps.
 
@@ -27,33 +29,43 @@ class FlowContext:
     actions: Optional[Any] = None  # type: ignore[valid-type]
 
 
+@compass_public
 @runtime_checkable
 class WorkflowStep(Protocol):
     """A single step in a workflow plan."""
 
+    @compass_public
     def name(self) -> str: ...
 
+    @compass_public
     def execute(self, context: FlowContext) -> Dict[str, Any]: ...
 
 
+@compass_public
 @runtime_checkable
 class Workflow(Protocol):
     """Protocol for orchestrating multi-step business flows."""
 
+    @compass_public
     def id(self) -> str: ...
 
+    @compass_public
     def plan(self, context: FlowContext) -> List[WorkflowStep]: ...
 
+    @compass_public
     def run(self, context: FlowContext) -> Dict[str, Any]: ...
 
 
+@compass_public
 @runtime_checkable
 class WorkflowManager(Protocol):
     """Protocol for managing workflow execution."""
 
+    @compass_public
     def run(self, workflow: Workflow, context: FlowContext) -> Dict[str, Any]: ...
 
 
+@compass_public
 class StandardWorkflowManager:
     """Default implementation that delegates to the workflow's `run`.
 
@@ -61,6 +73,7 @@ class StandardWorkflowManager:
     to executing each planned step sequentially and aggregate results.
     """
 
+    @compass_public
     def run(self, workflow: Workflow, context: FlowContext) -> Dict[str, Any]:
         # Prefer the workflow's own run implementation
         try:

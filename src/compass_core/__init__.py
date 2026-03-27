@@ -1,3 +1,4 @@
+from .decorators import compass_public
 from .engine import CompassRunner
 from .json_configuration import JsonConfiguration
 from .ini_configuration import IniConfiguration
@@ -19,6 +20,7 @@ except ImportError:
 
 # Define base public API
 __all__ = [
+    'compass_public',
     'CompassRunner',
     'JsonConfiguration',
     'IniConfiguration',
