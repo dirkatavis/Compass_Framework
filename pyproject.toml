@@ -3,12 +3,38 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "compass_core"  # This is the name you will 'pip install'
-version = "0.1.0"
+name = "compass-core"
+version = "1.0.0"
+description = "Compass Framework – Protocol-first browser automation core for Provider-Client deployments."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [{ name = "Compass Framework Team" }]
+keywords = ["automation", "selenium", "workflow", "compass"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+# No mandatory runtime dependencies – base framework is stdlib-only.
+dependencies = []
 
 [project.optional-dependencies]
 selenium = ["selenium>=4.0.0", "webdriver-manager>=4.0.0"]
-web = ["selenium>=4.0.0", "webdriver-manager>=4.0.0"]  # Alias for easier installation
+web     = ["selenium>=4.0.0", "webdriver-manager>=4.0.0"]  # Alias
+
+[project.scripts]
+# Installed as a CLI tool: `compass-inventory --out my_report.csv`
+compass-inventory = "compass_core.tools.export_inventory:main"
 
 [tool.setuptools.packages.find]
-where = ["src"]       # Tells it to look in 'src' for the code
+where = ["src"]   # /src layout: only packages under src/ are included
+
+[tool.setuptools.package-data]
+"compass_core" = ["py.typed"]

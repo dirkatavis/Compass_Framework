@@ -3,8 +3,15 @@ from .engine import CompassRunner
 from .json_configuration import JsonConfiguration
 from .ini_configuration import IniConfiguration
 from .logging import StandardLogger, StandardLoggerFactory
-from .workflow import StandardWorkflowManager
+from .workflow import StandardWorkflowManager, FlowContext, WorkflowStep, Workflow, WorkflowManager
 from .driver_factory import DriverFactory
+from .configuration import Configuration
+from .driver_manager import DriverManager
+from .logging import Logger, LoggerFactory
+from .navigation import Navigator
+from .pm_actions import PmActions
+from .vehicle_data_actions import VehicleDataActions
+from .version_checker import VersionChecker
 
 # Optional PM flow - available when workflow protocols are present
 try:
@@ -18,16 +25,38 @@ try:
 except ImportError:
     Vin2MvaFlow = None  # type: ignore
 
-# Define base public API
+# Define base public API  – all certified protocol and implementation classes
 __all__ = [
+    # Decorator marker
     'compass_public',
+    # Entry point
     'CompassRunner',
-    'JsonConfiguration',
+    # Configuration protocol + implementations
+    'Configuration',
     'IniConfiguration',
+    'JsonConfiguration',
+    # Driver management
+    'DriverFactory',
+    'DriverManager',
+    # Logging protocol + implementations
+    'Logger',
+    'LoggerFactory',
     'StandardLogger',
     'StandardLoggerFactory',
+    # Navigation protocol
+    'Navigator',
+    # PM actions protocol
+    'PmActions',
+    # Vehicle data protocol
+    'VehicleDataActions',
+    # Version checking protocol
+    'VersionChecker',
+    # Workflow protocols + implementation
+    'Workflow',
+    'WorkflowManager',
+    'WorkflowStep',
+    'FlowContext',
     'StandardWorkflowManager',
-    'DriverFactory'
 ]
 if PmWorkItemFlow is not None:
     __all__.append('PmWorkItemFlow')
