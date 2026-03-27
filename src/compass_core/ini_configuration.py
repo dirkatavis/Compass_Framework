@@ -194,6 +194,7 @@ class IniConfiguration(Configuration):
         except Exception:
             return False
     
+    @compass_public
     def get_all(self) -> Dict[str, Any]:
         """
         Get all configuration data.

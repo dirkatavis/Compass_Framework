@@ -204,7 +204,7 @@ class SmartLoginFlow(LoginFlow):
             
             # Check for WWID-only page first (auto-login scenario)
             wwid_detector = WWIDPageDetector(self.driver, timeout=0.5, logger=self.logger)
-            wwid_only = wwid_detector.is_present()
+            wwid_only = wwid_detector._is_present()
             self.logger.debug(f"[SMART_AUTH] WWID check complete: {wwid_only}")
             
             if wwid_only:

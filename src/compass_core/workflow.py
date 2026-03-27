@@ -12,6 +12,7 @@ from typing import Protocol, runtime_checkable, Dict, Any, List, Optional
 
 
 @dataclass
+@compass_public
 class FlowContext:
     """Shared context passed across workflow steps.
 

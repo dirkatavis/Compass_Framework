@@ -298,6 +298,7 @@ class SeleniumPmActions(PmActions):
             # Restore original implicit wait value
             self.driver.implicitly_wait(original_implicit_wait)
 
+    @compass_public
     def navigate_to_workitem_tab(self) -> Dict[str, Any]:
         """
         Navigate to the WorkItem tab after entering an MVA.
@@ -329,6 +330,7 @@ class SeleniumPmActions(PmActions):
         
         return {"status": "success"}
 
+    @compass_public
     def get_existing_workitems(self) -> list:
         """
         Capture all existing workitem structures from the WorkItem tab.

@@ -216,6 +216,7 @@ class JsonConfiguration(Configuration):
             'warnings': warnings
         }
     
+    @compass_public
     def get_all(self) -> Dict[str, Any]:
         """
         Get a copy of the current configuration.

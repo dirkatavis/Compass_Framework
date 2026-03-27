@@ -18,26 +18,26 @@ class TestDriverFactory(unittest.TestCase):
     def test_kill_locked_drivers(self, mock_run):
         """Test that taskkill is called to release locked drivers."""
         with patch('sys.platform', 'win32'):
-            self.factory.kill_locked_drivers()
+            self.factory._kill_locked_drivers()
             mock_run.assert_called_with(
                 ["taskkill", "/F", "/IM", "msedgedriver.exe", "/T"],
                 capture_output=True, check=False
             )
 
     @patch('webdriver_manager.microsoft.EdgeChromiumDriverManager.install')
-    @patch.object(DriverFactory, 'kill_locked_drivers')
+    @patch.object(DriverFactory, '_kill_locked_drivers')
     def test_update_driver_approach_a_success(self, mock_kill, mock_install):
         """Test Approach A (webdriver-manager) integration."""
         mock_install.return_value = "new/path/to/driver.exe"
         
-        path = self.factory.update_driver_approach_a()
+        path = self.factory._update_driver_approach_a()
         
         self.assertEqual(path, "new/path/to/driver.exe")
         mock_kill.assert_called_once()
         mock_install.assert_called_once()
 
     @patch('selenium.webdriver.Edge')
-    @patch.object(DriverFactory, 'update_driver_approach_a')
+    @patch.object(DriverFactory, '_update_driver_approach_a')
     def test_get_driver_self_healing_success(self, mock_update, mock_edge):
         """Test that get_driver heals and retries on version mismatch."""
         # 1. First attempt fails with version error
@@ -86,7 +86,7 @@ class TestDriverFactory(unittest.TestCase):
     @patch('urllib.request.urlopen')
     @patch('zipfile.ZipFile')
     @patch('builtins.open', new_callable=MagicMock)
-    @patch.object(DriverFactory, 'kill_locked_drivers')
+    @patch.object(DriverFactory, '_kill_locked_drivers')
     def test_update_driver_approach_b_manual(self, mock_kill, mock_open, mock_zip, mock_urlopen):
         """Test Approach B (Manual Scrape) fallback logic."""
         # Mock browser version detection
@@ -103,7 +103,7 @@ class TestDriverFactory(unittest.TestCase):
         mock_zip_instance.namelist.return_value = ["msedgedriver.exe"]
         mock_zip_instance.read.return_value = b"exe_content"
         
-        path = self.factory.update_driver_approach_b()
+        path = self.factory._update_driver_approach_b()
         
         self.assertEqual(path, "test_driver.exe")
         mock_kill.assert_called_once()

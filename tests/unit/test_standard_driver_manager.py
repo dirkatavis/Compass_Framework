@@ -68,18 +68,26 @@ def test_check_version_compatibility_various():
     assert r3['compatible'] is False and r3['status'] in ('parse_error', 'version_unknown')
 
 
+
 @pytest.mark.new_slice
 def test_get_or_create_driver_raises_on_version_mismatch(monkeypatch, tmp_path):
+    """Test that driver creation fails when DriverFactory can't create driver."""
+    from selenium.common.exceptions import SessionNotCreatedException
+    
     manager = StandardDriverManager(driver_path=str(tmp_path / 'msedgedriver.exe'))
-    monkeypatch.setattr('os.path.exists', lambda p: True)
+    
+    # Mock the factory to fail persistently (not recoverable)
+    mock_factory = Mock()
+    mock_factory.get_driver.side_effect = SessionNotCreatedException(
+        "This version of Microsoft Edge WebDriver only supports version 120 "
+        "(but you have version 145)"
+    )
+    monkeypatch.setattr(manager, '_factory', mock_factory)
 
-    # Force browser and driver versions that mismatch
-    monkeypatch.setattr(manager, '_get_browser_version', lambda: '121.0.0.0')
-    monkeypatch.setattr(manager, 'get_driver_version', lambda p: '120.0.0.1')
-
-    with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError) as exc_info:
         manager.get_or_create_driver()
-
+    
+    assert "Failed to create WebDriver session" in str(exc_info.value)
 
 @pytest.mark.new_slice
 def test_get_or_create_driver_creates_and_quits(monkeypatch, tmp_path):

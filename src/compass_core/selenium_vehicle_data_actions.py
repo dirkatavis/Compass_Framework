@@ -428,6 +428,7 @@ class SeleniumVehicleDataActions(VehicleDataActions):
         last8 = mva[-8:] if len(mva) >= 8 else mva
         return self._find_mva_echo(last8, timeout)
     
+    @compass_public
     def wait_for_property_loaded(self, label: str, timeout: int = 10) -> bool:
         """Wait for a specific property to be loaded and visible.
         
@@ -448,6 +449,7 @@ class SeleniumVehicleDataActions(VehicleDataActions):
             self._logger.error(f"[PROPERTY] Error waiting for property '{label}': {e}")
             return False
     
+    @compass_public
     def wait_for_property_page_loaded(self, expected_mva: str, timeout: Optional[float] = None) -> bool:
         """
         Wait for property page to load by detecting MVA property field.
@@ -522,6 +524,7 @@ class SeleniumVehicleDataActions(VehicleDataActions):
             self._logger.error(f"[PROPERTY_PAGE] Traceback: {traceback.format_exc()}")
             return False
 
+    @compass_public
     def set_vehicle_status(self, status: str) -> Dict[str, Any]:
         """Set vehicle status value on the current page."""
         try:
@@ -603,6 +606,7 @@ class SeleniumVehicleDataActions(VehicleDataActions):
                 'error': f'Failed to set vehicle status: {str(e)}'
             }
 
+    @compass_public
     def save_vehicle(self) -> Dict[str, Any]:
         """Save or update the current vehicle record."""
         try:

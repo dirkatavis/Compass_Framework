@@ -75,7 +75,7 @@ class TestSmartLoginFlow(unittest.TestCase):
         
         # Mock WWID detector - no WWID page
         mock_wwid_detector = Mock()
-        mock_wwid_detector.is_present.return_value = False
+        mock_wwid_detector._is_present.return_value = False
         mock_wwid_detector_class.return_value = mock_wwid_detector
         
         # Mock detectors with selectors
@@ -122,7 +122,7 @@ class TestSmartLoginFlow(unittest.TestCase):
         
         # Mock WWID detector - no WWID page
         mock_wwid_detector = Mock()
-        mock_wwid_detector.is_present.return_value = False
+        mock_wwid_detector._is_present.return_value = False
         mock_wwid_detector_class.return_value = mock_wwid_detector
         
         # Mock detectors with selectors
@@ -197,7 +197,7 @@ class TestSmartLoginFlow(unittest.TestCase):
         
         # Mock detectors
         mock_wwid_detector = Mock()
-        mock_wwid_detector.is_present.return_value = False
+        mock_wwid_detector._is_present.return_value = False
         mock_wwid_detector_class.return_value = mock_wwid_detector
         
         mock_login_detector = Mock()
@@ -249,7 +249,7 @@ class TestSmartLoginFlow(unittest.TestCase):
         
         # Mock detectors
         mock_wwid_detector = Mock()
-        mock_wwid_detector.is_present.return_value = False
+        mock_wwid_detector._is_present.return_value = False
         mock_wwid_detector_class.return_value = mock_wwid_detector
         
         mock_login_detector = Mock()
@@ -311,7 +311,7 @@ class TestSmartLoginFlow(unittest.TestCase):
         
         # Mock detectors
         mock_wwid_detector = Mock()
-        mock_wwid_detector.is_present.return_value = False
+        mock_wwid_detector._is_present.return_value = False
         mock_wwid_detector_class.return_value = mock_wwid_detector
         
         mock_login_detector = Mock()

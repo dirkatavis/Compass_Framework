@@ -31,6 +31,9 @@ except ImportError:
     # Fallback/Mock for standalone or when imported from outside compass_core
     BrowserVersionChecker = None
 
+from .decorators import compass_public
+
+@compass_public
 class DriverFactory:
     """
     Architect's Solution for robust, self-healing Edge WebDriver management.
@@ -62,7 +65,7 @@ class DriverFactory:
             
         return os.path.abspath("msedgedriver.exe")
 
-    def kill_locked_drivers(self):
+    def _kill_locked_drivers(self):
         """Terminates any running msedgedriver.exe processes to prevent file locks."""
         self.logger.info("[DRIVER_FACTORY] Task: Terminating locked msedgedriver.exe processes...")
         try:
@@ -75,20 +78,20 @@ class DriverFactory:
         except Exception as e:
             self.logger.warning(f"[DRIVER_FACTORY] Error killing driver processes: {e}")
 
-    def update_driver_approach_a(self) -> str:
+    def _update_driver_approach_a(self) -> str:
         """Approach A: Use webdriver-manager for a clean, low-maintenance setup."""
         if not HAS_WEBDRIVER_MANAGER:
             self.logger.warning("[DRIVER_FACTORY] webdriver-manager not installed. Falling back to Approach B.")
-            return self.update_driver_approach_b()
+            return self._update_driver_approach_b()
 
         self.logger.info("[DRIVER_FACTORY] Updating via Approach A (webdriver-manager)...")
-        self.kill_locked_drivers()
+        self._kill_locked_drivers()
         manager = EdgeChromiumDriverManager()
         new_path = manager.install()
         self.logger.info(f"[DRIVER_FACTORY] Approach A Success: {new_path}")
         return new_path
 
-    def update_driver_approach_b(self) -> str:
+    def _update_driver_approach_b(self) -> str:
         """Approach B: Custom/Air-Gapped fallback using direct downloads from Microsoft."""
         self.logger.info("[DRIVER_FACTORY] Updating via Approach B (Manual Scrape/Download)...")
         import urllib.request
@@ -105,7 +108,7 @@ class DriverFactory:
         self.logger.info(f"[DRIVER_FACTORY] Target Version: {browser_v}")
         
         # 2. Kill locks
-        self.kill_locked_drivers()
+        self._kill_locked_drivers()
         
         # 3. Construct Download URL (Microsoft pattern)
         # Usually: https://msedgedriver.azureedge.net/{version}/edgedriver_win64.zip
@@ -132,6 +135,7 @@ class DriverFactory:
 
         raise RuntimeError("msedgedriver.exe not found in downloaded zip.")
 
+    @compass_public
     def get_driver(self, options: Optional[EdgeOptions] = None, max_retries: int = 2) -> webdriver.Edge:
         """
         Main entry point. Attempts to create driver, catches version errors, 
@@ -203,9 +207,9 @@ class DriverFactory:
                     
                     try:
                         if HAS_WEBDRIVER_MANAGER:
-                            self.driver_path = self.update_driver_approach_a()
+                            self.driver_path = self._update_driver_approach_a()
                         else:
-                            self.driver_path = self.update_driver_approach_b()
+                            self.driver_path = self._update_driver_approach_b()
                         
                         # Update report metadata after download
                         if self.checker:

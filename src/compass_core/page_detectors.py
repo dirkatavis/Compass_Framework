@@ -77,7 +77,7 @@ class PageDetector:
             self.logger.warning(f"Error waiting for element '{selector}': {e}")
             return None
     
-    def is_present(self) -> bool:
+    def _is_present(self) -> bool:
         """
         Check if this page type is currently displayed.
         
@@ -86,7 +86,7 @@ class PageDetector:
         Returns:
             bool: True if page is detected, False otherwise
         """
-        raise NotImplementedError("Subclasses must implement is_present()")
+        raise NotImplementedError("Subclasses must implement _is_present()")
 
 
 class LoginPageDetector(PageDetector):
@@ -105,7 +105,7 @@ class LoginPageDetector(PageDetector):
         '#i0116'                    # Microsoft-specific element ID
     ]
     
-    def is_present(self) -> bool:
+    def _is_present(self) -> bool:
         """
         Check if login page is currently displayed.
         
@@ -143,7 +143,7 @@ class WWIDPageDetector(PageDetector):
         '#i0116'
     ]
     
-    def is_present(self) -> bool:
+    def _is_present(self) -> bool:
         """
         Check if WWID-only page is currently displayed.
         
@@ -194,7 +194,7 @@ class AuthenticatedPageDetector(PageDetector):
         "nav[class*='navbar']"                             # Navigation bar
     ]
     
-    def is_present(self) -> bool:
+    def _is_present(self) -> bool:
         """
         Check if application is loaded and user is authenticated.
         
