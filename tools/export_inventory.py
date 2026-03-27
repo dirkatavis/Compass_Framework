@@ -60,20 +60,19 @@ _UTILITY_FILES: Set[str] = {
     "page_detectors.py",
     "driver_factory.py",
     "browser_version_checker.py",
-    "engine.py",
 }
 
 
 def _layer_for_file(filename: str) -> str:
     """Return the architectural layer label for a given source filename."""
+    if filename == "engine.py":  # check before _UTILITY_FILES to avoid shadowing
+        return "Entry Point"
     if filename in _PROTOCOL_FILES:
         return "Protocol"
     if filename.endswith("_flow.py"):
         return "Flow"
     if filename in _UTILITY_FILES:
         return "Utility"
-    if filename == "engine.py":
-        return "Entry Point"
     # Remaining files are concrete implementations
     return "Implementation"
 
@@ -143,9 +142,13 @@ def _review_recommendation(
 
     certified_public = "YES" if class_is_public and class_marked and method_is_public and method_marked else ""
 
-    needs_method_review = method_is_public and not method_marked
-    if needs_method_review:
-        return certified_public, "YES", "Add @compass_public to method or rename method with leading underscore"
+    # Only review method visibility when the containing class is also public;
+    # methods inside private classes are assumed intentionally internal.
+    if class_is_public:
+        if method_is_public and not method_marked:
+            return certified_public, "YES", "Add @compass_public to method or rename method with leading underscore"
+        if not method_is_public and method_marked:
+            return certified_public, "YES", "Remove @compass_public or rename method without leading underscore"
 
     return certified_public, "", ""
 
@@ -157,7 +160,12 @@ def _class_review_status(class_access: str, class_public: str) -> Tuple[str, str
 
     if class_is_public and not class_marked:
         return "YES", "Add @compass_public to class or rename class with leading underscore"
+    if not class_is_public and class_marked:
+        return "YES", "Remove @compass_public or rename class without leading underscore"
     return "", ""
+
+
+
 
 
 def _signature(func: ast.FunctionDef) -> str:
@@ -240,6 +248,32 @@ def _extract_all_exports(init_path: Path) -> Set[str]:
                 if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
                     exports.add(arg.value)
 
+        # __all__.extend([...]) or __all__ += [...]
+        if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call):
+            call = node.value
+            if (
+                isinstance(call.func, ast.Attribute)
+                and call.func.attr == "extend"
+                and isinstance(call.func.value, ast.Name)
+                and call.func.value.id == "__all__"
+                and call.args
+                and isinstance(call.args[0], ast.List)
+            ):
+                for elt in call.args[0].elts:
+                    if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
+                        exports.add(elt.value)
+
+        # __all__ += [...]
+        if (
+            isinstance(node, ast.AugAssign)
+            and isinstance(node.target, ast.Name)
+            and node.target.id == "__all__"
+            and isinstance(node.value, ast.List)
+        ):
+            for elt in node.value.elts:
+                if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
+                    exports.add(elt.value)
+
     return exports
 
 
@@ -277,10 +311,21 @@ def _walk_source(src_root: Path, all_exports: Set[str]) -> List[Tuple]:
             class_public = "YES" if _has_compass_public_decorator(node) else ""
             class_review_needed, class_suggested_action = _class_review_status(class_access, class_public)
 
-            for item in node.body:
-                if not isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                    continue
+            method_nodes = [
+                item for item in node.body
+                if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef))
+            ]
 
+            # Emit a class-only row for classes with no methods (e.g. Enums, bare dataclasses)
+            if not method_nodes:
+                rows.append((
+                    filename, module, layer, class_name, is_protocol, in_all,
+                    class_access, class_public, class_review_needed, class_suggested_action,
+                    "", "", "", "", "", "", "", _first_docstring(node),
+                ))
+                continue
+
+            for item in method_nodes:
                 method_name = item.name
                 method_access = "Private (Internal)" if method_name.startswith("_") else "Public"
                 method_public = "YES" if _has_compass_public_decorator(item) else ""
