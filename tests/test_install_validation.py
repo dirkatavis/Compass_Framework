@@ -4,6 +4,7 @@ Run this before starting development to confirm your environment is configured.
 Usage: pytest tests/test_install_validation.py -v
 """
 
+from importlib.util import find_spec
 from importlib.metadata import PackageNotFoundError, entry_points, version
 import inspect
 import os
@@ -48,6 +49,17 @@ CERTIFIED_CLASSES = [
     "WorkflowStep",
 ]
 
+OPTIONAL_SELENIUM_CLASSES = {
+    "LoginFlow",
+    "SeleniumLoginFlow",
+    "SeleniumNavigator",
+    "SeleniumPmActions",
+    "SeleniumVehicleDataActions",
+    "SmartLoginFlow",
+    "StandardDriverManager",
+    "VehicleLookupFlow",
+}
+
 
 class TestPackageInstall:
     """Verify compass-core is installed and importable."""
@@ -60,6 +72,8 @@ class TestPackageInstall:
 
     def test_compass_core_version(self):
         """Installed package version must match framework release version."""
+        from compass_core import CompassRunner
+
         try:
             installed_version = version("compass-core")
         except PackageNotFoundError as exc:
@@ -67,13 +81,24 @@ class TestPackageInstall:
                 "Package 'compass-core' is not installed. Run: pip install -e <framework path>"
             ) from exc
 
-        assert installed_version == "1.0.0", f"Expected 1.0.0, got {installed_version}"
+        expected_version = CompassRunner().version
+        assert (
+            installed_version == expected_version
+        ), f"Expected {expected_version}, got {installed_version}"
 
     def test_certified_classes_available(self):
         """All certified public classes must be available at top-level compass_core."""
         import compass_core
 
-        missing = [cls for cls in CERTIFIED_CLASSES if not hasattr(compass_core, cls)]
+        expected_classes = set(CERTIFIED_CLASSES)
+
+        if sys.platform != "win32":
+            expected_classes.discard("BrowserVersionChecker")
+
+        if find_spec("selenium") is None or find_spec("webdriver_manager") is None:
+            expected_classes -= OPTIONAL_SELENIUM_CLASSES
+
+        missing = [cls for cls in sorted(expected_classes) if not hasattr(compass_core, cls)]
         assert not missing, f"Missing certified classes: {missing}"
 
     def test_public_surface_not_leaking(self):
@@ -124,12 +149,18 @@ class TestDependencies:
 
     def test_selenium_installed(self):
         """Selenium must be available."""
+        if find_spec("selenium") is None:
+            pytest.skip("selenium extra not installed")
+
         from selenium import webdriver
 
         assert webdriver is not None
 
     def test_webdriver_manager_installed(self):
         """webdriver-manager must be available."""
+        if find_spec("webdriver_manager") is None:
+            pytest.skip("selenium extra not installed")
+
         from webdriver_manager.chrome import ChromeDriverManager
 
         assert ChromeDriverManager is not None

@@ -17,13 +17,13 @@ from .version_checker import VersionChecker
 try:
     from .pm_work_item_flow import PmWorkItemFlow
 except ImportError:
-    PmWorkItemFlow = None  # type: ignore
+    pass
 
 # Optional Vin2Mva flow
 try:
     from .vin_to_mva_flow import Vin2MvaFlow
 except ImportError:
-    Vin2MvaFlow = None  # type: ignore
+    pass
 
 # Optional imports - only available if dependencies are installed
 try:
@@ -85,7 +85,7 @@ except ImportError:
     # winreg not available (non-Windows) - BrowserVersionChecker not available
     pass
 
-__all__ = [
+_CERTIFIED_EXPORTS = [
     "BrowserVersionChecker",
     "CompassRunner",
     "Configuration",
@@ -120,6 +120,8 @@ __all__ = [
     "WorkflowManager",
     "WorkflowStep",
 ]
+
+__all__ = [name for name in _CERTIFIED_EXPORTS if name in globals()]
 
 
 def __dir__():
