@@ -4,9 +4,19 @@ from .json_configuration import JsonConfiguration
 from .ini_configuration import IniConfiguration
 from .logging import StandardLogger, StandardLoggerFactory
 from .workflow import StandardWorkflowManager, FlowContext, WorkflowStep, Workflow, WorkflowManager
-from .driver_factory import DriverFactory
+try:
+    from .driver_factory import DriverFactory
+except ImportError:
+    # selenium not installed - DriverFactory not available
+    DriverFactory = None  # type: ignore
+
 from .configuration import Configuration
-from .driver_manager import DriverManager
+
+try:
+    from .driver_manager import DriverManager
+except ImportError:
+    # selenium not installed - DriverManager not available
+    DriverManager = None  # type: ignore
 from .logging import Logger, LoggerFactory
 from .navigation import Navigator
 from .pm_actions import PmActions
@@ -29,61 +39,55 @@ except ImportError:
 try:
     from .selenium_navigator import SeleniumNavigator
 except ImportError:
-    # selenium not installed - SeleniumNavigator not available
-    pass
+    SeleniumNavigator = None  # type: ignore
 
 # Optional Selenium-backed PM actions - available when selenium and protocol present
 try:
     from .pm_actions_selenium import SeleniumPmActions
 except ImportError:
-    # selenium or pm_actions not installed - SeleniumPmActions not available
-    pass
+    SeleniumPmActions = None  # type: ignore
 
 # Optional Vehicle Data Actions - available when selenium installed
 try:
     from .selenium_vehicle_data_actions import SeleniumVehicleDataActions
 except ImportError:
-    # selenium not installed - SeleniumVehicleDataActions not available
-    pass
+    SeleniumVehicleDataActions = None  # type: ignore
 
 # DriverManager - requires selenium for WebDriver support
 try:
     from .standard_driver_manager import StandardDriverManager
 except ImportError:
-    # selenium not installed - StandardDriverManager not available
-    pass
+    StandardDriverManager = None  # type: ignore
 
 # LoginFlow - authentication protocol and Selenium implementation
 try:
     from .login_flow import LoginFlow
-    
     from .selenium_login_flow import SeleniumLoginFlow
-    
     from .smart_login_flow import SmartLoginFlow
 except ImportError:
-    # selenium not installed - LoginFlow components not available
-    pass
+    LoginFlow = None  # type: ignore
+    SeleniumLoginFlow = None  # type: ignore
+    SmartLoginFlow = None  # type: ignore
 
 # VehicleLookupFlow - batch MVA processing workflow
 try:
     from .vehicle_lookup_flow import VehicleLookupFlow
 except ImportError:
-    # Dependencies not installed - VehicleLookupFlow not available
-    pass
+    VehicleLookupFlow = None  # type: ignore
 
 # MVA collection management - data structures for MVA tracking
 try:
     from .mva_collection import MvaCollection, MvaItem, MvaStatus
 except ImportError:
-    # MVA collection not available
-    pass
+    MvaCollection = None  # type: ignore
+    MvaItem = None  # type: ignore
+    MvaStatus = None  # type: ignore
 
 # Windows-only imports - only available on Windows
 try:
     from .browser_version_checker import BrowserVersionChecker
 except ImportError:
-    # winreg not available (non-Windows) - BrowserVersionChecker not available
-    pass
+    BrowserVersionChecker = None  # type: ignore
 
 _CERTIFIED_EXPORTS = [
     "BrowserVersionChecker",
