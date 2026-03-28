@@ -4,9 +4,19 @@ from .json_configuration import JsonConfiguration
 from .ini_configuration import IniConfiguration
 from .logging import StandardLogger, StandardLoggerFactory
 from .workflow import StandardWorkflowManager, FlowContext, WorkflowStep, Workflow, WorkflowManager
-from .driver_factory import DriverFactory
+try:
+    from .driver_factory import DriverFactory
+except ImportError:
+    # selenium not installed - DriverFactory not available
+    DriverFactory = None  # type: ignore
+
 from .configuration import Configuration
-from .driver_manager import DriverManager
+
+try:
+    from .driver_manager import DriverManager
+except ImportError:
+    # selenium not installed - DriverManager not available
+    DriverManager = None  # type: ignore
 from .logging import Logger, LoggerFactory
 from .navigation import Navigator
 from .pm_actions import PmActions
@@ -17,130 +27,106 @@ from .version_checker import VersionChecker
 try:
     from .pm_work_item_flow import PmWorkItemFlow
 except ImportError:
-    PmWorkItemFlow = None  # type: ignore
+    pass
 
 # Optional Vin2Mva flow
 try:
     from .vin_to_mva_flow import Vin2MvaFlow
 except ImportError:
-    Vin2MvaFlow = None  # type: ignore
-
-# Define base public API  – all certified protocol and implementation classes
-__all__ = [
-    # Decorator marker
-    'compass_public',
-    # Entry point
-    'CompassRunner',
-    # Configuration protocol + implementations
-    'Configuration',
-    'IniConfiguration',
-    'JsonConfiguration',
-    # Driver management
-    'DriverFactory',
-    'DriverManager',
-    # Logging protocol + implementations
-    'Logger',
-    'LoggerFactory',
-    'StandardLogger',
-    'StandardLoggerFactory',
-    # Navigation protocol
-    'Navigator',
-    # PM actions protocol
-    'PmActions',
-    # Vehicle data protocol
-    'VehicleDataActions',
-    # Version checking protocol
-    'VersionChecker',
-    # Workflow protocols + implementation
-    'Workflow',
-    'WorkflowManager',
-    'WorkflowStep',
-    'FlowContext',
-    'StandardWorkflowManager',
-]
-if PmWorkItemFlow is not None:
-    __all__.append('PmWorkItemFlow')
-
-if Vin2MvaFlow is not None:
-    __all__.append('Vin2MvaFlow')
+    pass
 
 # Optional imports - only available if dependencies are installed
 try:
     from .selenium_navigator import SeleniumNavigator
-    __all__.append('SeleniumNavigator')
 except ImportError:
-    # selenium not installed - SeleniumNavigator not available
-    pass
+    SeleniumNavigator = None  # type: ignore
 
 # Optional Selenium-backed PM actions - available when selenium and protocol present
 try:
     from .pm_actions_selenium import SeleniumPmActions
-    __all__.append('SeleniumPmActions')
 except ImportError:
-    # selenium or pm_actions not installed - SeleniumPmActions not available
-    pass
+    SeleniumPmActions = None  # type: ignore
 
 # Optional Vehicle Data Actions - available when selenium installed
 try:
     from .selenium_vehicle_data_actions import SeleniumVehicleDataActions
-    __all__.append('SeleniumVehicleDataActions')
 except ImportError:
-    # selenium not installed - SeleniumVehicleDataActions not available
-    pass
+    SeleniumVehicleDataActions = None  # type: ignore
 
 # DriverManager - requires selenium for WebDriver support
 try:
     from .standard_driver_manager import StandardDriverManager
-    __all__.append('StandardDriverManager')
 except ImportError:
-    # selenium not installed - StandardDriverManager not available
-    pass
+    StandardDriverManager = None  # type: ignore
 
 # LoginFlow - authentication protocol and Selenium implementation
 try:
     from .login_flow import LoginFlow
-    __all__.append('LoginFlow')
-    
     from .selenium_login_flow import SeleniumLoginFlow
-    __all__.append('SeleniumLoginFlow')
-    
     from .smart_login_flow import SmartLoginFlow
-    __all__.append('SmartLoginFlow')
 except ImportError:
-    # selenium not installed - LoginFlow components not available
-    pass
+    LoginFlow = None  # type: ignore
+    SeleniumLoginFlow = None  # type: ignore
+    SmartLoginFlow = None  # type: ignore
 
 # VehicleLookupFlow - batch MVA processing workflow
 try:
     from .vehicle_lookup_flow import VehicleLookupFlow
-    __all__.append('VehicleLookupFlow')
 except ImportError:
-    # Dependencies not installed - VehicleLookupFlow not available
-    pass
-
-# CSV utilities - MVA list reading and results writing
-try:
-    from .csv_utils import read_mva_list, write_results_csv, read_workitem_list
-    __all__.extend(['read_mva_list', 'write_results_csv', 'read_workitem_list'])
-except ImportError:
-    # CSV utilities not available
-    pass
+    VehicleLookupFlow = None  # type: ignore
 
 # MVA collection management - data structures for MVA tracking
 try:
     from .mva_collection import MvaCollection, MvaItem, MvaStatus
-    __all__.extend(['MvaCollection', 'MvaItem', 'MvaStatus'])
 except ImportError:
-    # MVA collection not available
-    pass
+    MvaCollection = None  # type: ignore
+    MvaItem = None  # type: ignore
+    MvaStatus = None  # type: ignore
 
 # Windows-only imports - only available on Windows
 try:
     from .browser_version_checker import BrowserVersionChecker
-    __all__.append('BrowserVersionChecker')
 except ImportError:
-    # winreg not available (non-Windows) - BrowserVersionChecker not available
-    pass
+    BrowserVersionChecker = None  # type: ignore
 
-# Note: Additional public API exports (e.g., WorkflowManager, flows, and Selenium-backed PM actions)
-# will be added once their modules land on main to avoid misleading API entries and ImportErrors.
+_CERTIFIED_EXPORTS = [
+    "BrowserVersionChecker",
+    "CompassRunner",
+    "Configuration",
+    "DriverFactory",
+    "DriverManager",
+    "FlowContext",
+    "IniConfiguration",
+    "JsonConfiguration",
+    "Logger",
+    "LoggerFactory",
+    "LoginFlow",
+    "MvaCollection",
+    "MvaItem",
+    "MvaStatus",
+    "Navigator",
+    "PmActions",
+    "PmWorkItemFlow",
+    "SeleniumLoginFlow",
+    "SeleniumNavigator",
+    "SeleniumPmActions",
+    "SeleniumVehicleDataActions",
+    "SmartLoginFlow",
+    "StandardDriverManager",
+    "StandardLogger",
+    "StandardLoggerFactory",
+    "StandardWorkflowManager",
+    "VehicleDataActions",
+    "VehicleLookupFlow",
+    "VersionChecker",
+    "Vin2MvaFlow",
+    "Workflow",
+    "WorkflowManager",
+    "WorkflowStep",
+]
+
+__all__ = [name for name in _CERTIFIED_EXPORTS if name in globals()]
+
+
+def __dir__():
+    return __all__
