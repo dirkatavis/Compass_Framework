@@ -23,7 +23,7 @@ classifiers = [
 ]
 
 # No mandatory runtime dependencies – base framework is stdlib-only.
-dependencies = []
+dependencies = ["selenium>=4.0.0","webdriver-manager>=4.0.0",]
 
 [project.optional-dependencies]
 selenium = ["selenium>=4.0.0", "webdriver-manager>=4.0.0"]
