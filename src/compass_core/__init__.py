@@ -22,6 +22,7 @@ from .navigation import Navigator
 from .pm_actions import PmActions
 from .vehicle_data_actions import VehicleDataActions
 from .version_checker import VersionChecker
+from .csv_utils import read_mva_list, write_results_csv, read_workitem_list
 
 # Optional PM flow - available when workflow protocols are present
 try:
@@ -123,6 +124,9 @@ _CERTIFIED_EXPORTS = [
     "Workflow",
     "WorkflowManager",
     "WorkflowStep",
+    "read_mva_list",
+    "write_results_csv",
+    "read_workitem_list",
 ]
 
 __all__ = [name for name in _CERTIFIED_EXPORTS if name in globals()]
